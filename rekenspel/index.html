@@ -134,7 +134,14 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 #end h1{font-size:clamp(1.8rem,6vw,3rem)}
 #end .big{font-family:var(--display);font-size:1.4rem;margin:0}
 .stickerbook{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;font-size:2.4rem;background:var(--card);border-radius:16px;padding:.6rem .8rem}
-.stickerbook span{animation:pop .6s both}
+.stickerbook{flex-direction:column;gap:.3rem;font-size:1rem}
+.stickerbook .sb-kop{font-family:var(--display);color:var(--muted);font-size:1rem}
+.sb-row{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;font-size:2.4rem}
+.sb-row.small{font-size:1.5rem}
+.sb-row span{animation:pop .6s both}
+.station.goal{width:40px;height:40px;font-size:1.5rem;border-style:dashed}
+.station.goal.done{border-style:solid}
+.walker{transition:left .7s cubic-bezier(.3,1.3,.5,1)}
 .stars{font-size:2.2rem;letter-spacing:.1em}
 .diploma{border:4px double #c9a227;border-radius:14px;padding:.9rem 1.2rem;background:linear-gradient(135deg,#fff8dc,#ffe9a3);color:#3a2600;display:flex;flex-direction:column;gap:.15rem;align-items:center;max-width:100%;box-shadow:0 6px 18px rgba(0,0,0,.25);animation:pop .7s cubic-bezier(.2,1.4,.4,1) both}
 .diploma .medal{font-size:3rem;line-height:1;animation:spin 2.4s ease-in-out infinite}
@@ -203,30 +210,30 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 /* ===================== INSTELLINGEN ===================== */
 const $=s=>document.querySelector(s);
 const TOTAL=20;                       // vragen per potje
-const STATIONS=10;                    // stations op de reis (elke 2 vragen één)
+const STEPS=8;                        // zoveel goede antwoorden achter elkaar voor een sticker
 const STICKERS=['🌟','🦄','🚀','🌈','🍦','🐬','🎁','🦖','🎵','🏆'];
 const AVATARS=['🐸','🐱','🦊','🐼','🦁','🐧'];
 const SETS=[['🐸','🐱','🐶','🐰','🐥','🦋','🐟','🐢','🐞','🐙'],['🍎','🍓','🍌','🍊','🍇','🍒','🍉','🥕'],['⭐','🎈','🍪','🚗','⚽','🧸','🎁','🌼']];
 /* Teksten: Engels (standaard, heel eenvoudige woorden) en Nederlands. */
 const LANGS={
   en:{flag:'🇬🇧',name:'English',voice:/^en(-|_)(GB|US)/i,voiceAny:/^en/i,
-    title:'Math Game',intro:'Count, add and take away. It gets a little harder. Get all the stickers!',who:'Who are you?',askName:'What is your name?',start:'Start!',startLevel:'Start at level',soundOpt:'Sound and voice',again:'Play again!',
+    title:'Math Game',intro:'Count, add and take away. It gets a little harder. 8 in a row gives a sticker!',who:'Who are you?',askName:'What is your name?',start:'Start!',startLevel:'Start at level',soundOpt:'Sound and voice',again:'Play again!',
     level:'level',next:'Next',praise:['Good job!','Super!','Well done!','Yes!','Great!','Wow!','Nice!'],tryAgain:'Try again!',sayTryAgain:'Not yet. Try again!',sticker:'A sticker!',
     hi:n=>`Hi ${n}! Let's go.`,harder:'You are very good. Now it gets a little harder!',
     itIs:a=>`It is ${a}`,thisOne:'This one',thereAre:n=>`There are ${n}.`,makes10:n=>`${n} more makes 10.`,answerIs:a=>`The answer is ${a}.`,
     hooray:n=>`Hooray, ${n}!`,wellDone:n=>`Well done, ${n}!`,endText:(s,t,l)=>`You got ${s} of ${t} right the first time. You reached level ${l}.`,
-    diploma:'Diploma',champion:l=>`Math champion, level ${l}`,sayWin:n=>`Hooray ${n}! You are a math champion!`,sayEnd:(n,k)=>`Well done ${n}! You got ${k} stickers.`,
+    diploma:'Diploma',champion:l=>`Math champion, level ${l}`,sayWin:n=>`Hooray ${n}! You are a math champion!`,sayEnd:(n,k)=>k?`Well done ${n}! You got ${k} ${k===1?'sticker':'stickers'}.`:`Well done ${n}! Next time, get 8 in a row for a sticker.`,stickersNow:'New stickers',stickersAll:'All your stickers',noSticker:'8 in a row gives a sticker. Try again!',
     avatar:{'🐸':'the frog','🐱':'the cat','🦊':'the fox','🐼':'the panda','🦁':'the lion','🐧':'the penguin'},youAre:a=>`You are ${a}!`,
     q:{count:q=>'How many? Count them.',compare:q=>q.most?'Which has more? Tap it.':'Which has less? Tap it.',number:q=>`Tap the number ${q.n}.`,
        add:q=>`${q.a} and ${q.b}. How many together?`,sub:q=>`There are ${q.a}. ${q.b} go away. How many are left?`,make10:q=>`There are ${q.k} dots. How many more to make 10?`,
        abstract:q=>q.op==='+'?`${q.a} plus ${q.b} is?`:`${q.a} take away ${q.b} is?`}},
   nl:{flag:'🇳🇱',name:'Nederlands',voice:/^nl(-|_)NL/i,voiceAny:/^nl/i,
-    title:'Rekenspel',intro:'Tellen, erbij en eraf. Het wordt steeds een beetje moeilijker. Verzamel alle stickers!',who:'Wie ben jij?',askName:'Hoe heet je?',start:'Start!',startLevel:'Begin op niveau',soundOpt:'Geluid en voorleesstem',again:'Nog een keer!',
+    title:'Rekenspel',intro:'Tellen, erbij en eraf. Het wordt steeds een beetje moeilijker. 8 goed achter elkaar geeft een sticker!',who:'Wie ben jij?',askName:'Hoe heet je?',start:'Start!',startLevel:'Begin op niveau',soundOpt:'Geluid en voorleesstem',again:'Nog een keer!',
     level:'niveau',next:'Verder',praise:['Goed zo!','Super!','Knap hoor!','Yes!','Helemaal goed!','Wauw!','Top!'],tryAgain:'Probeer nog eens!',sayTryAgain:'Nog niet goed. Probeer nog eens!',sticker:'Een sticker!',
     hi:n=>`Hoi ${n}! Daar gaan we.`,harder:'Je bent heel goed. Het wordt nu een beetje moeilijker!',
     itIs:a=>`Het is ${a}`,thisOne:'Deze',thereAre:n=>`Het zijn er ${n}.`,makes10:n=>`${n} erbij maakt 10.`,answerIs:a=>`Het goede antwoord is ${a}.`,
     hooray:n=>`Hoera, ${n}!`,wellDone:n=>`Goed gedaan, ${n}!`,endText:(s,t,l)=>`Je hebt ${s} van de ${t} sommen in één keer goed en je kwam tot niveau ${l}.`,
-    diploma:'Diploma',champion:l=>`Rekenkampioen, niveau ${l}`,sayWin:n=>`Hoera ${n}! Je bent een rekenkampioen!`,sayEnd:(n,k)=>`Goed gedaan ${n}! Je hebt ${k} stickers verdiend.`,
+    diploma:'Diploma',champion:l=>`Rekenkampioen, niveau ${l}`,sayWin:n=>`Hoera ${n}! Je bent een rekenkampioen!`,sayEnd:(n,k)=>k?`Goed gedaan ${n}! Je hebt ${k} ${k===1?'sticker':'stickers'} verdiend.`:`Goed gedaan ${n}! Volgende keer 8 goed achter elkaar voor een sticker.`,stickersNow:'Nieuwe stickers',stickersAll:'Al je stickers',noSticker:'8 goed achter elkaar geeft een sticker. Probeer het nog eens!',
     avatar:{'🐸':'de kikker','🐱':'de poes','🦊':'de vos','🐼':'de panda','🦁':'de leeuw','🐧':'de pinguïn'},youAre:a=>`Jij bent ${a}!`,
     q:{count:q=>`Hoeveel ${q.n===1?'is':'zijn'} het? Tel maar.`,compare:q=>q.most?'Waar zijn er het meeste? Tik erop.':'Waar zijn er het minste? Tik erop.',number:q=>`Tik op het cijfer ${q.n}.`,
        add:q=>`${q.a} erbij ${q.b}. Hoeveel is dat samen?`,sub:q=>`Er zijn ${q.a}. Er ${q.b===1?'gaat':'gaan'} ${q.b} weg. Hoeveel blijven er over?`,make10:q=>`Er zijn ${q.k} bolletjes. Hoeveel moeten erbij om 10 te maken?`,
@@ -249,7 +256,7 @@ const pick=a=>a[rnd(a.length)];
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;};
 const store={get(k,d){try{const v=localStorage.getItem('rekenspel.'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('rekenspel.'+k,JSON.stringify(v));}catch(e){}}};
 
-const state={naam:'',avatar:AVATARS[0],level:0,maxLevel:0,streakGood:0,streakBad:0,asked:0,correctFirst:0,wrongTotal:0,attempts:0,retry:[],q:null,busy:false,sound:true,stickers:[]};
+const state={naam:'',avatar:AVATARS[0],level:0,maxLevel:0,streakGood:0,streakBad:0,asked:0,correctFirst:0,wrongTotal:0,attempts:0,retry:[],q:null,busy:false,sound:true,stickers:[],run:0};
 let startLevel=store.get('level',0);
 let lang=store.get('lang','en'); if(!LANGS[lang]) lang='en';
 const T=()=>LANGS[lang];
@@ -322,10 +329,12 @@ function render(q){
 function speakQuestion(q){ say(qText(q)); }
 
 /* Reis */
-function buildTrack(){ const t=$('#track'); t.querySelectorAll('.station').forEach(s=>s.remove()); for(let i=0;i<STATIONS;i++){ const s=document.createElement('div'); s.className='station'; s.dataset.i=i; s.textContent='•'; t.appendChild(s);} }
-function updateJourney(){ const done=Math.min(STATIONS,Math.floor(state.asked/2)); $('#track').querySelectorAll('.station').forEach((s,i)=>{ if(i<done&&!s.classList.contains('done')){ s.classList.add('done','new'); s.textContent=STICKERS[i]; } });
-  while(state.stickers.length<done) state.stickers.push(STICKERS[state.stickers.length]);
-  const pct=4+92*(done/STATIONS); $('#walker').style.left=pct+'%'; $('#fill').style.width=(92*(done/STATIONS))+'%'; return done; }
+const nextSticker=()=>STICKERS[state.stickers.length%STICKERS.length];
+function buildTrack(){ const t=$('#track'); t.querySelectorAll('.station').forEach(s=>s.remove()); for(let i=0;i<STEPS;i++){ const s=document.createElement('div'); s.className='station'+(i===STEPS-1?' goal':''); s.dataset.i=i; s.textContent=i===STEPS-1?nextSticker():'•'; t.appendChild(s);} }
+/* De reis toont de huidige reeks goede antwoorden; bij een fout gaat alles terug naar het begin. */
+function updateJourney(){ const run=Math.min(STEPS,state.run);
+  $('#track').querySelectorAll('.station').forEach((s,i)=>{ const on=i<run; if(on&&!s.classList.contains('done')) s.classList.add('done','new'); if(!on) s.classList.remove('done','new'); if(i<STEPS-1) s.textContent=on?'⭐':'•'; });
+  const pct=4+92*(run/STEPS); $('#walker').style.left=pct+'%'; $('#fill').style.width=(92*(run/STEPS))+'%'; }
 
 /* Confetti */
 const cc=$('#confetti'), cx=cc.getContext('2d'); let confs=[]; let confRunning=false;
@@ -335,7 +344,7 @@ function confLoop(){ cx.clearRect(0,0,cc.width,cc.height); for(const p of confs)
 /* ===================== SPELVERLOOP ===================== */
 function show(id){ for(const s of ['start','game','end']) $('#'+s).hidden=(s!==id); }
 function startGame(n){
-  Object.assign(state,{naam:n,level:startLevel,maxLevel:startLevel,streakGood:0,streakBad:0,asked:0,correctFirst:0,wrongTotal:0,attempts:0,retry:[],q:null,busy:false,stickers:[]});
+  Object.assign(state,{naam:n,level:startLevel,maxLevel:startLevel,streakGood:0,streakBad:0,asked:0,correctFirst:0,wrongTotal:0,attempts:0,retry:[],q:null,busy:false,stickers:[],run:0});
   $('#who').innerHTML=`<span>${state.avatar}</span> ${n}`; $('#walker').textContent=state.avatar; buildTrack(); updateJourney();
   show('game'); say(T().hi(n)); setTimeout(nextQuestion,1200);
 }
@@ -357,13 +366,16 @@ function answer(val,btn){
     state.busy=true; btn.classList.add('good'); ding(); const r=btn.getBoundingClientRect(); confetti(r.left+r.width/2,r.top+r.height/2);
     if(state.attempts===0){ state.correctFirst++; state.streakGood++; state.streakBad=0; }
     const pr=pick(T().praise); feedback(pr,'good'); say(pr);
-    state.asked++; const before=Math.floor((state.asked-1)/2); const done=updateJourney(); let wait=1300;
-    if(done>before){ const s=STICKERS[done-1]; $('#walker').classList.add('hop'); setTimeout(()=>$('#walker').classList.remove('hop'),800); showSticker(s); confetti(innerWidth/2,innerHeight/2,120); wait=2300; }
+    state.asked++; let wait=1300;
+    if(state.attempts===0){ state.run++; $('#walker').classList.add('hop'); setTimeout(()=>$('#walker').classList.remove('hop'),800); }
+    updateJourney();
+    if(state.run>=STEPS){ const s=nextSticker(); state.stickers.push(s); store.set('stickers',[...store.get('stickers',[]),s]); showSticker(s); confetti(innerWidth/2,innerHeight/2,160); wait=2600;
+      setTimeout(()=>{ state.run=0; buildTrack(); updateJourney(); },2200); }
     if(state.streakGood>=3){ levelUp(); wait+=800; }
     setTimeout(nextQuestion,wait);
   } else {
     state.attempts++; btn.classList.add('bad'); btn.disabled=true; buzz();
-    if(state.attempts===1){ state.streakGood=0; state.streakBad++; state.wrongTotal++; if(state.streakBad>=2) levelDown();
+    if(state.attempts===1){ state.streakGood=0; state.run=0; updateJourney(); state.streakBad++; state.wrongTotal++; if(state.streakBad>=2) levelDown();
       state.retry.push({...q,due:state.asked+3}); const f=feedback(T().tryAgain,'bad'); say(T().sayTryAgain); setTimeout(()=>f.remove(),1500); }
     else { state.busy=true; state.asked++; updateJourney(); explain(q); }
   }
@@ -392,7 +404,9 @@ function endGame(){
   show('end'); const total=state.asked; const score=state.correctFirst; const win=score>=Math.round(TOTAL*0.8);
   const stars=score>=TOTAL*0.9?3:score>=TOTAL*0.7?2:1; $('#stars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
   state.win=win; state.score=score; endTexts();
-  $('#stickerbook').innerHTML=state.stickers.map((s,i)=>`<span style="animation-delay:${i*.15}s">${s}</span>`).join('');
+  const all=store.get('stickers',[]);
+  $('#stickerbook').innerHTML=(state.stickers.length?`<div class="sb-kop">${T().stickersNow}</div><div class="sb-row">${state.stickers.map((s,i)=>`<span style="animation-delay:${i*.15}s">${s}</span>`).join('')}</div>`:`<div class="sb-kop">${T().noSticker}</div>`)
+    +(all.length?`<div class="sb-kop">${T().stickersAll} (${all.length})</div><div class="sb-row small">${all.slice(-30).map(s=>`<span>${s}</span>`).join('')}</div>`:'');
   const d=$('#diploma'); d.hidden=!win; $('#endcard').classList.toggle('win',win);
   if(win) fanfare();
   say(win?T().sayWin(state.naam):T().sayEnd(state.naam,state.stickers.length));

@@ -22,5 +22,7 @@ zodat het volgende potje iets onder dat niveau begint. Via het tandwieltje op he
 het beginniveau en zet je het geluid aan of uit.
 
 ## Beloning
-Elke twee goede vragen een station verder op de reis, met een sticker. Aan het eind een stickerboek, en bij
-16 of meer in één keer goed een diploma met vuurwerk waarin je naam ontploft.
+Acht goede antwoorden achter elkaar (in één keer goed) geven een sticker. De reis bovenin laat zien
+hoe ver de reeks is; bij een fout gaat het figuurtje terug naar het begin. Stickers worden in de
+browser bewaard, zodat het kind over meerdere potjes een verzameling opbouwt. Aan het eind een
+stickerboek, en bij 16 of meer in één keer goed een diploma met vuurwerk waarin je naam ontploft.
