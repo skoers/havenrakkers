@@ -63,6 +63,9 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 .mode small{color:var(--muted);font-family:var(--body)}
 .mode.sel{border-color:var(--accent);background:var(--card);box-shadow:0 0 0 4px rgba(26,163,107,.25)}
 .known{font-size:.95rem;color:var(--muted)}
+.voicerow{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:.4rem}
+.voicerow select{font:inherit;font-size:.95rem;padding:.4rem .6rem;border-radius:12px;border:2px solid var(--line);background:var(--panel);color:var(--fg);max-width:min(70vw,22rem)}
+.voicerow .btn{min-height:40px;padding:.2rem 1rem;font-size:1rem}
 
 /* Spelscherm */
 #game{gap:8px}
@@ -147,6 +150,7 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
   </div>
   <div class="known" id="known"></div>
   <button class="btn" id="startbtn" type="button">Play! 🚀</button>
+  <div class="voicerow" id="voicerow" hidden><select id="voicesel" aria-label="Voice"></select> <button class="btn secondary" id="voicetest" type="button">▶ Test</button></div>
 </section>
 
 <!-- GAME -->
@@ -268,12 +272,15 @@ const ding=()=>beep([[660,0,.15],[880,.12,.2],[1100,.24,.3]]);
 const buzz=()=>beep([[180,0,.25],[150,.15,.3]]);
 const fanfare=()=>beep([[523,0,.2],[659,.18,.2],[784,.36,.2],[1047,.54,.5],[784,.9,.15],[1047,1.05,.6]]);
 let voices=[];
-function pickVoice(){ if(!('speechSynthesis' in window)) return; voices=speechSynthesis.getVoices(); }
-function voiceFor(){ return voices.find(v=>/^en(-|_)GB/i.test(v.lang))||voices.find(v=>/^en(-|_)US/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||null; }
+/* Stemkeuze: dezelfde regel als het rekenspel (eerste Engelse GB/US-stem van het apparaat), tenzij een stem gekozen is. */
+function pickVoice(){ if(!('speechSynthesis' in window)) return; voices=speechSynthesis.getVoices(); fillVoices(); }
+let voiceName=store.get('voice','');
+function voiceFor(){ return (voiceName&&voices.find(v=>v.name===voiceName))||voices.find(v=>/^en(-|_)(GB|US)/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||null; }
+function fillVoices(){ const sel=$('#voicesel'); if(!sel) return; const en=voices.filter(v=>/^en/i.test(v.lang)); sel.innerHTML='<option value="">Voice: automatic</option>'+en.map(v=>`<option value="${v.name.replace(/"/g,'')}" ${v.name===voiceName?'selected':''}>${v.name} (${v.lang})</option>`).join(''); $('#voicerow').hidden=en.length<2; }
 if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
 const canSpeak=()=>'speechSynthesis' in window;
-function say(text,opts={}){ if(!state.sound||!canSpeak()) return; try{ if(!opts.keep) speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang='en-GB'; const v=voiceFor(); if(v) u.voice=v; u.rate=opts.rate||0.85; u.pitch=1.05; speechSynthesis.speak(u); }catch(e){} }
-const sayWord=(w,opts)=>say(w,{rate:0.75,...opts});
+function say(text,opts={}){ if(!state.sound||!canSpeak()) return; try{ if(!opts.keep) speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); const v=voiceFor(); u.lang=v?v.lang:'en-US'; if(v) u.voice=v; u.rate=opts.rate||0.92; u.pitch=1.1; speechSynthesis.speak(u); }catch(e){} }
+const sayWord=(w,opts)=>say(w,{rate:0.88,...opts});
 function setSound(on){ state.sound=on; store.set('sound',on); $('#soundbtn').innerHTML=`<b>${on?'🔊':'🔇'}</b> ${on?'Sound':'No sound'}`; if(!on&&canSpeak()) speechSynthesis.cancel(); if(state.q&&!$('#game').hidden) render(state.q,true); }
 $('#soundbtn').addEventListener('click',()=>setSound(!state.sound));
 
@@ -436,7 +443,9 @@ $('#startbtn').addEventListener('click',()=>{
   if(!state.naam){ say('Type your name, or tap your name.'); $('#naam').focus(); return; }
   const p=players[state.naam]; p.mode=state.mode; p.last=Date.now(); savePlayers(); state.avatar=p.avatar; startGame();
 });
-setSound(state.sound); renderStart();
+$('#voicesel').addEventListener('change',e=>{ voiceName=e.target.value; store.set('voice',voiceName); say('Hello! I am your voice. Cat. Apple. House.'); });
+$('#voicetest').addEventListener('click',()=>say('Hello! I am your voice. Cat. Apple. House.'));
+setSound(state.sound); renderStart(); fillVoices();
 
 /* ===================== VUURWERK ===================== */
 class Fireworks{
