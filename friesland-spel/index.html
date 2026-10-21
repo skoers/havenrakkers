@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Friesland Kaartspel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* Layout: één scherm. Bovenbalk met naam en voortgang, daaronder kaart (links/boven) en vraagpaneel (rechts/onder). */
+:root{
+  --bg:#eef4f8; --panel:#ffffff; --fg:#1c2b3a; --muted:#5b6b7b; --line:#d5dfe8;
+  --accent:#1d5fa8; --accent-fg:#ffffff;
+  --good:#1f9d55; --good-bg:#e4f6ea; --bad:#d64545; --bad-bg:#fcebea;
+  --hl:#ff5a00; --hl2:#ffd400;
+  --sea:#a9cde9; --sea-deep:#8fbce0; --land:#f3e3a3; --land-edge:#b7a25a; --other:#d9d4c3; --other-edge:#b9b3a0;
+  --display:"Fredoka","Nunito",system-ui,sans-serif; --body:"Nunito",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#141c26; --panel:#1e2937; --fg:#eef3f8; --muted:#a6b4c2; --line:#34435a;
+  --accent:#6aa7ea; --accent-fg:#0d1826; --good:#4fcf84; --good-bg:#1a3a2a; --bad:#ff7b7b; --bad-bg:#432326;
+  --other:#5a5d58; --other-edge:#787b74; --sea:#5d8fbf; --sea-deep:#4a7cad; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#141c26; --panel:#1e2937; --fg:#eef3f8; --muted:#a6b4c2; --line:#34435a;
+  --accent:#6aa7ea; --accent-fg:#0d1826; --good:#4fcf84; --good-bg:#1a3a2a; --bad:#ff7b7b; --bad-bg:#432326;
+  --other:#5a5d58; --other-edge:#787b74; --sea:#5d8fbf; --sea-deep:#4a7cad; color-scheme:dark }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.4;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+button{font:inherit;cursor:pointer}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:52px;padding:.6rem 1.4rem;border-radius:999px;border:0;
+  background:var(--accent);color:var(--accent-fg);font-family:var(--display);font-size:1.25rem;font-weight:600;box-shadow:0 3px 0 rgba(0,0,0,.18);transition:transform .08s}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.btn.secondary{background:var(--panel);color:var(--fg);border:2px solid var(--line)}
+.btn:focus-visible,input:focus-visible,.choice:focus-visible{outline:4px solid var(--hl);outline-offset:3px}
+.screen{height:100%;display:flex;flex-direction:column}
+
+/* Startscherm */
+#start{align-items:center;justify-content:center;text-align:center;gap:1.2rem}
+#start h1{font-size:clamp(2rem,6vw,3.4rem);color:var(--accent)}
+#start p{max-width:34ch;margin:0;color:var(--muted);font-size:1.1rem}
+.namebox{display:flex;flex-wrap:wrap;gap:.7rem;justify-content:center}
+input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:14px;border:2px solid var(--line);background:var(--panel);color:var(--fg);min-width:min(18rem,80vw)}
+.mini-map{width:min(420px,90vw);max-width:100%;filter:drop-shadow(0 6px 12px rgba(0,0,0,.15))}
+
+/* Spelscherm */
+#game{gap:10px}
+.topbar{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.topbar .who{font-family:var(--display);font-size:1.3rem}
+.progress{flex:1 1 160px;min-width:0;height:14px;border-radius:7px;background:var(--line);overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.counter{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.hearts{font-size:1.4rem;letter-spacing:.1em;white-space:nowrap}
+.playarea{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,360px);gap:14px}
+@media (max-width:860px){.playarea{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)} .panel{order:-1}}
+.mapwrap{min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;background:var(--panel);border-radius:18px;padding:8px;border:1px solid var(--line)}
+.mapwrap svg{width:100%;height:100%;max-height:100%;max-width:100%}
+.panel{min-width:0;background:var(--panel);border-radius:18px;padding:1rem 1.1rem;border:1px solid var(--line);display:flex;flex-direction:column;gap:.9rem;overflow:auto}
+.soort{align-self:flex-start;font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .7rem;border-radius:999px;background:var(--hl2);color:#3a2600}
+.vraag{font-size:1.45rem;line-height:1.25}
+.answer{display:flex;flex-wrap:wrap;gap:.6rem}
+.answer input{flex:1 1 10rem}
+.choices{display:grid;gap:.6rem}
+.choice{min-height:52px;border-radius:14px;border:2px solid var(--line);background:var(--bg);color:var(--fg);font-family:var(--display);font-size:1.2rem;font-weight:500;padding:.5rem .9rem;text-align:left}
+.choice:hover{border-color:var(--accent)}
+.choice.good{background:var(--good-bg);border-color:var(--good)} .choice.bad{background:var(--bad-bg);border-color:var(--bad)}
+.hint{color:var(--muted);font-size:1rem}
+.feedback{border-radius:14px;padding:.8rem 1rem;font-size:1.15rem;font-weight:700}
+.feedback.good{background:var(--good-bg);color:var(--good)} .feedback.bad{background:var(--bad-bg);color:var(--bad)}
+.feedback small{display:block;font-weight:500;color:var(--fg);margin-top:.3rem}
+.sound{margin-left:auto;background:none;border:0;font-size:1.4rem;line-height:1}
+
+/* Kaart */
+.sea{fill:var(--sea)} .water{fill:var(--sea-deep)} .fries{fill:var(--land);stroke:var(--land-edge);stroke-width:3;stroke-linejoin:round}
+.eiland{fill:var(--land);stroke:var(--land-edge);stroke-width:3;stroke-linejoin:round}
+.other{fill:var(--other);stroke:var(--other-edge);stroke-width:3;stroke-linejoin:round}
+.dijk{stroke:#e9d98b;stroke-width:12;stroke-linecap:round} .dijk-edge{stroke:#7a6a2a;stroke-width:18;stroke-linecap:round}
+.mark{fill:#222;stroke:#fff;stroke-width:2} .mark.hoofd{fill:#c0392b} .mark.tri{fill:#222}
+.wave{font:700 64px var(--display);fill:#2c5d8f}
+.hl-ring{fill:var(--hl);fill-opacity:.3;stroke:var(--hl);stroke-width:8;transform-box:fill-box;transform-origin:center;animation:ring 1.1s ease-in-out infinite}
+@keyframes ring{0%,100%{transform:scale(1)}50%{transform:scale(1.25);fill-opacity:.5}}
+.dim{fill:#061a30;fill-opacity:.45}
+.hl-shape{fill:var(--hl);stroke:#5a1600;stroke-width:10;stroke-linejoin:round;animation:shape 1s ease-in-out infinite}
+@keyframes shape{0%,100%{fill:var(--hl);stroke-width:10}50%{fill:var(--hl2);stroke-width:20}}
+.hl-line{fill:none;stroke:var(--hl);stroke-width:28;stroke-linecap:round;animation:line 1s ease-in-out infinite}
+@keyframes line{0%,100%{stroke:var(--hl);stroke-width:28}50%{stroke:var(--hl2);stroke-width:44}}
+.hl-dot{fill:#fff;stroke:#222;stroke-width:3}
+.goodfill{fill:var(--good) !important} .badfill{fill:var(--bad) !important}
+.hl-shape.goodfill,.hl-shape.badfill{animation:none;stroke:#fff}
+.hl-line.goodfill{animation:none;stroke:var(--good)} .hl-line.badfill{animation:none;stroke:var(--bad)}
+.hits *{pointer-events:none;fill:#000;fill-opacity:0;stroke:none}
+.klik .hits *{pointer-events:all;cursor:pointer}
+.klik .hits *:hover{fill:var(--hl);fill-opacity:.35}
+.hits line{stroke:#000;stroke-opacity:0;stroke-width:40;stroke-linecap:round}
+.klik .hits line:hover{stroke:var(--hl);stroke-opacity:.5}
+@media (prefers-reduced-motion:reduce){.hl-ring,.hl-shape,.hl-line{animation:none}}
+
+/* Eindscherm */
+#end{align-items:center;justify-content:flex-end;text-align:center;gap:1rem;position:relative;padding-bottom:4vh}
+#fw{position:fixed;inset:0;width:100%;height:100%;z-index:0;background:#070b1a}
+#end .endcard{position:relative;z-index:1;max-height:52vh;overflow:auto;background:color-mix(in srgb,var(--panel) 88%,transparent);border-radius:22px;padding:1.4rem 1.6rem;max-width:36rem;display:flex;flex-direction:column;gap:.8rem;align-items:center}
+#end h1{font-size:clamp(1.8rem,6vw,3rem)}
+#end .big{font-family:var(--display);font-size:1.5rem}
+#end ul{margin:0;padding-left:1.2rem;text-align:left}
+.stars{font-size:2.2rem;letter-spacing:.1em}
+.scrollhint{position:sticky;bottom:-1.4rem;margin:-.4rem -1.6rem -1.4rem;padding:.5rem 0 .8rem;width:calc(100% + 3.2rem);background:linear-gradient(to bottom,transparent,var(--panel) 45%);font-family:var(--display);font-weight:600;color:var(--accent)}
+.scrollhint span{display:inline-block;animation:bounce 1s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+.diploma{border:4px double #c9a227;border-radius:14px;padding:.9rem 1.2rem;background:linear-gradient(135deg,#fff8dc,#ffe9a3);color:#3a2600;display:flex;flex-direction:column;gap:.15rem;align-items:center;max-width:100%;box-shadow:0 6px 18px rgba(0,0,0,.25);animation:pop .7s cubic-bezier(.2,1.4,.4,1) both}
+.diploma .medal{font-size:3rem;line-height:1;animation:spin 2.4s ease-in-out infinite}
+.diploma .kop{font-size:.8rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#8a6a0a}
+.diploma .titel{font-family:var(--display);font-size:1.6rem;font-weight:700}
+.diploma .naam{font-family:var(--display);font-size:2rem;font-weight:700;color:#b5471b}
+.diploma .sub{font-size:.95rem;color:#5a4a1a}
+@keyframes pop{0%{transform:scale(.3) rotate(-8deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes spin{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+#end .endcard.win{border:3px solid #ffd166;box-shadow:0 0 40px rgba(255,209,102,.5)}
+@media (prefers-reduced-motion:reduce){.scrollhint span,.diploma,.diploma .medal{animation:none}}
+</style>
+</head>
+<body>
+
+<!-- STARTSCHERM -->
+<section id="start" class="screen">
+  <svg class="mini-map" viewBox="0 0 1565 1080" aria-hidden="true"><use href="#basemap"/></svg>
+  <h1>Friesland Kaartspel</h1>
+  <p>Ken jij alle plaatsen, eilanden en wateren van Friesland? Maximaal 1 fout en je naam ontploft in vuurwerk!</p>
+  <form class="namebox" id="nameform">
+    <label for="naam" class="visually-hidden" hidden>Je naam</label>
+    <input type="text" id="naam" placeholder="Hoe heet je?" autocomplete="off" maxlength="20" required>
+    <button class="btn" type="submit">Start! 🚀</button>
+  </form>
+</section>
+
+<!-- SPELSCHERM -->
+<section id="game" class="screen" hidden>
+  <div class="topbar">
+    <span class="who" id="who"></span>
+    <div class="progress" aria-label="Voortgang"><i id="bar"></i></div>
+    <span class="counter" id="counter"></span>
+    <span class="hearts" id="hearts" title="Levens"></span>
+    <button class="sound" id="soundbtn" type="button" aria-label="Geluid aan of uit">🔊</button>
+  </div>
+  <div class="playarea">
+    <div class="mapwrap">
+      <svg id="map" viewBox="0 0 1565 1080" role="img" aria-label="Kaart van Friesland">
+        <defs>
+          <g id="basemap">
+            <rect class="sea" x="0" y="0" width="1565" height="1080"/>
+            <polygon id="w-waddenzee" class="water" points="60,470 140,450 280,330 340,300 500,200 650,145 725,115 820,155 1040,105 1165,100 1300,90 1390,55 1565,100 1565,470 1480,490 1430,450 1380,370 1315,330 1290,290 1200,185 1030,215 850,280 670,390 560,530 545,590 542,645 210,880 140,880 0,790 30,770 40,670 0,600 0,560"/>
+            <polygon id="w-ijsselmeer" class="water" points="542,645 210,880 300,1080 400,1040 500,1010 575,985 550,940 550,870 548,800 525,730 515,675"/>
+            <polygon class="other" points="1565,470 1565,1080 300,1080 400,1040 500,1010 575,985 645,1020 725,1052 790,1070 855,1070 915,1058 980,1042 1040,1025 1095,1055 1160,1053 1260,1042 1345,1032 1430,900 1438,830 1422,770 1380,710 1348,650 1315,620 1250,560 1255,490 1250,430 1260,390 1315,330 1380,370 1430,450 1480,490"/>
+            <polygon class="other" points="210,880 300,1080 0,1080 0,930 140,880"/>
+            <polygon class="other" points="0,600 40,670 30,770 0,790"/>
+            <polygon id="s-friesland" class="fries" points="1315,330 1290,290 1260,250 1235,210 1200,185 1120,195 1030,215 940,240 850,280 770,330 670,390 605,460 560,530 545,590 542,645 515,675 525,730 548,800 550,870 550,940 575,985 645,1020 725,1052 790,1070 855,1070 915,1058 980,1042 1040,1025 1095,1055 1160,1053 1260,1042 1345,1032 1430,900 1438,830 1422,770 1380,710 1348,650 1315,620 1250,560 1255,490 1250,430 1260,390"/>
+            <ellipse class="water" cx="1270" cy="300" rx="55" ry="38"/>
+            <g class="water">
+              <ellipse cx="1120" cy="530" rx="40" ry="25"/><ellipse cx="980" cy="600" rx="30" ry="22"/><ellipse cx="880" cy="730" rx="38" ry="35"/>
+              <ellipse cx="830" cy="830" rx="30" ry="30"/><ellipse cx="900" cy="890" rx="45" ry="40"/><ellipse cx="750" cy="940" rx="40" ry="35"/>
+              <ellipse cx="710" cy="870" rx="50" ry="30"/><ellipse cx="640" cy="830" rx="40" ry="25"/><ellipse cx="620" cy="880" rx="40" ry="30"/>
+              <ellipse cx="600" cy="920" rx="45" ry="35"/><ellipse cx="960" cy="850" rx="14" ry="14"/>
+            </g>
+            <polygon id="s-schiermonnikoog" class="eiland" points="1380,30 1390,55 1300,90 1200,115 1160,100 1165,65 1250,35 1340,25"/>
+            <polygon id="s-ameland" class="eiland" points="1050,85 1040,105 940,130 820,155 750,150 725,115 780,85 900,80 1000,75"/>
+            <polygon id="s-terschelling" class="eiland" points="680,115 650,145 600,170 500,200 420,240 340,300 310,330 280,310 310,250 380,190 480,140 580,115 650,105"/>
+            <polygon id="s-vlieland" class="eiland" points="280,330 260,360 200,410 140,450 80,470 50,460 60,430 130,380 200,340 250,325"/>
+            <line class="dijk-edge" x1="542" y1="645" x2="210" y2="880"/>
+            <line id="s-afsluitdijk" class="dijk" x1="542" y1="645" x2="210" y2="880"/>
+            <text class="wave" x="300" y="555" text-anchor="middle">〜</text>
+            <text class="wave" x="350" y="970" text-anchor="middle">〜</text>
+          </g>
+        </defs>
+        <use href="#basemap"/>
+        <g id="markers"></g>
+        <g id="hl"></g>
+        <g id="hits" class="hits"></g>
+      </svg>
+    </div>
+    <div class="panel" id="panel">
+      <span class="soort" id="soort"></span>
+      <div class="vraag" id="vraag"></div>
+      <div id="answerbox"></div>
+      <div id="feedback" hidden></div>
+      <button class="btn" id="verder" type="button" hidden>Verder ➜</button>
+    </div>
+  </div>
+</section>
+
+<!-- EINDSCHERM -->
+<section id="end" class="screen" hidden>
+  <canvas id="fw"></canvas>
+  <div class="endcard">
+    <div class="stars" id="stars"></div>
+    <h1 id="endtitle"></h1>
+    <p class="big" id="endtext"></p>
+    <div id="diploma" hidden></div>
+    <div id="endlist"></div>
+    <button class="btn" id="again" type="button">Nog een keer! 🔁</button>
+    <div class="scrollhint" id="scrollhint" hidden><span>⬇</span> Scroll naar beneden voor je score en de knop</div>
+  </div>
+</section>
+
+<script>
+/* ===================== DATA ===================== */
+const ITEMS = [
+  {id:'schiermonnikoog', naam:'Schiermonnikoog', soort:'eiland', x:1220, y:63, shape:'s-schiermonnikoog'},
+  {id:'waddeneilanden', naam:'Waddeneilanden', soort:'gebied', x:310, y:307},
+  {id:'leeuwarden', naam:'Leeuwarden', soort:'hoofdstad', x:890, y:492},
+  {id:'harlingen', naam:'Harlingen', soort:'plaats', x:575, y:530},
+  {id:'terschelling', naam:'Terschelling', soort:'eiland', x:490, y:195, shape:'s-terschelling'},
+  {id:'sneek', naam:'Sneek', soort:'plaats', x:770, y:725},
+  {id:'ameland', naam:'Ameland', soort:'eiland', x:900, y:115, shape:'s-ameland'},
+  {id:'afsluitdijk', naam:'Afsluitdijk', soort:'bijzonderheid', x:376, y:762, shape:'s-afsluitdijk'},
+  {id:'drachten', naam:'Drachten', soort:'plaats', x:1165, y:618},
+  {id:'ijsselmeer', naam:'IJsselmeer', soort:'meer', x:350, y:945, shape:'w-ijsselmeer'},
+  {id:'waddenzee', naam:'Waddenzee', soort:'zee', x:320, y:530, shape:'w-waddenzee'},
+  {id:'dokkum', naam:'Dokkum', soort:'plaats', x:1060, y:312},
+  {id:'vlieland', naam:'Vlieland', soort:'eiland', x:120, y:447, shape:'s-vlieland'},
+  {id:'friesland', naam:'Friesland', soort:'provincie', x:780, y:635, shape:'s-friesland'},
+  {id:'franeker', naam:'Franeker', soort:'plaats', x:675, y:512},
+  {id:'heerenveen', naam:'Heerenveen', soort:'plaats', x:1020, y:847},
+];
+const EILANDEN = ['schiermonnikoog','terschelling','ameland','vlieland'];
+const SOORT = {
+  eiland:{label:'Eiland', typ:'Welk eiland licht op?', klik:'Klik op het eiland {n}.', kies:'Welk eiland licht op?', lidw:'het eiland'},
+  plaats:{label:'Plaats', typ:'Welke plaats licht op?', klik:'Klik op de plaats {n}.', kies:'Welke plaats licht op?', lidw:'de plaats'},
+  hoofdstad:{label:'Hoofdstad', typ:'Welke hoofdstad licht op? (het rode vierkantje)', klik:'Klik op de hoofdstad {n}.', kies:'Welke hoofdstad licht op?', lidw:'de hoofdstad'},
+  provincie:{label:'Provincie', typ:'Welke provincie licht op?', klik:'Klik op de provincie {n}.', kies:'Welke provincie licht op?', lidw:'de provincie'},
+  zee:{label:'Zee', typ:'Welke zee licht op?', klik:'Klik op de {n}.', kies:'Welke zee licht op?', lidw:'de zee'},
+  meer:{label:'Meer', typ:'Welk meer licht op?', klik:'Klik op het {n}.', kies:'Welk meer licht op?', lidw:'het meer'},
+  bijzonderheid:{label:'Bijzonderheid', typ:'Hoe heet deze dijk?', klik:'Klik op de {n}.', kies:'Hoe heet deze dijk?', lidw:'de dijk'},
+  gebied:{label:'Streek / gebied', typ:'Hoe heet dit gebied? (alle eilanden samen)', klik:'Klik op de {n}.', kies:'Hoe heet dit gebied?', lidw:'het gebied'},
+};
+const MODES = ['typ','klik','kies'];
+const byId = Object.fromEntries(ITEMS.map(i=>[i.id,i]));
+
+/* ===================== HULP ===================== */
+const $ = s => document.querySelector(s);
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();
+const SVGNS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs={}, text){ const e=document.createElementNS(SVGNS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(text!=null) e.textContent=text; return e; }
+function groupOf(it){ return it.soort==='eiland'?'eiland': (it.soort==='plaats'||it.soort==='hoofdstad')?'plaats':'rest'; }
+
+/* geluid */
+let soundOn = true;
+let actx;
+function beep(kind){
+  if(!soundOn) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const notes = kind==='good' ? [[523,0],[659,.1],[784,.2]] : [[220,0],[180,.18]];
+    notes.forEach(([f,t])=>{ const o=actx.createOscillator(), g=actx.createGain(); o.type='triangle'; o.frequency.value=f;
+      g.gain.setValueAtTime(0.0001,actx.currentTime+t); g.gain.exponentialRampToValueAtTime(0.25,actx.currentTime+t+.02); g.gain.exponentialRampToValueAtTime(0.0001,actx.currentTime+t+.25);
+      o.connect(g).connect(actx.destination); o.start(actx.currentTime+t); o.stop(actx.currentTime+t+.3); });
+  }catch(e){}
+}
+$('#soundbtn').addEventListener('click',()=>{ soundOn=!soundOn; $('#soundbtn').textContent = soundOn?'🔊':'🔇'; });
+
+/* ===================== KAART ===================== */
+const markers = $('#markers'), hl = $('#hl'), hits = $('#hits'), map = $('#map');
+function drawMarkers(){
+  markers.innerHTML='';
+  for(const it of ITEMS){
+    const {x,y} = it;
+    if(it.soort==='plaats') markers.append(el('circle',{class:'mark',cx:x,cy:y,r:10}));
+    else if(it.soort==='hoofdstad') markers.append(el('rect',{class:'mark hoofd',x:x-10,y:y-10,width:20,height:20}));
+    else if(it.soort==='provincie') markers.append(el('polygon',{class:'mark tri',points:`${x},${y-14} ${x+14},${y+10} ${x-14},${y+10}`}));
+    else if(it.soort==='bijzonderheid') markers.append(el('polygon',{class:'mark',points:star(x,y,16,7)}));
+    else if(it.soort==='gebied') markers.append(el('path',{class:'mark',d:`M${x} ${y+22} C${x-18} ${y} ${x-18} ${y-10} ${x-18} ${y-12} A18 18 0 1 1 ${x+18} ${y-12} C${x+18} ${y-10} ${x+18} ${y} ${x} ${y+22}Z`}));
+  }
+}
+function star(cx,cy,R,r){ let p=[]; for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5, rad=i%2?r:R; p.push(`${(cx+rad*Math.cos(a)).toFixed(1)},${(cy+rad*Math.sin(a)).toFixed(1)}`);} return p.join(' '); }
+function drawHits(){
+  hits.innerHTML='';
+  const add=(e,id)=>{ e.dataset.id=id; e.addEventListener('click',()=>onMapClick(id)); hits.append(e); };
+  // onderste laag: water en provincie, dan eilanden, dijk, daarna punten
+  for(const id of ['waddenzee','ijsselmeer','friesland', ...EILANDEN]){
+    const src=document.getElementById(byId[id].shape); add(el('polygon',{points:src.getAttribute('points')}),id);
+  }
+  add(el('line',{x1:542,y1:645,x2:210,y2:880}),'afsluitdijk');
+  for(const it of ITEMS){ if(it.shape) continue; add(el('circle',{cx:it.x,cy:it.y,r:48}),it.id); }
+}
+function clearHighlight(){ hl.innerHTML=''; }
+// Tekent een kopie van het gezochte gebied bovenop een gedimde kaart, zodat het echt opvalt.
+function highlight(id, cls='glow'){
+  const it=byId[id];
+  if(cls==='glow' && !hl.querySelector('.dim')) hl.prepend(el('rect',{class:'dim',x:0,y:0,width:1565,height:1080}));
+  const ids = id==='waddeneilanden' ? EILANDEN : (it.shape ? [id] : []);
+  for(const sid of ids){
+    const src=document.getElementById(byId[sid].shape);
+    if(src.tagName==='line') hl.append(el('line',{class:'hl-line '+cls,x1:src.getAttribute('x1'),y1:src.getAttribute('y1'),x2:src.getAttribute('x2'),y2:src.getAttribute('y2')}));
+    else hl.append(el('polygon',{class:'hl-shape '+cls,points:src.getAttribute('points')}));
+  }
+  if(id==='waddenzee'){ for(const e of EILANDEN){ const u=el('use',{href:'#'+byId[e].shape}); u.style.opacity='.55'; hl.append(u); } }
+  if(!it.shape || it.soort==='bijzonderheid' || id==='waddeneilanden'){
+    const ring = el('circle',{class:'hl-ring',cx:it.x,cy:it.y,r:46});
+    if(cls!=='glow'){ ring.style.animation='none'; ring.style.fill=`var(--${cls==='goodfill'?'good':'bad'})`; ring.style.stroke=ring.style.fill; }
+    hl.append(ring);
+    if(!it.shape && id!=='waddeneilanden') hl.append(el('circle',{class:'hl-dot',cx:it.x,cy:it.y,r:11}));
+  }
+}
+
+/* ===================== SPEL ===================== */
+const state = { naam:'', queue:[], idx:0, fouten:0, foutItems:[], answered:0, busy:false };
+function buildQueue(){
+  const first = shuffle(ITEMS).map((item,i)=>({item,mode:MODES[i%3]}));
+  const extraN = Math.round(ITEMS.length*1.5) - ITEMS.length;
+  const extra = shuffle(ITEMS).slice(0,extraN).map(item=>{ const used=first.find(q=>q.item===item).mode; return {item, mode:shuffle(MODES.filter(m=>m!==used))[0]}; });
+  return shuffle([...first,...extra]);
+}
+function startGame(naam){
+  Object.assign(state,{naam, queue:buildQueue(), idx:0, fouten:0, foutItems:[], answered:0, busy:false});
+  $('#who').textContent = naam;
+  show('game'); showQuestion();
+}
+function show(id){ for(const s of ['start','game','end']) $('#'+s).hidden = s!==id; }
+function updateTop(){
+  $('#bar').style.width = (state.answered/state.queue.length*100)+'%';
+  $('#counter').textContent = `Vraag ${Math.min(state.idx+1,state.queue.length)} van ${state.queue.length}`;
+  $('#hearts').textContent = state.fouten===0?'❤️❤️':state.fouten===1?'❤️🖤':'🖤🖤'+(state.fouten>2?' '+state.fouten:'');
+}
+function showQuestion(){
+  if(state.idx>=state.queue.length) return endGame();
+  const q = state.queue[state.idx]; const it=q.item, S=SOORT[it.soort];
+  state.busy=false; clearHighlight(); map.classList.toggle('klik', q.mode==='klik');
+  $('#feedback').hidden=true; $('#verder').hidden=true;
+  $('#soort').textContent = S.label + (q.herhaling?'  ·  nog een keer':'');
+  const box=$('#answerbox'); box.innerHTML='';
+  if(q.mode==='typ'){
+    highlight(it.id);
+    $('#vraag').textContent = S.typ;
+    const f=document.createElement('form'); f.className='answer';
+    f.innerHTML=`<input type="text" id="antwoord" autocomplete="off" autocapitalize="words" placeholder="Typ de naam" aria-label="Antwoord"><button class="btn" type="submit">OK</button>`;
+    f.addEventListener('submit',e=>{e.preventDefault(); const v=f.querySelector('input').value; if(v.trim()) check(norm(v)===norm(it.naam), null);});
+    box.append(f); setTimeout(()=>f.querySelector('input').focus(),50);
+  } else if(q.mode==='klik'){
+    $('#vraag').textContent = S.klik.replace('{n}', it.naam);
+    box.innerHTML='<p class="hint">Klik of tik op de goede plek op de kaart.</p>';
+  } else {
+    highlight(it.id);
+    $('#vraag').textContent = S.kies;
+    const pool = shuffle(ITEMS.filter(o=>o!==it && groupOf(o)===groupOf(it)));
+    const rest = shuffle(ITEMS.filter(o=>o!==it && groupOf(o)!==groupOf(it)));
+    const opts = shuffle([it, ...[...pool,...rest].slice(0,3)]);
+    const d=document.createElement('div'); d.className='choices';
+    opts.forEach(o=>{ const b=document.createElement('button'); b.type='button'; b.className='choice'; b.textContent=o.naam;
+      b.addEventListener('click',()=>{ if(state.busy) return; b.classList.add(o===it?'good':'bad'); d.querySelectorAll('.choice').forEach(c=>{ if(c.textContent===it.naam) c.classList.add('good'); c.disabled=true; }); check(o===it,null); });
+      d.append(b); });
+    box.append(d);
+  }
+  updateTop();
+}
+function onMapClick(id){
+  const q=state.queue[state.idx]; if(state.busy||q.mode!=='klik') return;
+  const t=q.item.id;
+  const ok = id===t || (t==='waddeneilanden' && EILANDEN.includes(id));
+  map.classList.remove('klik');
+  if(!ok) highlight(id,'badfill');
+  highlight(t, ok?'goodfill':'goodfill');
+  check(ok, byId[id].naam);
+}
+function check(ok, clickedName){
+  const q=state.queue[state.idx]; const it=q.item; state.busy=true; state.answered++;
+  const fb=$('#feedback'); fb.hidden=false; fb.className='feedback '+(ok?'good':'bad');
+  if(ok){
+    fb.textContent = shuffle(['Goed zo! 🎉','Super! ⭐','Top! 👍','Helemaal goed! 🌟'])[0];
+    beep('good'); map.querySelectorAll('.glow').forEach(e=>e.classList.replace('glow','goodfill')); hl.querySelectorAll('.hl-ring').forEach(r=>{r.style.animation='none';r.style.fill='var(--good)';r.style.stroke='var(--good)';});
+    setTimeout(next, 1300);
+  } else {
+    state.fouten++; if(!state.foutItems.includes(it.naam)) state.foutItems.push(it.naam);
+    fb.innerHTML = `Helaas… <small>${clickedName?`Dat was <b>${clickedName}</b>. `:''}Het goede antwoord is <b>${it.naam}</b>${clickedName?' (groen op de kaart)':''}. Deze vraag komt straks nog een keer.</small>`;
+    beep('bad');
+    if(q.mode!=='klik'){ map.querySelectorAll('.glow').forEach(e=>e.classList.replace('glow','goodfill')); hl.querySelectorAll('.hl-ring').forEach(r=>{r.style.animation='none';r.style.fill='var(--good)';r.style.stroke='var(--good)';}); }
+    // herhaling later inplannen met een andere vraagvorm
+    const pos = Math.min(state.queue.length, state.idx + 2 + Math.floor(Math.random()*4));
+    state.queue.splice(pos,0,{item:it, mode:shuffle(MODES.filter(m=>m!==q.mode))[0], herhaling:true});
+    const v=$('#verder'); v.hidden=false; v.focus();
+  }
+  updateTop();
+}
+function next(){ state.idx++; showQuestion(); }
+$('#verder').addEventListener('click', next);
+
+/* ===================== EINDE ===================== */
+let fw=null;
+function endGame(){
+  show('end');
+  const won = state.fouten<=1;
+  $('#stars').textContent = won ? (state.fouten===0?'⭐⭐⭐':'⭐⭐') : '⭐';
+  $('#endtitle').textContent = won ? `Gefeliciteerd, ${state.naam}!` : `Goed geprobeerd, ${state.naam}!`;
+  $('#endtext').textContent = won
+    ? (state.fouten===0 ? 'Alles goed! Jij kent Friesland helemaal uit je hoofd.' : 'Maar één foutje. Dat is super knap!')
+    : `Je had ${state.fouten} fouten. Oefen nog even en probeer het nog een keer.`;
+  $('#endlist').innerHTML = state.foutItems.length ? `<p>Nog even oefenen:</p><ul>${state.foutItems.map(n=>`<li>${n}</li>`).join('')}</ul>` : '';
+  const card=$('#end .endcard'); card.classList.toggle('win',won);
+  const dip=$('#diploma'); dip.hidden=!won;
+  if(won){
+    const datum=new Date().toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
+    dip.innerHTML=`<div class="diploma"><div class="medal">🏅</div><div class="kop">Diploma</div><div class="titel">${state.fouten===0?'Kaartkampioen van Friesland':'Friesland-kenner'}</div><div class="naam">${state.naam}</div><div class="sub">${state.queue.length} vragen · ${state.fouten===0?'0 fouten, foutloos!':'1 foutje'} · ${datum}</div></div>`;
+    fanfare();
+  }
+  card.scrollTop=0; setTimeout(updateScrollHint,50);
+  if(fw) fw.stop();
+  fw = new Fireworks($('#fw'), won ? state.naam : null, won); fw.start();
+}
+function updateScrollHint(){ const c=$('#end .endcard'); const more=c.scrollHeight-c.clientHeight-c.scrollTop>12; $('#scrollhint').hidden=!more; }
+$('#end .endcard').addEventListener('scroll',updateScrollHint); addEventListener('resize',updateScrollHint);
+function fanfare(){
+  if(!soundOn) return;
+  try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const mel=[[523,0,.15],[523,.15,.15],[523,.3,.15],[659,.45,.4],[523,.9,.15],[659,1.05,.15],[784,1.2,.7],[1047,2.0,.9]];
+    mel.forEach(([f,t,d])=>{ const o=actx.createOscillator(), g=actx.createGain(); o.type='square'; o.frequency.value=f;
+      g.gain.setValueAtTime(0.0001,actx.currentTime+t); g.gain.exponentialRampToValueAtTime(0.18,actx.currentTime+t+.03); g.gain.exponentialRampToValueAtTime(0.0001,actx.currentTime+t+d);
+      o.connect(g).connect(actx.destination); o.start(actx.currentTime+t); o.stop(actx.currentTime+t+d+.05); });
+  }catch(e){}
+}
+$('#again').addEventListener('click',()=>{ if(fw) fw.stop(); $('#naam').value=state.naam; show('start'); $('#naam').focus(); });
+$('#nameform').addEventListener('submit',e=>{ e.preventDefault(); const n=$('#naam').value.trim(); if(n) startGame(n); });
+
+/* ===================== VUURWERK ===================== */
+class Fireworks{
+  constructor(canvas,name,grand=false){ this.grand=grand; this.c=canvas; this.ctx=canvas.getContext('2d'); this.name=name; this.rockets=[]; this.parts=[]; this.letters=[]; this.t=0; this.phase='wait'; this.phaseT=0; this.running=false;
+    this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches; this.resize=this.resize.bind(this); }
+  resize(){ const dpr=Math.min(2,devicePixelRatio||1); this.c.width=innerWidth*dpr; this.c.height=innerHeight*dpr; this.ctx.setTransform(dpr,0,0,dpr,0,0); this.W=innerWidth; this.H=innerHeight; this.targets=this.name?this.sampleText(this.name):[]; }
+  sampleText(txt){
+    const o=document.createElement('canvas'); const W=this.W, H=this.H; o.width=W; o.height=H; const x=o.getContext('2d');
+    let size=Math.min(220, W*0.16); x.font=`700 ${size}px Fredoka, Nunito, sans-serif`;
+    while(x.measureText(txt).width > W*0.86 && size>24){ size-=6; x.font=`700 ${size}px Fredoka, Nunito, sans-serif`; }
+    x.fillStyle='#fff'; x.textAlign='center'; x.textBaseline='middle'; x.fillText(txt, W/2, H*0.26);
+    const d=x.getImageData(0,0,W,H).data; let step=Math.max(4,Math.round(size/22)); let pts=[];
+    for(let y=0;y<H;y+=step) for(let xx=0;xx<W;xx+=step){ if(d[(y*W+xx)*4+3]>128) pts.push([xx,y]); }
+    while(pts.length>1400){ pts=pts.filter((_,i)=>i%2===0); }
+    return pts;
+  }
+  start(){ this.running=true; addEventListener('resize',this.resize); this.resize(); this.last=performance.now(); this.phase='wait'; this.phaseT=this.name?0.8:9e9;
+    if(this.reduced){ this.drawStatic(); return; } requestAnimationFrame(t=>this.loop(t)); }
+  stop(){ this.running=false; removeEventListener('resize',this.resize); }
+  drawStatic(){ const g=this.ctx; g.fillStyle='#070b1a'; g.fillRect(0,0,this.W,this.H); g.fillStyle='#ffd166';
+    for(const [x,y] of this.targets){ g.beginPath(); g.arc(x,y,2.2,0,7); g.fill(); }
+    for(let i=0;i<60;i++){ g.fillStyle=`hsl(${Math.random()*360} 90% 65%)`; g.beginPath(); g.arc(Math.random()*this.W,Math.random()*this.H,Math.random()*3+1,0,7); g.fill(); } }
+  launch(){ const x=this.W*(0.15+Math.random()*0.7); this.rockets.push({x, y:this.H, vx:(Math.random()-.5)*1.5, vy:-(this.H*0.012+Math.random()*this.H*0.006), hue:Math.random()*360}); }
+  explode(x,y,hue,n=90){
+    if(!this.grand){ for(let i=0;i<n*0.6;i++){ const a=Math.random()*Math.PI*2, s=Math.random()*4+1; this.parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,decay:0.012+Math.random()*0.014,hue:hue+Math.random()*40-20,size:Math.random()*1.5+1}); } return; }
+    const kind=['burst','burst','ring','heart','willow','twin'][Math.floor(Math.random()*6)]; const N=Math.round(n*1.6);
+    for(let i=0;i<N;i++){
+      let a=Math.random()*Math.PI*2, s=Math.random()*6+2, h=hue+Math.random()*40-20, decay=0.008+Math.random()*0.010, size=Math.random()*2.2+1.6, g=0.05;
+      if(kind==='ring'){ a=i/N*Math.PI*2; s=6; }
+      else if(kind==='heart'){ const t=i/N*Math.PI*2; const hx=16*Math.pow(Math.sin(t),3), hy=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t)); a=Math.atan2(hy,hx); s=Math.hypot(hx,hy)*0.42; h=345+Math.random()*20; }
+      else if(kind==='willow'){ s=Math.random()*4+1.5; decay=0.005+Math.random()*0.004; g=0.09; h=45+Math.random()*15; size=1.6; }
+      else if(kind==='twin'){ h=(i%2?hue:hue+180); }
+      this.parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,decay,hue:h,size,g,sparkle:kind!=='willow'&&Math.random()<0.3});
+    }
+  }
+  loop(now){
+    if(!this.running) return;
+    const dt=Math.min(0.05,(now-this.last)/1000); this.last=now; this.t+=dt; this.phaseT-=dt;
+    const g=this.ctx; g.globalCompositeOperation='source-over'; g.fillStyle='rgba(7,11,26,0.22)'; g.fillRect(0,0,this.W,this.H); g.globalCompositeOperation='lighter';
+    if(Math.random()<(this.grand?0.14:0.02)) this.launch();
+    if(this.grand && Math.random()<0.01){ for(let i=0;i<4;i++) setTimeout(()=>this.launch(), i*120); }
+    // raketten
+    for(const r of this.rockets){ r.x+=r.vx; r.y+=r.vy; r.vy+=0.12; g.fillStyle=`hsl(${r.hue} 100% 75%)`; g.beginPath(); g.arc(r.x,r.y,2.5,0,7); g.fill(); if(this.grand) this.parts.push({x:r.x+(Math.random()-.5)*3,y:r.y+4,vx:0,vy:1,life:.6,decay:0.05,hue:40,size:1.2,g:0.02}); }
+    this.rockets=this.rockets.filter(r=>{ if(r.vy>-1){ this.explode(r.x,r.y,r.hue); return false;} return true; });
+    // deeltjes
+    for(const p of this.parts){ p.x+=p.vx; p.y+=p.vy; p.vy+=(p.g||0.05); p.vx*=0.985; p.vy*=0.985; p.life-=p.decay; const tw=p.sparkle&&Math.random()<0.35?0.2:1; g.fillStyle=`hsla(${p.hue} 100% ${p.sparkle?80:65}% / ${Math.max(0,p.life)*tw})`; g.beginPath(); g.arc(p.x,p.y,p.size,0,7); g.fill(); }
+    this.parts=this.parts.filter(p=>p.life>0);
+    // naam-fasen: wait -> gather -> hold -> burst
+    if(this.name){
+      if(this.phase==='wait' && this.phaseT<=0){ this.phase='gather'; this.phaseT=1.8; const cx=this.W/2, cy=this.H*0.26; this.explode(cx,cy,50,60);
+        this.letters=this.targets.map(([tx,ty])=>({x:cx+(Math.random()-.5)*60,y:cy+(Math.random()-.5)*60,sx:0,sy:0,tx,ty,hue:30+Math.random()*40,p:0,spd:0.4+Math.random()*0.6}));
+        this.letters.forEach(l=>{l.sx=l.x;l.sy=l.y;}); }
+      else if(this.phase==='gather'){ const prog=1-this.phaseT/1.8; for(const l of this.letters){ const e=Math.min(1,prog/l.spd*0.9); const k=1-Math.pow(1-e,3); l.x=l.sx+(l.tx-l.sx)*k; l.y=l.sy+(l.ty-l.sy)*k; } if(this.phaseT<=0){this.phase='hold';this.phaseT=2.8;} }
+      else if(this.phase==='hold'){ if(this.phaseT<=0){ this.phase='burst'; this.phaseT=2.2; for(const l of this.letters){ const a=Math.random()*Math.PI*2, s=Math.random()*7+2; l.vx=Math.cos(a)*s; l.vy=Math.sin(a)*s-2; l.life=1; } for(let i=0;i<7;i++) this.explode(this.W/2+(Math.random()-.5)*this.W*.7, this.H*0.26+(Math.random()-.5)*160, Math.random()*360,80); } }
+      else if(this.phase==='burst'){ for(const l of this.letters){ l.x+=l.vx; l.y+=l.vy; l.vy+=0.06; l.vx*=0.985; l.life-=0.012; } if(this.phaseT<=0){ this.phase='wait'; this.phaseT=1.5; this.letters=[]; } }
+      const tw = this.phase==='hold' ? 0.75+0.25*Math.sin(this.t*9) : 1;
+      for(const l of this.letters){ const a = this.phase==='burst'?Math.max(0,l.life):1; g.fillStyle=`hsla(${l.hue} 100% 70% / ${a*tw})`; g.beginPath(); g.arc(l.x,l.y,2.6,0,7); g.fill(); }
+    }
+    requestAnimationFrame(t=>this.loop(t));
+  }
+}
+
+/* ===================== OPSTARTEN ===================== */
+drawMarkers(); drawHits();
+function boot(saved){
+  if(saved && saved.naam && saved.queue && saved.queue.length){
+    saved.queue = saved.queue.map(q=>({...q, item:byId[q.item]}));
+    Object.assign(state, saved, {busy:false});
+    $('#who').textContent=state.naam; show('game'); showQuestion();
+  }
+}
+if(window.claude?.hot?.snapshot) window.claude.hot.snapshot(()=> state.queue.length && !$('#game').hidden ? {...state, queue:state.queue.map(q=>({...q,item:q.item.id}))} : null);
+window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? null);
+</script>
+</body>
+</html>

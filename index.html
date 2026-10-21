@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Havenrakkers spelletjes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@600&display=swap">
+<style>
+/* Keuzescherm: twee grote plaatjes, zodat ook kinderen die nog niet lezen het goede spel kiezen. */
+:root{--bg:#eef4f8;--panel:#fff;--fg:#1c2b3a;--muted:#5b6b7b;--line:#d5dfe8;--a1:#1d5fa8;--a2:#ff7a1a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141c26;--panel:#1e2937;--fg:#eef3f8;--muted:#a6b4c2;--line:#34435a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141c26;--panel:#1e2937;--fg:#eef3f8;--muted:#a6b4c2;--line:#34435a;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Nunito,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;padding:16px max(16px,env(safe-area-inset-right)) 16px max(16px,env(safe-area-inset-left))}
+h1{font-family:Fredoka,Nunito,sans-serif;font-size:clamp(1.8rem,5vw,2.8rem);margin:0;text-align:center}
+p{margin:0;color:var(--muted);text-align:center}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:1.4rem;width:min(100%,760px)}
+.tile{display:flex;flex-direction:column;align-items:center;gap:.8rem;padding:1.2rem;border-radius:26px;background:var(--panel);border:3px solid var(--line);text-decoration:none;color:var(--fg);box-shadow:0 8px 24px rgba(0,0,0,.10);transition:transform .15s,border-color .15s}
+.tile:hover,.tile:focus-visible{transform:translateY(-4px) scale(1.02);border-color:var(--c);outline:none}
+.tile:active{transform:scale(.98)}
+.tile svg{width:100%;height:auto;aspect-ratio:4/3;border-radius:18px}
+.tile h2{font-family:Fredoka,Nunito,sans-serif;font-size:clamp(1.4rem,4vw,1.9rem);margin:0;color:var(--c)}
+.tile small{color:var(--muted);font-size:1rem}
+.tile.fries{--c:var(--a1)} .tile.reken{--c:var(--a2)}
+@keyframes wob{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.tile:hover .wob{animation:wob 1s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+</style>
+</head>
+<body>
+<h1>Welk spel wil je spelen?</h1>
+<p>Tik op een plaatje.</p>
+<div class="tiles">
+
+  <a class="tile reken" href="rekenspel/">
+    <svg viewBox="0 0 400 300" aria-hidden="true">
+      <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9b8"/><stop offset="1" stop-color="#ffd27a"/></linearGradient></defs>
+      <rect width="400" height="300" rx="18" fill="url(#g1)"/>
+      <circle cx="340" cy="60" r="34" fill="#ffd400" stroke="#f0a500" stroke-width="5"/>
+      <g class="wob"><text x="48" y="118" font-family="Fredoka,Nunito,sans-serif" font-weight="700" font-size="92" fill="#4f7cff">1</text></g>
+      <text x="200" y="150" font-size="60" text-anchor="middle">🐸</text>
+      <text x="110" y="118" font-family="Fredoka,sans-serif" font-weight="700" font-size="70" fill="#ff7a1a">+</text>
+      <text x="265" y="118" font-family="Fredoka,sans-serif" font-weight="700" font-size="92" fill="#4f7cff">2</text>
+      <text x="100" y="250" font-size="56">🍎🍎🍎</text>
+      <text x="300" y="250" font-family="Fredoka,sans-serif" font-weight="700" font-size="70" fill="#1f9d55" text-anchor="middle">= 3</text>
+      <text x="40" y="60" font-size="40">⭐</text>
+      <text x="60" y="190" font-size="30">🦋</text>
+    </svg>
+    <h2>Rekenspel</h2>
+    <small>Tellen, erbij en eraf (5 jaar)</small>
+  </a>
+
+  <a class="tile fries" href="friesland-spel/">
+    <svg viewBox="0 0 400 300" aria-hidden="true">
+      <defs><clipPath id="c1"><rect width="400" height="300" rx="18"/></clipPath></defs>
+      <g clip-path="url(#c1)">
+        <!-- Friese vlag: blauw-witte schuine banen met rode pompeblêden -->
+        <rect width="400" height="300" fill="#fff"/>
+        <g fill="#2a56b5">
+          <polygon points="0,0 115,0 400,185 400,260"/>
+          <polygon points="0,45 0,120 400,380 400,300 380,300"/>
+          <polygon points="0,165 0,240 95,300 210,300"/>
+          <polygon points="200,0 315,0 400,55 400,130"/>
+        </g>
+        <g fill="#d9232e">
+          <path d="M60 60 c0 -22 22 -36 36 -18 c14 -18 36 -4 36 18 c0 28 -36 46 -36 46 c0 0 -36 -18 -36 -46z"/>
+          <path d="M135 115 c0 -22 22 -36 36 -18 c14 -18 36 -4 36 18 c0 28 -36 46 -36 46 c0 0 -36 -18 -36 -46z"/>
+          <path d="M210 170 c0 -22 22 -36 36 -18 c14 -18 36 -4 36 18 c0 28 -36 46 -36 46 c0 0 -36 -18 -36 -46z"/>
+          <path d="M285 225 c0 -22 22 -36 36 -18 c14 -18 36 -4 36 18 c0 28 -36 46 -36 46 c0 0 -36 -18 -36 -46z"/>
+          <path d="M20 190 c0 -22 22 -36 36 -18 c14 -18 36 -4 36 18 c0 28 -36 46 -36 46 c0 0 -36 -18 -36 -46z"/>
+          <path d="M240 40 c0 -22 22 -36 36 -18 c14 -18 36 -4 36 18 c0 28 -36 46 -36 46 c0 0 -36 -18 -36 -46z"/>
+          <path d="M115 245 c0 -22 22 -36 36 -18 c14 -18 36 -4 36 18 c0 28 -36 46 -36 46 c0 0 -36 -18 -36 -46z"/>
+        </g>
+        <text x="330" y="90" font-size="56" text-anchor="middle" class="wob">🗺️</text>
+      </g>
+    </svg>
+    <h2>Friesland Kaartspel</h2>
+    <small>Plaatsen, eilanden en wateren (groep 6)</small>
+  </a>
+
+</div>
+</body>
+</html>
