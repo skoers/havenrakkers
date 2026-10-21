@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Rekenspel 5 jarigen</title>
+<title>Math Game · Rekenspel 5 jarigen</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
 <style>
@@ -57,13 +57,17 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 .lvl{font-size:1.6rem;width:58px;height:58px;border-radius:14px;border:2px solid var(--line);background:var(--bg);display:grid;place-items:center;position:relative}
 .lvl small{position:absolute;right:4px;bottom:2px;font:800 .7rem var(--body);color:var(--muted)}
 .lvl.sel{border-color:var(--accent2);background:var(--card);box-shadow:0 0 0 3px rgba(79,124,255,.3)}
-.gear{background:none;border:0;font-size:1.6rem;position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:12px;opacity:.6}
+.gear{background:none;border:0;font-size:1.6rem;position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:12px;opacity:.6;z-index:60}
+.langbtn{position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:60;border:2px solid var(--line);background:var(--panel);color:var(--fg);border-radius:999px;padding:.25rem .8rem .25rem .5rem;font-family:var(--display);font-weight:600;font-size:1rem;display:flex;align-items:center;gap:.4rem;box-shadow:0 3px 8px rgba(0,0,0,.15)}
+.langbtn b{font-size:1.4rem;line-height:1}
+#game .topbar{padding-top:44px}
+@media (min-width:760px){#game .topbar{padding-top:0}}
 
 /* Spelscherm */
 #game{gap:8px}
 .topbar{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
 .topbar .who{font-family:var(--display);font-size:1.3rem;display:flex;align-items:center;gap:.4rem}
-.counter{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap;margin-left:auto}
+.counter{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap;margin-left:auto;display:flex;align-items:center;gap:.5rem}
 .sound{background:none;border:0;font-size:1.5rem;line-height:1}
 .levelpill{font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .7rem;border-radius:999px;background:var(--hl);color:#3a2600}
 
@@ -144,24 +148,25 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 </style>
 </head>
 <body>
+<button class="langbtn" id="langbtn" type="button" aria-label="Taal / Language"></button>
 
 <!-- STARTSCHERM -->
 <section id="start" class="screen">
   <a class="backlink" href="../" aria-label="Terug naar de spelletjes">🏠</a>
-  <button class="gear" id="gearbtn" type="button" aria-label="Instellingen">⚙️</button>
+  <button class="gear" id="gearbtn" type="button" aria-label="Settings">⚙️</button>
   <div class="hero" aria-hidden="true">🐸 <b>1</b> 🍎🍎 <b>2</b> ⭐⭐⭐ <b>3</b></div>
-  <h1>Rekenspel</h1>
-  <p>Tellen, erbij en eraf. Het wordt steeds een beetje moeilijker. Verzamel alle stickers!</p>
-  <div class="label">Wie ben jij?</div>
+  <h1 data-t="title"></h1>
+  <p data-t="intro"></p>
+  <div class="label" data-t="who"></div>
   <div class="avatars" id="avatars"></div>
   <form class="namebox" id="nameform">
-    <input type="text" id="naam" placeholder="Hoe heet je?" autocomplete="off" maxlength="20" required>
-    <button class="btn" type="submit">Start! 🚀</button>
+    <input type="text" id="naam" placeholder="" autocomplete="off" maxlength="20" required>
+    <button class="btn" type="submit"><span data-t="start"></span> 🚀</button>
   </form>
   <div id="settings" hidden>
-    <div class="label">Begin op niveau</div>
+    <div class="label" data-t="startLevel"></div>
     <div class="levels" id="levels"></div>
-    <label class="label" style="display:flex;gap:.5rem;align-items:center;justify-content:center"><input type="checkbox" id="soundopt" checked> Geluid en voorleesstem</label>
+    <label class="label" style="display:flex;gap:.5rem;align-items:center;justify-content:center"><input type="checkbox" id="soundopt" checked> <span data-t="soundOpt"></span></label>
   </div>
 </section>
 
@@ -169,8 +174,7 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 <section id="game" class="screen" hidden>
   <div class="topbar">
     <span class="who" id="who"></span>
-    <span class="levelpill" id="levelpill"></span>
-    <span class="counter" id="counter"></span>
+    <span class="counter"><span class="levelpill" id="levelpill"></span> <span id="counter"></span></span>
     <button class="sound" id="soundbtn" type="button" aria-label="Geluid aan of uit">🔊</button>
   </div>
   <div class="journey">
@@ -190,7 +194,7 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
     <p class="big" id="endtext"></p>
     <div id="diploma" hidden></div>
     <div class="stickerbook" id="stickerbook"></div>
-    <button class="btn" id="again" type="button">Nog een keer! 🔁</button>
+    <button class="btn" id="again" type="button"><span data-t="again"></span> 🔁</button>
   </div>
 </section>
 <canvas id="confetti"></canvas>
@@ -203,7 +207,31 @@ const STATIONS=10;                    // stations op de reis (elke 2 vragen éé
 const STICKERS=['🌟','🦄','🚀','🌈','🍦','🐬','🎁','🦖','🎵','🏆'];
 const AVATARS=['🐸','🐱','🦊','🐼','🦁','🐧'];
 const SETS=[['🐸','🐱','🐶','🐰','🐥','🦋','🐟','🐢','🐞','🐙'],['🍎','🍓','🍌','🍊','🍇','🍒','🍉','🥕'],['⭐','🎈','🍪','🚗','⚽','🧸','🎁','🌼']];
-const PRAISE=['Goed zo!','Super!','Knap hoor!','Yes!','Helemaal goed!','Wauw!','Top!'];
+/* Teksten: Engels (standaard, heel eenvoudige woorden) en Nederlands. */
+const LANGS={
+  en:{flag:'🇬🇧',name:'English',voice:/^en(-|_)(GB|US)/i,voiceAny:/^en/i,
+    title:'Math Game',intro:'Count, add and take away. It gets a little harder. Get all the stickers!',who:'Who are you?',askName:'What is your name?',start:'Start!',startLevel:'Start at level',soundOpt:'Sound and voice',again:'Play again!',
+    level:'level',next:'Next',praise:['Good job!','Super!','Well done!','Yes!','Great!','Wow!','Nice!'],tryAgain:'Try again!',sayTryAgain:'Not yet. Try again!',sticker:'A sticker!',
+    hi:n=>`Hi ${n}! Let's go.`,harder:'You are very good. Now it gets a little harder!',
+    itIs:a=>`It is ${a}`,thisOne:'This one',thereAre:n=>`There are ${n}.`,makes10:n=>`${n} more makes 10.`,answerIs:a=>`The answer is ${a}.`,
+    hooray:n=>`Hooray, ${n}!`,wellDone:n=>`Well done, ${n}!`,endText:(s,t,l)=>`You got ${s} of ${t} right the first time. You reached level ${l}.`,
+    diploma:'Diploma',champion:l=>`Math champion, level ${l}`,sayWin:n=>`Hooray ${n}! You are a math champion!`,sayEnd:(n,k)=>`Well done ${n}! You got ${k} stickers.`,
+    avatar:{'🐸':'the frog','🐱':'the cat','🦊':'the fox','🐼':'the panda','🦁':'the lion','🐧':'the penguin'},youAre:a=>`You are ${a}!`,
+    q:{count:q=>'How many? Count them.',compare:q=>q.most?'Which has more? Tap it.':'Which has less? Tap it.',number:q=>`Tap the number ${q.n}.`,
+       add:q=>`${q.a} and ${q.b}. How many together?`,sub:q=>`There are ${q.a}. ${q.b} go away. How many are left?`,make10:q=>`There are ${q.k} dots. How many more to make 10?`,
+       abstract:q=>q.op==='+'?`${q.a} plus ${q.b} is?`:`${q.a} take away ${q.b} is?`}},
+  nl:{flag:'🇳🇱',name:'Nederlands',voice:/^nl(-|_)NL/i,voiceAny:/^nl/i,
+    title:'Rekenspel',intro:'Tellen, erbij en eraf. Het wordt steeds een beetje moeilijker. Verzamel alle stickers!',who:'Wie ben jij?',askName:'Hoe heet je?',start:'Start!',startLevel:'Begin op niveau',soundOpt:'Geluid en voorleesstem',again:'Nog een keer!',
+    level:'niveau',next:'Verder',praise:['Goed zo!','Super!','Knap hoor!','Yes!','Helemaal goed!','Wauw!','Top!'],tryAgain:'Probeer nog eens!',sayTryAgain:'Nog niet goed. Probeer nog eens!',sticker:'Een sticker!',
+    hi:n=>`Hoi ${n}! Daar gaan we.`,harder:'Je bent heel goed. Het wordt nu een beetje moeilijker!',
+    itIs:a=>`Het is ${a}`,thisOne:'Deze',thereAre:n=>`Het zijn er ${n}.`,makes10:n=>`${n} erbij maakt 10.`,answerIs:a=>`Het goede antwoord is ${a}.`,
+    hooray:n=>`Hoera, ${n}!`,wellDone:n=>`Goed gedaan, ${n}!`,endText:(s,t,l)=>`Je hebt ${s} van de ${t} sommen in één keer goed en je kwam tot niveau ${l}.`,
+    diploma:'Diploma',champion:l=>`Rekenkampioen, niveau ${l}`,sayWin:n=>`Hoera ${n}! Je bent een rekenkampioen!`,sayEnd:(n,k)=>`Goed gedaan ${n}! Je hebt ${k} stickers verdiend.`,
+    avatar:{'🐸':'de kikker','🐱':'de poes','🦊':'de vos','🐼':'de panda','🦁':'de leeuw','🐧':'de pinguïn'},youAre:a=>`Jij bent ${a}!`,
+    q:{count:q=>`Hoeveel ${q.n===1?'is':'zijn'} het? Tel maar.`,compare:q=>q.most?'Waar zijn er het meeste? Tik erop.':'Waar zijn er het minste? Tik erop.',number:q=>`Tik op het cijfer ${q.n}.`,
+       add:q=>`${q.a} erbij ${q.b}. Hoeveel is dat samen?`,sub:q=>`Er zijn ${q.a}. Er ${q.b===1?'gaat':'gaan'} ${q.b} weg. Hoeveel blijven er over?`,make10:q=>`Er zijn ${q.k} bolletjes. Hoeveel moeten erbij om 10 te maken?`,
+       abstract:q=>q.op==='+'?`${q.a} plus ${q.b} is?`:`${q.a} min ${q.b} is?`}},
+};
 const LEVEL_ICONS=['🐣','🐥','🐤','🐔','🦆','🦅','🦉','🦁'];
 /* Per niveau: grootste getal en welke vraagvormen (met gewicht) meedoen. */
 const LEVELS=[
@@ -223,6 +251,18 @@ const store={get(k,d){try{const v=localStorage.getItem('rekenspel.'+k);return v=
 
 const state={naam:'',avatar:AVATARS[0],level:0,maxLevel:0,streakGood:0,streakBad:0,asked:0,correctFirst:0,wrongTotal:0,attempts:0,retry:[],q:null,busy:false,sound:true,stickers:[]};
 let startLevel=store.get('level',0);
+let lang=store.get('lang','en'); if(!LANGS[lang]) lang='en';
+const T=()=>LANGS[lang];
+const qText=q=>T().q[q.type](q);
+/* Alle vaste teksten op het scherm in de gekozen taal zetten. */
+function applyLang(){
+  document.documentElement.lang=lang; const L=T();
+  document.querySelectorAll('[data-t]').forEach(el=>{ el.textContent=L[el.dataset.t]; });
+  $('#naam').placeholder=L.askName; $('#langbtn').innerHTML=`<b>${L.flag}</b> ${L.name}`;
+  if(state.q && !$('#game').hidden){ $('#stage').querySelector('.prompt span').textContent=qText(state.q); const v=$('#stage').querySelector('.verder'); if(v) v.textContent=L.next+' ➡️'; }
+  if(state.q) $('#levelpill').textContent=`${LEVEL_ICONS[state.level]} ${L.level} ${state.level+1}`;
+}
+function toggleLang(){ lang=lang==='en'?'nl':'en'; store.set('lang',lang); if(canSpeak()) speechSynthesis.cancel(); applyLang(); if(state.q && !$('#game').hidden) say(qText(state.q)); else if(!$('#end').hidden) endTexts(); }
 
 /* ===================== STEM EN GELUID ===================== */
 let actx=null;
@@ -233,11 +273,12 @@ function beep(seq){ if(!state.sound) return; try{ actx=actx||new (window.AudioCo
 const ding=()=>beep([[660,0,.15],[880,.12,.2],[1100,.24,.3]]);
 const buzz=()=>beep([[180,0,.25],[150,.15,.3]]);
 const fanfare=()=>beep([[523,0,.2],[659,.18,.2],[784,.36,.2],[1047,.54,.5],[784,.9,.15],[1047,1.05,.6]]);
-let nlVoice=null;
-function pickVoice(){ if(!('speechSynthesis' in window)) return; const vs=speechSynthesis.getVoices(); nlVoice=vs.find(v=>/^nl(-|_)NL/i.test(v.lang))||vs.find(v=>/^nl/i.test(v.lang))||null; }
+let voices=[];
+function pickVoice(){ if(!('speechSynthesis' in window)) return; voices=speechSynthesis.getVoices(); }
+function voiceFor(){ const L=T(); return voices.find(v=>L.voice.test(v.lang))||voices.find(v=>L.voiceAny.test(v.lang))||null; }
 if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
 const canSpeak=()=>'speechSynthesis' in window;
-function say(text,opts={}){ if(!state.sound||!canSpeak()) return; try{ if(!opts.keep) speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang='nl-NL'; if(nlVoice) u.voice=nlVoice; u.rate=opts.rate||0.92; u.pitch=1.1; speechSynthesis.speak(u); }catch(e){} }
+function say(text,opts={}){ if(!state.sound||!canSpeak()) return; try{ if(!opts.keep) speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang=lang==='nl'?'nl-NL':'en-GB'; const v=voiceFor(); if(v) u.voice=v; u.rate=opts.rate||0.92; u.pitch=1.1; speechSynthesis.speak(u); }catch(e){} }
 
 /* ===================== VRAGEN MAKEN ===================== */
 function weighted(types){ const pool=[]; for(const [k,w] of Object.entries(types)) for(let i=0;i<w;i++) pool.push(k); return pick(pool); }
@@ -245,13 +286,13 @@ function choicesAround(ans,max){ const set=new Set([ans]); let tries=0; while(se
 function gen(level){
   const L=LEVELS[Math.min(level,LEVELS.length-1)]; const type=weighted(L.types); const emoji=pick(pick(SETS)); const max=L.max;
   let q={type,emoji,level};
-  if(type==='count'){ q.n=rnd(max)+1; q.answer=q.n; q.text=`Hoeveel ${q.n===1?'is':'zijn'} het? Tel maar.`; }
-  else if(type==='compare'){ let a=rnd(max)+1, b=rnd(max)+1; while(a===b) b=rnd(max)+1; q.a=a; q.b=b; q.emoji2=pick(pick(SETS)); q.most=level<3||Math.random()<.6; q.answer=q.most?(a>b?0:1):(a<b?0:1); q.text=q.most?'Waar zijn er het meeste? Tik erop.':'Waar zijn er het minste? Tik erop.'; }
-  else if(type==='number'){ q.n=rnd(Math.min(max,10))+1; q.answer=q.n; q.text=`Tik op het cijfer ${q.n}.`; q.spoken=true; }
-  else if(type==='add'){ const top=max; let a=rnd(Math.min(top-1,9))+1; let b=rnd(Math.min(top-a,9))+1; q.a=a; q.b=b; q.answer=a+b; q.text=`${a} erbij ${b}. Hoeveel is dat samen?`; }
-  else if(type==='sub'){ const a=rnd(max-1)+2; const b=rnd(a-1)+1; q.a=a; q.b=b; q.answer=a-b; q.text=`Er ${a===1?'is':'zijn'} ${a}. Er ${b===1?'gaat':'gaan'} ${b} weg. Hoeveel blijven er over?`; }
-  else if(type==='make10'){ q.k=rnd(9)+1; q.answer=10-q.k; q.text=`Er zijn ${q.k} bolletjes. Hoeveel moeten erbij om 10 te maken?`; }
-  else if(type==='abstract'){ if(Math.random()<.6){ let a=rnd(max-1)+1, b=rnd(max-a)+1; q.op='+'; q.a=a; q.b=b; q.answer=a+b; q.text=`${a} plus ${b} is?`; } else { let a=rnd(max-1)+2, b=rnd(a-1)+1; q.op='−'; q.a=a; q.b=b; q.answer=a-b; q.text=`${a} min ${b} is?`; } }
+  if(type==='count'){ q.n=rnd(max)+1; q.answer=q.n; }
+  else if(type==='compare'){ let a=rnd(max)+1, b=rnd(max)+1; while(a===b) b=rnd(max)+1; q.a=a; q.b=b; q.emoji2=pick(pick(SETS)); q.most=level<3||Math.random()<.6; q.answer=q.most?(a>b?0:1):(a<b?0:1); }
+  else if(type==='number'){ q.n=rnd(Math.min(max,10))+1; q.answer=q.n; q.spoken=true; }
+  else if(type==='add'){ const top=max; let a=rnd(Math.min(top-1,9))+1; let b=rnd(Math.min(top-a,9))+1; q.a=a; q.b=b; q.answer=a+b; }
+  else if(type==='sub'){ const a=rnd(max-1)+2; const b=rnd(a-1)+1; q.a=a; q.b=b; q.answer=a-b; }
+  else if(type==='make10'){ q.k=rnd(9)+1; q.answer=10-q.k; }
+  else if(type==='abstract'){ if(Math.random()<.6){ let a=rnd(max-1)+1, b=rnd(max-a)+1; q.op='+'; q.a=a; q.b=b; q.answer=a+b; } else { let a=rnd(max-1)+2, b=rnd(a-1)+1; q.op='−'; q.a=a; q.b=b; q.answer=a-b; } }
   if(type!=='compare') q.choices=choicesAround(q.answer, type==='make10'?10:max);
   return q;
 }
@@ -261,7 +302,7 @@ function picsHTML(emoji,n,cls=''){ return `<div class="pics ${cls}${n>10?' small
 function promptHTML(text){ return `<div class="prompt"><button type="button" id="replay" aria-label="Nog eens voorlezen">🔊</button><span>${text}</span></div>`; }
 function dotsHTML(n){ return `<div class="dots">${Array.from({length:n},()=>'<span>🔵</span>').join('')}</div>`; }
 function render(q){
-  const st=$('#stage'), an=$('#answers'); an.innerHTML=''; let h=promptHTML(q.text);
+  const st=$('#stage'), an=$('#answers'); an.innerHTML=''; let h=promptHTML(qText(q));
   if(q.type==='count') h+=picsHTML(q.emoji,q.n);
   else if(q.type==='number') h+=`<div class="ear">👂</div>${canSpeak()?'':dotsHTML(q.n)}`;
   else if(q.type==='add') h+=`<div class="row">${picsHTML(q.emoji,q.a,'ga')}<span class="op">+</span>${picsHTML(q.emoji,q.b,'gb')}<span class="op">=</span><span class="op">?</span></div>`;
@@ -275,10 +316,10 @@ function render(q){
   else { for(const c of q.choices){ const b=document.createElement('button'); b.className='choice'; b.type='button'; b.textContent=c; b.addEventListener('click',()=>answer(c,b)); an.appendChild(b); } }
   if(q.type==='sub'){ setTimeout(()=>{ const sp=[...st.querySelectorAll('.pics span')]; sp.slice(q.a-q.b).forEach((s,i)=>setTimeout(()=>s.classList.add('gone'),i*220)); },700); }
   $('#counter').textContent=`${Math.min(state.asked+1,TOTAL)} / ${TOTAL}`;
-  $('#levelpill').textContent=`${LEVEL_ICONS[state.level]} niveau ${state.level+1}`;
+  $('#levelpill').textContent=`${LEVEL_ICONS[state.level]} ${T().level} ${state.level+1}`;
   speakQuestion(q);
 }
-function speakQuestion(q){ say(q.text); }
+function speakQuestion(q){ say(qText(q)); }
 
 /* Reis */
 function buildTrack(){ const t=$('#track'); t.querySelectorAll('.station').forEach(s=>s.remove()); for(let i=0;i<STATIONS;i++){ const s=document.createElement('div'); s.className='station'; s.dataset.i=i; s.textContent='•'; t.appendChild(s);} }
@@ -296,7 +337,7 @@ function show(id){ for(const s of ['start','game','end']) $('#'+s).hidden=(s!==i
 function startGame(n){
   Object.assign(state,{naam:n,level:startLevel,maxLevel:startLevel,streakGood:0,streakBad:0,asked:0,correctFirst:0,wrongTotal:0,attempts:0,retry:[],q:null,busy:false,stickers:[]});
   $('#who').innerHTML=`<span>${state.avatar}</span> ${n}`; $('#walker').textContent=state.avatar; buildTrack(); updateJourney();
-  show('game'); say(`Hoi ${n}! Daar gaan we.`); setTimeout(nextQuestion,1200);
+  show('game'); say(T().hi(n)); setTimeout(nextQuestion,1200);
 }
 function nextQuestion(){
   state.busy=false; state.attempts=0; $('#stage').querySelector('.feedback')?.remove();
@@ -308,14 +349,14 @@ function nextQuestion(){
   state.q=q; render(q);
 }
 function feedback(text,cls){ $('#stage').querySelectorAll('.feedback').forEach(x=>x.remove()); const f=document.createElement('div'); f.className='feedback '+cls; f.textContent=text; $('#stage').appendChild(f); return f; }
-function levelUp(){ if(state.level<LEVELS.length-1){ state.level++; state.streakGood=0; state.maxLevel=Math.max(state.maxLevel,state.level); store.set('level',Math.max(0,state.maxLevel-1)); say('Je bent heel goed. Het wordt nu een beetje moeilijker!',{keep:true}); } }
+function levelUp(){ if(state.level<LEVELS.length-1){ state.level++; state.streakGood=0; state.maxLevel=Math.max(state.maxLevel,state.level); store.set('level',Math.max(0,state.maxLevel-1)); say(T().harder,{keep:true}); } }
 function levelDown(){ if(state.level>0){ state.level--; state.streakBad=0; } }
 function answer(val,btn){
   if(state.busy) return; const q=state.q; const ok=val===q.answer;
   if(ok){
     state.busy=true; btn.classList.add('good'); ding(); const r=btn.getBoundingClientRect(); confetti(r.left+r.width/2,r.top+r.height/2);
     if(state.attempts===0){ state.correctFirst++; state.streakGood++; state.streakBad=0; }
-    feedback(pick(PRAISE),'good'); say(pick(PRAISE));
+    const pr=pick(T().praise); feedback(pr,'good'); say(pr);
     state.asked++; const before=Math.floor((state.asked-1)/2); const done=updateJourney(); let wait=1300;
     if(done>before){ const s=STICKERS[done-1]; $('#walker').classList.add('hop'); setTimeout(()=>$('#walker').classList.remove('hop'),800); showSticker(s); confetti(innerWidth/2,innerHeight/2,120); wait=2300; }
     if(state.streakGood>=3){ levelUp(); wait+=800; }
@@ -323,36 +364,38 @@ function answer(val,btn){
   } else {
     state.attempts++; btn.classList.add('bad'); btn.disabled=true; buzz();
     if(state.attempts===1){ state.streakGood=0; state.streakBad++; state.wrongTotal++; if(state.streakBad>=2) levelDown();
-      state.retry.push({...q,due:state.asked+3}); const f=feedback('Probeer nog eens!','bad'); say('Nog niet goed. Probeer nog eens!'); setTimeout(()=>f.remove(),1500); }
+      state.retry.push({...q,due:state.asked+3}); const f=feedback(T().tryAgain,'bad'); say(T().sayTryAgain); setTimeout(()=>f.remove(),1500); }
     else { state.busy=true; state.asked++; updateJourney(); explain(q); }
   }
 }
-function showSticker(s){ const t=document.createElement('div'); t.className='sticker-toast'; t.innerHTML=`<div>${s}</div>`; document.body.appendChild(t); say('Een sticker!',{keep:true}); setTimeout(()=>t.remove(),1700); }
+function showSticker(s){ const t=document.createElement('div'); t.className='sticker-toast'; t.innerHTML=`<div>${s}</div>`; document.body.appendChild(t); say(T().sticker,{keep:true}); setTimeout(()=>t.remove(),1700); }
 /* Bij de tweede fout: het goede antwoord laten zien en samen tellen. */
 function explain(q){
   const st=$('#stage'); st.querySelectorAll('.choice,.card').forEach(b=>b.disabled=true);
   const good=q.type==='compare'?st.querySelector(`.card[data-i="${q.answer}"]`):[...document.querySelectorAll('.choice')].find(b=>+b.textContent===q.answer);
-  good?.classList.add('good'); feedback(`Het is ${q.type==='compare'?'deze':q.answer}`,'good');
+  good?.classList.add('good'); feedback(q.type==='compare'?T().thisOne:T().itIs(q.answer),'good');
   let spans=[];
   if(q.type==='count') spans=[...st.querySelectorAll('.pics span')];
   else if(q.type==='add') spans=[...st.querySelectorAll('.pics span')];
   else if(q.type==='sub') spans=[...st.querySelectorAll('.pics span')].slice(0,q.a-q.b);
   else if(q.type==='compare') spans=[...good.querySelectorAll('.pics span')];
-  if(q.type==='make10'){ const dots=[...st.querySelectorAll('.rek i')]; dots.slice(q.k).forEach((d,i)=>setTimeout(()=>{ d.classList.add('add'); say(String(i+1),{keep:true}); },500+i*650)); setTimeout(()=>say(`${q.answer} erbij maakt 10.`,{keep:true}),500+q.answer*650+200); }
-  else if(spans.length){ spans.forEach((s,i)=>setTimeout(()=>{ s.classList.add('cnt'); s.dataset.n=i+1; say(String(i+1),{keep:true}); },500+i*650)); setTimeout(()=>say(`Het zijn er ${spans.length}.`,{keep:true}),500+spans.length*650+200); }
-  else say(`Het goede antwoord is ${q.answer}.`);
-  const b=document.createElement('button'); b.className='btn verder'; b.type='button'; b.textContent='Verder ➡️'; b.addEventListener('click',()=>{ if(canSpeak()) speechSynthesis.cancel(); nextQuestion(); }); st.appendChild(b);
+  if(q.type==='make10'){ const dots=[...st.querySelectorAll('.rek i')]; dots.slice(q.k).forEach((d,i)=>setTimeout(()=>{ d.classList.add('add'); say(String(i+1),{keep:true}); },500+i*650)); setTimeout(()=>say(T().makes10(q.answer),{keep:true}),500+q.answer*650+200); }
+  else if(spans.length){ spans.forEach((s,i)=>setTimeout(()=>{ s.classList.add('cnt'); s.dataset.n=i+1; say(String(i+1),{keep:true}); },500+i*650)); setTimeout(()=>say(T().thereAre(spans.length),{keep:true}),500+spans.length*650+200); }
+  else say(T().answerIs(q.answer));
+  const b=document.createElement('button'); b.className='btn verder'; b.type='button'; b.textContent=T().next+' ➡️'; b.addEventListener('click',()=>{ if(canSpeak()) speechSynthesis.cancel(); nextQuestion(); }); st.appendChild(b);
 }
 let fw=null;
+function endTexts(){ const L=T(); $('#endtitle').textContent=state.win?L.hooray(state.naam):L.wellDone(state.naam);
+  $('#endtext').textContent=L.endText(state.score,TOTAL,state.maxLevel+1);
+  if(state.win) $('#diploma').innerHTML=`<div class="diploma"><div class="medal">🏅</div><div class="kop">${L.diploma}</div><div class="naam">${state.naam}</div><div class="sub">${L.champion(state.maxLevel+1)}</div></div>`; }
 function endGame(){
   show('end'); const total=state.asked; const score=state.correctFirst; const win=score>=Math.round(TOTAL*0.8);
   const stars=score>=TOTAL*0.9?3:score>=TOTAL*0.7?2:1; $('#stars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
-  $('#endtitle').textContent=win?`Hoera, ${state.naam}!`:`Goed gedaan, ${state.naam}!`;
-  $('#endtext').textContent=`Je hebt ${score} van de ${TOTAL} sommen in één keer goed en je kwam tot niveau ${state.maxLevel+1}.`;
+  state.win=win; state.score=score; endTexts();
   $('#stickerbook').innerHTML=state.stickers.map((s,i)=>`<span style="animation-delay:${i*.15}s">${s}</span>`).join('');
   const d=$('#diploma'); d.hidden=!win; $('#endcard').classList.toggle('win',win);
-  if(win){ d.innerHTML=`<div class="diploma"><div class="medal">🏅</div><div class="kop">Diploma</div><div class="naam">${state.naam}</div><div class="sub">Rekenkampioen, niveau ${state.maxLevel+1}</div></div>`; fanfare(); }
-  say(win?`Hoera ${state.naam}! Je bent een rekenkampioen!`:`Goed gedaan ${state.naam}! Je hebt ${state.stickers.length} stickers verdiend.`);
+  if(win) fanfare();
+  say(win?T().sayWin(state.naam):T().sayEnd(state.naam,state.stickers.length));
   fw=new Fireworks($('#fw'),state.naam,win); fw.start();
 }
 $('#again').addEventListener('click',()=>{ if(fw) fw.stop(); $('#naam').value=state.naam; show('start'); });
@@ -360,9 +403,11 @@ $('#nameform').addEventListener('submit',e=>{ e.preventDefault(); const n=$('#na
 $('#soundbtn').addEventListener('click',()=>{ state.sound=!state.sound; $('#soundbtn').textContent=state.sound?'🔊':'🔇'; $('#soundopt').checked=state.sound; if(!state.sound&&canSpeak()) speechSynthesis.cancel(); });
 $('#soundopt').addEventListener('change',e=>{ state.sound=e.target.checked; $('#soundbtn').textContent=state.sound?'🔊':'🔇'; });
 $('#gearbtn').addEventListener('click',()=>{ $('#settings').hidden=!$('#settings').hidden; });
+$('#langbtn').addEventListener('click',toggleLang);
+applyLang();
 
 /* Startscherm: figuurtje en niveau kiezen */
-const av=$('#avatars'); AVATARS.forEach(a=>{ const b=document.createElement('button'); b.type='button'; b.className='avatar'+(a===state.avatar?' sel':''); b.textContent=a; b.addEventListener('click',()=>{ state.avatar=a; av.querySelectorAll('.avatar').forEach(x=>x.classList.toggle('sel',x===b)); say(`Jij bent ${a==='🐸'?'de kikker':a==='🐱'?'de poes':a==='🦊'?'de vos':a==='🐼'?'de panda':a==='🦁'?'de leeuw':'de pinguïn'}!`); }); av.appendChild(b); });
+const av=$('#avatars'); AVATARS.forEach(a=>{ const b=document.createElement('button'); b.type='button'; b.className='avatar'+(a===state.avatar?' sel':''); b.textContent=a; b.addEventListener('click',()=>{ state.avatar=a; av.querySelectorAll('.avatar').forEach(x=>x.classList.toggle('sel',x===b)); say(T().youAre(T().avatar[a])); }); av.appendChild(b); });
 const lv=$('#levels'); LEVELS.forEach((_,i)=>{ const b=document.createElement('button'); b.type='button'; b.className='lvl'+(i===startLevel?' sel':''); b.innerHTML=`${LEVEL_ICONS[i]}<small>${i+1}</small>`; b.addEventListener('click',()=>{ startLevel=i; lv.querySelectorAll('.lvl').forEach(x=>x.classList.toggle('sel',x===b)); }); lv.appendChild(b); });
 
 /* ===================== VUURWERK ===================== */

@@ -1,8 +1,10 @@
 # Rekenspel 5 jarigen
 
 Rekenspel voor kleuters die nog niet kunnen lezen. Alles gaat met plaatjes, grote knoppen en een
-Nederlandse voorleesstem (de ingebouwde stem van de browser). Open `index.html` op tablet, telefoon
-of computer, kies een figuurtje, vul je naam in en speel 20 vragen.
+voorleesstem (de ingebouwde stem van de browser). Het spel staat standaard op **eenvoudig Engels**,
+zodat een kind van 5 spelenderwijs Engelse woorden en getallen leert. Met de taalknop bovenin het
+scherm (altijd zichtbaar) wissel je naar Nederlands; de keuze wordt onthouden. Open `index.html` op
+tablet, telefoon of computer, kies een figuurtje, vul je naam in en speel 20 vragen.
 
 ## Vraagvormen
 - **Tellen**: hoeveel dieren of vruchten zie je? Tik het cijfer aan.
