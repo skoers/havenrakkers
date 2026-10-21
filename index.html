@@ -16,14 +16,14 @@ html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:Nunito,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;padding:16px max(16px,env(safe-area-inset-right)) 16px max(16px,env(safe-area-inset-left))}
 h1{font-family:Fredoka,Nunito,sans-serif;font-size:clamp(1.8rem,5vw,2.8rem);margin:0;text-align:center}
 p{margin:0;color:var(--muted);text-align:center}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:1.4rem;width:min(100%,760px)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:1.4rem;width:min(100%,1000px)}
 .tile{display:flex;flex-direction:column;align-items:center;gap:.8rem;padding:1.2rem;border-radius:26px;background:var(--panel);border:3px solid var(--line);text-decoration:none;color:var(--fg);box-shadow:0 8px 24px rgba(0,0,0,.10);transition:transform .15s,border-color .15s}
 .tile:hover,.tile:focus-visible{transform:translateY(-4px) scale(1.02);border-color:var(--c);outline:none}
 .tile:active{transform:scale(.98)}
 .tile svg{width:100%;height:auto;aspect-ratio:4/3;border-radius:18px}
 .tile h2{font-family:Fredoka,Nunito,sans-serif;font-size:clamp(1.4rem,4vw,1.9rem);margin:0;color:var(--c)}
 .tile small{color:var(--muted);font-size:1rem}
-.tile.fries{--c:var(--a1)} .tile.reken{--c:var(--a2)}
+.tile.fries{--c:var(--a1)} .tile.reken{--c:var(--a2)} .tile.woord{--c:#1aa36b}
 @keyframes wob{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
 .tile:hover .wob{animation:wob 1s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 </style>
@@ -49,6 +49,22 @@ p{margin:0;color:var(--muted);text-align:center}
     </svg>
     <h2>Math Game · Rekenspel</h2>
     <small>Count, add, take away · Engels of Nederlands (5 jaar)</small>
+  </a>
+
+  <a class="tile woord" href="woordspel/">
+    <svg viewBox="0 0 400 300" aria-hidden="true">
+      <defs><linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9f5e6"/><stop offset="1" stop-color="#a8e6c6"/></linearGradient></defs>
+      <rect width="400" height="300" rx="18" fill="url(#g3)"/>
+      <rect x="30" y="40" width="160" height="110" rx="16" fill="#fff" stroke="#1aa36b" stroke-width="5"/>
+      <text x="110" y="118" font-size="64" text-anchor="middle">🐱</text>
+      <text x="300" y="112" font-family="Fredoka,Nunito,sans-serif" font-weight="700" font-size="54" fill="#5b6cff" text-anchor="middle" class="wob">cat</text>
+      <rect x="30" y="170" width="160" height="100" rx="16" fill="#fff" stroke="#1aa36b" stroke-width="5"/>
+      <text x="110" y="243" font-size="60" text-anchor="middle">🍎</text>
+      <text x="300" y="235" font-family="Fredoka,Nunito,sans-serif" font-weight="700" font-size="48" fill="#5b6cff" text-anchor="middle">a p p l e</text>
+      <text x="345" y="55" font-size="36">🔊</text>
+    </svg>
+    <h2>Word Game</h2>
+    <small>Engelse woordjes met plaatjes · tap (5 jaar) of typ (9 jaar)</small>
   </a>
 
   <a class="tile fries" href="friesland-spel/">
