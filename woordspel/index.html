@@ -134,7 +134,7 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 <!-- START -->
 <section id="start" class="screen">
   <div class="hero" aria-hidden="true">🐱 🍎 🚗 🌞 🐸</div>
-  <h1>Word Game <small style="font-size:.4em;color:var(--muted);font-weight:500">v4</small></h1>
+  <h1>Word Game <small style="font-size:.4em;color:var(--muted);font-weight:500">v5</small></h1>
   <p>Learn English words with pictures. Tap or type. The game remembers how good you are!</p>
   <div class="label">Who is playing?</div>
   <div class="names" id="names"></div>
@@ -282,8 +282,8 @@ function voiceFor(){ return (voiceName&&voices.find(v=>v.name===voiceName))||PRE
 function fillVoices(){ const sel=$('#voicesel'); if(!sel) return; const en=voices.filter(v=>/^en/i.test(v.lang)); sel.innerHTML='<option value="">Voice: automatic</option>'+en.map(v=>`<option value="${v.name.replace(/"/g,'')}" ${v.name===voiceName?'selected':''}>${v.name} (${v.lang})</option>`).join(''); $('#voicerow').hidden=en.length<2; }
 if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
 const canSpeak=()=>'speechSynthesis' in window;
-function say(text,opts={}){ if(!state.sound||!canSpeak()) return; try{ if(!opts.keep) speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang='en-GB'; const v=voiceFor(); if(v) u.voice=v; u.rate=0.92; u.pitch=1.1; speechSynthesis.speak(u); }catch(e){} }
-const sayWord=(w,opts)=>say(w,opts);
+function say(text,opts={}){ if(!state.sound||!canSpeak()) return; try{ if(!opts.keep) speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang='en-GB'; const v=voiceFor(); if(v) u.voice=v; u.rate=opts.rate||0.85; u.pitch=1.1; speechSynthesis.speak(u); }catch(e){} }
+const sayWord=(w,opts)=>say(w,{rate:0.8,...opts});   // losse woorden nog iets rustiger
 function setSound(on){ state.sound=on; store.set('sound',on); $('#soundbtn').innerHTML=`<b>${on?'🔊':'🔇'}</b> ${on?'Sound':'No sound'}`; if(!on&&canSpeak()) speechSynthesis.cancel(); if(state.q&&!$('#game').hidden) render(state.q,true); }
 $('#soundbtn').addEventListener('click',()=>setSound(!state.sound));
 
