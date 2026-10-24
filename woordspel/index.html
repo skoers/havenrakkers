@@ -134,7 +134,7 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 <!-- START -->
 <section id="start" class="screen">
   <div class="hero" aria-hidden="true">🐱 🍎 🚗 🌞 🐸</div>
-  <h1>Word Game <small style="font-size:.4em;color:var(--muted);font-weight:500">v5</small></h1>
+  <h1>Word Game <small style="font-size:.4em;color:var(--muted);font-weight:500">v6</small></h1>
   <p>Learn English words with pictures. Tap or type. The game remembers how good you are!</p>
   <div class="label">Who is playing?</div>
   <div class="names" id="names"></div>
@@ -274,17 +274,40 @@ const fanfare=()=>beep([[523,0,.2],[659,.18,.2],[784,.36,.2],[1047,.54,.5],[784,
 let voices=[];
 /* Stemkeuze: dezelfde regel als het rekenspel (eerste Engelse GB/US-stem van het apparaat), tenzij een stem gekozen is. */
 function pickVoice(){ if(!('speechSynthesis' in window)) return; voices=speechSynthesis.getVoices(); fillVoices(); }
-let voiceName=store.get('voice',''); if(store.get('v')!==4){ voiceName=''; store.set('voice',''); store.set('v',4); }  // oude stemkeuze wissen
+let voiceName=store.get('voice',''); if(store.get('v')!==6){ voiceName=''; store.set('voice',''); store.set('v',6); }  // oude stemkeuze wissen
 /* Voorkeur: Google UK English Male (Chrome), dan de regel van het rekenspel. */
 const PREFERRED=['Google UK English Male','Google UK English Female','Google US English'];
 function voiceFor(){ return (voiceName&&voices.find(v=>v.name===voiceName))||PREFERRED.map(n=>voices.find(v=>v.name===n)).find(Boolean)||voices.find(v=>/^en(-|_)(GB|US)/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||null; }
 /* Precies de stem-instellingen van het rekenspel (Engelse stand). */
-function fillVoices(){ const sel=$('#voicesel'); if(!sel) return; const en=voices.filter(v=>/^en/i.test(v.lang)); sel.innerHTML='<option value="">Voice: automatic</option>'+en.map(v=>`<option value="${v.name.replace(/"/g,'')}" ${v.name===voiceName?'selected':''}>${v.name} (${v.lang})</option>`).join(''); $('#voicerow').hidden=en.length<2; }
+function fillVoices(){ const sel=$('#voicesel'); if(!sel) return; const en=voices.filter(v=>/^en/i.test(v.lang)); sel.innerHTML='<option value="">Voice: Cori (game voice)</option>'+en.map(v=>`<option value="${v.name.replace(/"/g,'')}" ${v.name===voiceName?'selected':''}>Device: ${v.name} (${v.lang})</option>`).join(''); $('#voicerow').hidden=false; }
 if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
 const canSpeak=()=>'speechSynthesis' in window;
-function say(text,opts={}){ if(!state.sound||!canSpeak()) return; try{ if(!opts.keep) speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang='en-GB'; const v=voiceFor(); if(v) u.voice=v; u.rate=opts.rate||0.85; u.pitch=1.1; speechSynthesis.speak(u); }catch(e){} }
-const sayWord=(w,opts)=>say(w,{rate:0.8,...opts});   // losse woorden nog iets rustiger
-function setSound(on){ state.sound=on; store.set('sound',on); $('#soundbtn').innerHTML=`<b>${on?'🔊':'🔇'}</b> ${on?'Sound':'No sound'}`; if(!on&&canSpeak()) speechSynthesis.cancel(); if(state.q&&!$('#game').hidden) render(state.q,true); }
+function say(text,opts={}){ if(!state.sound||!canSpeak()) return; try{ if(!opts.keep) speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang='en-GB'; const v=voiceFor(); if(v) u.voice=v; u.rate=opts.rate||0.9; u.pitch=1.1; speechSynthesis.speak(u); }catch(e){} }
+/* ===================== OPGENOMEN STEM =====================
+   Alle woorden en zinnen staan als mp3 in audio/ (Britse stem 'Cori'). Zo klinkt het op elk apparaat hetzelfde.
+   De browserstem is alleen reserve (bestand niet geladen) of als in de kiezer een apparaatstem is gekozen. */
+const AUDIO='audio/';
+const PH={p_listen_tap:'Listen. Tap the picture.',p_which_word:'Which word is this?',p_type:'Type the word.',p_listen_type:'Listen. Type the word.',
+  good_1:'Good job!',good_2:'Super!',good_3:'Well done!',good_4:'Yes!',good_5:'Great!',good_6:'Wow!',good_7:'Nice!',good_8:'You did it!',
+  try_again:'Not that one. Try again!',letters:'Not yet. Look at the letters.',this_is:'This is',it_is:'It is',type_it:'Type it.',
+  hi:"Hi! Let's learn some words.",level_2:'Level 2! You are learning so many words.',level_3:'Level 3! You are learning so many words.',
+  level_4:'Level 4! You are learning so many words.',level_5:'Level 5! You are learning so many words.',
+  end_win:'Hooray! You know so many words!',end_ok:'Well done! You are learning.',voice_test:'Hello! I am your voice. Cat. Apple. House.',
+  tap_pic:'Tap the picture.',type_word:'Type the word.',hi_name:'Hi!',say_name:'Type your name, or tap your name.'};
+const keyOf=w=>w.replace(/\s+/g,'_');
+const textOf=k=>PH[k]||k.replace(/_/g,' ');
+const player=new Audio(); player.preload='auto'; let queue=[]; let unlocked=false;
+/* iPad/iPhone: geluid mag pas na een tik. De eerste tik op de pagina 'ontgrendelt' de speler. */
+function unlock(){ if(unlocked) return; unlocked=true; try{ player.muted=true; player.src=AUDIO+'hi_name.mp3'; player.play().then(()=>{ player.pause(); player.muted=false; }).catch(()=>{ player.muted=false; }); }catch(e){ player.muted=false; } }
+addEventListener('pointerdown',unlock,{once:true,capture:true}); addEventListener('touchstart',unlock,{once:true,capture:true}); addEventListener('keydown',unlock,{once:true,capture:true});
+function playNext(){ const k=queue.shift(); if(!k) return; player.onended=playNext; player.onerror=()=>{ say(textOf(k)); playNext(); }; player.src=AUDIO+k+'.mp3'; player.play().catch(()=>{ say(textOf(k)); playNext(); }); }
+/* speak(['good_1','cat']) speelt de bestanden na elkaar. Met {keep:true} wordt wat nog speelt niet afgebroken. */
+function speak(keys,opts={}){ if(!state.sound) return; keys=[].concat(keys);
+  if(voiceName){ say(keys.map(textOf).join(' '),opts); return; }
+  if(!opts.keep){ queue=[]; player.onended=null; player.pause(); if(canSpeak()) speechSynthesis.cancel(); }
+  queue.push(...keys); if(player.paused||player.ended) playNext(); }
+const sayWord=(w,opts)=>speak(keyOf(w),opts);
+function setSound(on){ state.sound=on; store.set('sound',on); $('#soundbtn').innerHTML=`<b>${on?'🔊':'🔇'}</b> ${on?'Sound':'No sound'}`; if(!on){ queue=[]; player.pause(); if(canSpeak()) speechSynthesis.cancel(); } if(state.q&&!$('#game').hidden) render(state.q,true); }
 $('#soundbtn').addEventListener('click',()=>setSound(!state.sound));
 
 /* ===================== WOORD KIEZEN ===================== */
@@ -347,7 +370,7 @@ function render(q,keepInput=false){
   if(!keepInput) speakQuestion(q);
 }
 function typeBox(v){ return `<form class="typebox" id="typeform" autocomplete="off"><input type="text" id="typein" value="${v}" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Type the word"><button class="btn" type="submit">OK ✔️</button></form>`; }
-function speakQuestion(q){ const w=q.word.w; if(q.type==='hear-pic') sayWord(w); else if(q.type==='pic-word') say('Which word is this?'); else if(q.type==='pic-type') sayWord(w); else sayWord(w); }
+function speakQuestion(q){ const w=q.word.w; if(q.type==='pic-word') speak('p_which_word'); else sayWord(w); }
 function updateProgress(){ const t=tierWords(state.level).length; $('#fill').style.width=(100*knownIn(state.level)/t)+'%'; }
 /* Hint bij typen: eerste letter(s) zichtbaar, rest streepjes; tweede fout toont het hele woord om over te typen. */
 function showHint(q){ const h=$('#hint'); if(!h) return; const w=q.word.w; h.hidden=false; const show=q.hintLevel>=2?w.length:Math.max(1,Math.ceil(w.length/3));
@@ -362,7 +385,7 @@ function confLoop(){ cx.clearRect(0,0,cc.width,cc.height); for(const p of confs)
 function show(id){ for(const s of ['start','game','end']) $('#'+s).hidden=(s!==id); }
 function startGame(){
   const p=P(); Object.assign(state,{level:p.level||1,asked:0,correctFirst:0,attempts:0,q:null,busy:false,recent:[],learned:[],retry:[]});
-  $('#who').innerHTML=`<span>${p.avatar}</span> ${state.naam}`; show('game'); say(`Hi ${state.naam}! Let's learn some words.`); setTimeout(nextQuestion,1400);
+  $('#who').innerHTML=`<span>${p.avatar}</span> ${state.naam}`; show('game'); speak('hi'); setTimeout(nextQuestion,1400);
 }
 function nextQuestion(){
   state.busy=false; state.attempts=0; $('#stage').querySelector('.feedback')?.remove();
@@ -376,7 +399,7 @@ function nextQuestion(){
 function feedback(text,cls){ $('#stage').querySelectorAll('.feedback').forEach(x=>x.remove()); const f=document.createElement('div'); f.className='feedback '+cls; f.innerHTML=text; $('#stage').appendChild(f); return f; }
 function bump(w,delta){ const p=P(); const e=p.words[w]||{s:0,n:0}; e.s=Math.max(-2,Math.min(3,e.s+delta)); e.n++; p.words[w]=e; savePlayers(); }
 function checkLevelUp(){ const t=tierWords(state.level).length; if(state.level<MAXT && knownIn(state.level)>=Math.ceil(t*NEXT_LEVEL)){ state.level++; P().level=state.level; savePlayers();
-  const d=document.createElement('div'); d.className='levelup'; d.innerHTML=`<div>Level ${state.level}! 🎉</div>`; document.body.appendChild(d); setTimeout(()=>d.remove(),2100); confetti(innerWidth/2,innerHeight/2,160); say(`Level ${state.level}! You are learning so many words.`,{keep:true}); return true; } return false; }
+  const d=document.createElement('div'); d.className='levelup'; d.innerHTML=`<div>Level ${state.level}! 🎉</div>`; document.body.appendChild(d); setTimeout(()=>d.remove(),2100); confetti(innerWidth/2,innerHeight/2,160); speak('level_'+state.level,{keep:true}); return true; } return false; }
 function answer(val,el){
   if(state.busy) return; const q=state.q, w=q.word; const ok=val===w.w;
   if(ok){
@@ -385,7 +408,7 @@ function answer(val,el){
     else $('#answers').querySelectorAll('.choice').forEach(b=>b.disabled=true);
     if(state.attempts===0){ state.correctFirst++; bump(w.w,(q.type==='pic-type'||q.type==='hear-type')?+2:+1); } else bump(w.w,0);
     if(!state.learned.includes(w.w)) state.learned.push(w.w);
-    const pr=pick(PRAISE); feedback(`${pr} <b>${w.w}</b>`,'good'); say(pr); sayWord(w.w,{keep:true});
+    const pi=rnd(PRAISE.length); feedback(`${PRAISE[pi]} <b>${w.w}</b>`,'good'); speak(['good_'+(pi+1),keyOf(w.w)]);
     state.asked++; let wait=1900; updateProgress();
     if(state.attempts===0 && checkLevelUp()) wait+=1200;
     setTimeout(nextQuestion,wait);
@@ -394,13 +417,13 @@ function answer(val,el){
     if(state.attempts===1){ bump(w.w,-1); state.retry.push({word:w,due:state.asked+3}); }
     if(q.type==='hear-pic'||q.type==='pic-word'){
       el.classList.add('bad'); el.disabled=true;
-      if(state.attempts===1){ const f=feedback('Try again!','bad'); say('Not that one. Try again!'); setTimeout(()=>sayWord(w.w,{keep:true}),1200); setTimeout(()=>f.remove(),1500); }
+      if(state.attempts===1){ const f=feedback('Try again!','bad'); speak(['try_again',keyOf(w.w)]); setTimeout(()=>f.remove(),1500); }
       else { explainChoice(q); }
     } else {
       el.value=''; el.classList.add('bad'); setTimeout(()=>el.classList.remove('bad'),500);
       q.hintLevel=Math.min(2,state.attempts); showHint(q);
-      if(state.attempts===1){ const f=feedback('Almost! Look at the letters.','bad'); say('Not yet. Look at the letters.'); setTimeout(()=>sayWord(w.w,{keep:true}),1300); setTimeout(()=>f.remove(),1800); }
-      else { feedback(`It is <b>${w.w}</b>. Type it!`,'bad'); say(`It is ${w.w}. Type it.`); }
+      if(state.attempts===1){ const f=feedback('Almost! Look at the letters.','bad'); speak(['letters',keyOf(w.w)]); setTimeout(()=>f.remove(),1800); }
+      else { feedback(`It is <b>${w.w}</b>. Type it!`,'bad'); speak(['it_is',keyOf(w.w),'type_it']); }
       el.focus();
     }
   }
@@ -408,7 +431,7 @@ function answer(val,el){
 /* Bij de tweede fout bij tikken: het goede plaatje oplichten, woord tonen en uitspreken; verder met een knop. */
 function explainChoice(q){
   state.busy=true; state.asked++; const w=q.word; $('#answers').querySelectorAll('.choice').forEach(b=>{ b.disabled=true; if(b.dataset.w===w.w) b.classList.add('good'); });
-  feedback(`This is <b>${w.w}</b>`,'good'); say(`This is ${w.w}.`); setTimeout(()=>sayWord(w.w,{keep:true}),1500);
+  feedback(`This is <b>${w.w}</b>`,'good'); speak(['this_is',keyOf(w.w),keyOf(w.w)]);
   const b=document.createElement('button'); b.className='btn verder'; b.type='button'; b.textContent='Next ➡️'; b.addEventListener('click',()=>{ if(canSpeak()) speechSynthesis.cancel(); nextQuestion(); }); $('#stage').appendChild(b);
 }
 let fw=null;
@@ -421,7 +444,7 @@ function endGame(){
   $('#learned').innerHTML=state.learned.map(w=>{ const x=byWord[w]; return `<button type="button" data-w="${w}">${x.c?`<span class="swatch" style="display:inline-block;width:1.2em;height:1.2em;border-radius:30%;background:${x.c}"></span>`:x.n?`<span>${x.n}</span>`:`<span>${x.p}</span>`} ${w}</button>`; }).join('');
   $('#learned').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>sayWord(b.dataset.w)));
   $('#endcard').classList.toggle('win',win); if(win) fanfare();
-  say(win?`Hooray ${state.naam}! You know ${known} words!`:`Well done ${state.naam}! You know ${known} words.`);
+  speak(win?'end_win':'end_ok');
   fw=new Fireworks($('#fw'),state.naam,win); fw.start();
 }
 $('#again').addEventListener('click',()=>{ if(fw) fw.stop(); show('start'); renderStart(); });
@@ -430,24 +453,24 @@ $('#again').addEventListener('click',()=>{ if(fw) fw.stop(); show('start'); rend
 function selectPlayer(name){ state.naam=name; const p=players[name]; state.avatar=p.avatar; state.mode=p.mode||'tap'; renderStart(); }
 function renderStart(){
   const names=Object.keys(players).sort((a,b)=>(players[b].last||0)-(players[a].last||0)).slice(0,12);
-  const nm=$('#names'); nm.innerHTML=''; names.forEach(n=>{ const b=document.createElement('button'); b.type='button'; b.className='namechip'+(n===state.naam?' sel':''); b.innerHTML=`<span>${players[n].avatar}</span>${n}`; b.addEventListener('click',()=>{ selectPlayer(n); $('#naam').value=''; say(`Hi ${n}!`); }); nm.appendChild(b); });
+  const nm=$('#names'); nm.innerHTML=''; names.forEach(n=>{ const b=document.createElement('button'); b.type='button'; b.className='namechip'+(n===state.naam?' sel':''); b.innerHTML=`<span>${players[n].avatar}</span>${n}`; b.addEventListener('click',()=>{ selectPlayer(n); $('#naam').value=''; speak('hi_name'); }); nm.appendChild(b); });
   $('#names').hidden=!names.length; $('#newlabel').textContent=names.length?'Or a new player':'Pick a picture and type your name';
   $('#avatars').querySelectorAll('.avatar').forEach(x=>x.classList.toggle('sel',x.textContent===state.avatar));
   document.querySelectorAll('.mode').forEach(m=>m.classList.toggle('sel',m.dataset.mode===state.mode));
   const p=state.naam&&players[state.naam]; $('#known').textContent=p?`${state.naam} knows ${Object.values(p.words).filter(e=>e.s>=KNOWN).length} words · level ${p.level||1}`:'';
 }
 const av=$('#avatars'); AVATARS.forEach(a=>{ const b=document.createElement('button'); b.type='button'; b.className='avatar'; b.textContent=a; b.addEventListener('click',()=>{ state.avatar=a; if(state.naam&&players[state.naam]&&!$('#naam').value.trim()){ players[state.naam].avatar=a; savePlayers(); } renderStart(); }); av.appendChild(b); });
-document.querySelectorAll('.mode').forEach(m=>m.addEventListener('click',()=>{ state.mode=m.dataset.mode; if(state.naam&&players[state.naam]){ players[state.naam].mode=state.mode; savePlayers(); } renderStart(); say(m.dataset.mode==='tap'?'Tap the picture.':'Type the word.'); }));
+document.querySelectorAll('.mode').forEach(m=>m.addEventListener('click',()=>{ state.mode=m.dataset.mode; if(state.naam&&players[state.naam]){ players[state.naam].mode=state.mode; savePlayers(); } renderStart(); speak(m.dataset.mode==='tap'?'tap_pic':'type_word'); }));
 $('#naam').addEventListener('input',()=>{ if($('#naam').value.trim()) { state.naam=''; $('#known').textContent=''; $('#names').querySelectorAll('.namechip').forEach(x=>x.classList.remove('sel')); } });
 $('#nameform').addEventListener('submit',e=>{ e.preventDefault(); $('#startbtn').click(); });
 $('#startbtn').addEventListener('click',()=>{
   const typed=$('#naam').value.trim();
   if(typed){ const key=typed.charAt(0).toUpperCase()+typed.slice(1); players[key]=players[key]||{avatar:state.avatar,mode:state.mode,level:1,words:{}}; players[key].avatar=state.avatar; players[key].mode=state.mode; state.naam=key; }
-  if(!state.naam){ say('Type your name, or tap your name.'); $('#naam').focus(); return; }
+  if(!state.naam){ speak('say_name'); $('#naam').focus(); return; }
   const p=players[state.naam]; p.mode=state.mode; p.last=Date.now(); savePlayers(); state.avatar=p.avatar; startGame();
 });
-$('#voicesel').addEventListener('change',e=>{ voiceName=e.target.value; store.set('voice',voiceName); say('Hello! I am your voice. Cat. Apple. House.'); });
-$('#voicetest').addEventListener('click',()=>say('Hello! I am your voice. Cat. Apple. House.'));
+$('#voicesel').addEventListener('change',e=>{ voiceName=e.target.value; store.set('voice',voiceName); speak('voice_test'); });
+$('#voicetest').addEventListener('click',()=>speak('voice_test'));
 setSound(state.sound); renderStart(); fillVoices();
 
 /* ===================== VUURWERK ===================== */
