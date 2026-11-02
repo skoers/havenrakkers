@@ -192,7 +192,7 @@ function openChapter(i){
   $('#rtext').innerHTML=paras;
   $('#rtext').querySelectorAll('.s').forEach(s=>s.addEventListener('click',e=>{ if(e.target.classList.contains('kw')) return; audio.currentTime=+s.dataset.t; play(); }));
   $('#rtext').querySelectorAll('.kw').forEach(k=>k.addEventListener('click',()=>showWord(k.dataset.w)));
-  audio.src=AUDIO+`h${i+1}.mp3`; audio.load();
+  audio.src=AUDIO+`h${i+1}.m4a`; audio.load();
   $('#ptitle').textContent=`${i+1}. ${h.titel}`; $('#seek').max=T.duur; $('#seek').value=0; $('#ptime').textContent='0:00 / '+fmt(T.duur);
   renderList(); clearCountdown();
   $('#reader').scrollIntoView({block:'start'});
@@ -240,7 +240,7 @@ function showWord(w){
   $('#wsay').addEventListener('click',()=>playFx(f)); const close=()=>{ fx.pause(); m.remove(); if(wasPlaying) play(); };
   $('#wclose').addEventListener('click',close); m.addEventListener('click',e=>{ if(e.target===m) close(); });
 }
-function playFx(name){ try{ fx.src=AUDIO+name+'.mp3'; fx.play().catch(()=>{}); }catch(e){} }
+function playFx(name){ try{ fx.src=AUDIO+name+'.m4a'; fx.play().catch(()=>{}); }catch(e){} }
 
 /* ===================== KNOPPEN ===================== */
 $('#bigplay').addEventListener('click',()=>{ openChapter(0); play(); });
