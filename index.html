@@ -23,7 +23,7 @@ p{margin:0;color:var(--muted);text-align:center}
 .tile svg{width:100%;height:auto;aspect-ratio:4/3;border-radius:18px}
 .tile h2{font-family:Fredoka,Nunito,sans-serif;font-size:clamp(1.4rem,4vw,1.9rem);margin:0;color:var(--c)}
 .tile small{color:var(--muted);font-size:1rem}
-.tile.fries{--c:var(--a1)} .tile.reken{--c:var(--a2)} .tile.woord{--c:#1aa36b}
+.tile.fries{--c:var(--a1)} .tile.reken{--c:var(--a2)} .tile.woord{--c:#1aa36b} .tile.verhaal{--c:#c2410c}
 @keyframes wob{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
 .tile:hover .wob{animation:wob 1s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 </style>
@@ -65,6 +65,23 @@ p{margin:0;color:var(--muted);text-align:center}
     </svg>
     <h2>Word Game</h2>
     <small>Engelse woordjes met plaatjes · tap (5 jaar) of typ (9 jaar)</small>
+  </a>
+
+  <a class="tile verhaal" href="faqta-nov-2026/">
+    <svg viewBox="0 0 400 300" aria-hidden="true">
+      <defs><linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe4c4"/><stop offset="1" stop-color="#ffb974"/></linearGradient></defs>
+      <rect width="400" height="300" rx="18" fill="url(#g4)"/>
+      <rect x="40" y="50" width="320" height="200" rx="14" fill="#fff" stroke="#c2410c" stroke-width="5"/>
+      <line x1="200" y1="55" x2="200" y2="245" stroke="#c2410c" stroke-width="4"/>
+      <text x="120" y="130" font-size="56" text-anchor="middle">🐄</text>
+      <text x="120" y="210" font-size="56" text-anchor="middle">🚚</text>
+      <text x="280" y="130" font-size="56" text-anchor="middle">🚢</text>
+      <text x="280" y="210" font-size="56" text-anchor="middle">🧀</text>
+      <text x="350" y="60" font-size="40" class="wob">🔊</text>
+      <text x="30" y="285" font-size="22" font-family="Fredoka,Nunito,sans-serif" font-weight="700" fill="#c2410c">Luisterverhaal</text>
+    </svg>
+    <h2>Ronja en de verdwenen melkwagen</h2>
+    <small>Luisterverhaal bij Faqta · Van boer tot piloot (groep 6)</small>
   </a>
 
   <a class="tile fries" href="friesland-spel/">

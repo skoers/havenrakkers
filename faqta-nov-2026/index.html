@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ronja en de verdwenen melkwagen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* Luisterverhaal bij Faqta 'Van boer tot piloot'. Opgenomen stem (Piper, Pim), zin voor zin meelezen, woorden met uitleg, vragen per hoofdstuk. */
+:root{
+  --bg:#fdf6ec; --panel:#ffffff; --fg:#2a2320; --muted:#6e635b; --line:#eadcc9;
+  --accent:#c2410c; --accent-fg:#ffffff; --accent2:#2563eb; --hl:#fde68a; --card:#fff3e0;
+  --good:#1f9d55; --good-bg:#e4f6ea; --bad:#d64545; --bad-bg:#fcebea;
+  --display:"Fredoka","Nunito",system-ui,sans-serif; --body:"Nunito",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#1d1813; --panel:#2a231d; --fg:#f5ede3; --muted:#b8a999; --line:#4a3d31; --accent:#fb923c; --accent-fg:#2a1200; --accent2:#93b4ff; --hl:#6b4e10; --card:#3a2d20;
+  --good:#4fcf84; --good-bg:#1a3a2a; --bad:#ff7b7b; --bad-bg:#432326; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#1d1813; --panel:#2a231d; --fg:#f5ede3; --muted:#b8a999; --line:#4a3d31; --accent:#fb923c; --accent-fg:#2a1200; --accent2:#93b4ff; --hl:#6b4e10; --card:#3a2d20;
+  --good:#4fcf84; --good-bg:#1a3a2a; --bad:#ff7b7b; --bad-bg:#432326; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:18px;line-height:1.6;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) 150px max(16px,env(safe-area-inset-left,0px))}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:52px;padding:.5rem 1.3rem;border-radius:999px;border:0;
+  background:var(--accent);color:var(--accent-fg);font-family:var(--display);font-size:1.15rem;font-weight:600;box-shadow:0 4px 0 rgba(0,0,0,.18);transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:none}
+.btn.secondary{background:var(--panel);color:var(--fg);border:2px solid var(--line)}
+.btn:focus-visible,button:focus-visible{outline:4px solid var(--accent2);outline-offset:3px}
+.wrap{max-width:46rem;margin:0 auto}
+.backlink{position:fixed;left:max(12px,env(safe-area-inset-left,0px));top:10px;font-size:1.5rem;text-decoration:none;opacity:.6;z-index:60}
+
+/* Kop */
+.hero{text-align:center;padding:56px 0 18px}
+.hero .emo{font-size:clamp(2.4rem,9vw,4rem);line-height:1.1;filter:drop-shadow(0 6px 10px rgba(0,0,0,.15))}
+.hero h1{font-size:clamp(1.8rem,6vw,2.8rem);color:var(--accent);margin-top:.3rem}
+.hero p{color:var(--muted);margin:.3rem 0 0;font-size:1rem}
+.toprow{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;margin-top:1rem}
+
+/* Hoofdstukkenlijst */
+.chapters{display:grid;gap:.5rem;margin:1rem 0}
+.chap{display:flex;align-items:center;gap:.8rem;padding:.6rem .9rem;border-radius:16px;border:2px solid var(--line);background:var(--panel);text-align:left;font-family:var(--display);font-size:1.05rem}
+.chap .n{width:38px;height:38px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-weight:700;color:var(--accent);flex:none}
+.chap .t{flex:1}
+.chap .d{color:var(--muted);font-family:var(--body);font-size:.9rem}
+.chap.cur{border-color:var(--accent);background:var(--card)}
+.chap .done{color:var(--good)}
+
+/* Leesvenster */
+.reader{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:1.2rem 1.3rem;margin-top:1rem}
+.reader h2{font-size:clamp(1.4rem,5vw,1.9rem);color:var(--accent);margin-bottom:.6rem}
+.reader h2 small{display:block;font-size:.8rem;color:var(--muted);font-family:var(--body);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.reader p{margin:0 0 1em;font-size:1.1rem}
+.s{border-radius:6px;padding:0 .15em;margin:0 -.15em;transition:background .2s;cursor:pointer}
+.s.cur{background:var(--hl)}
+.kw{display:inline;font-weight:800;color:var(--accent2);text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer;border:0;background:none;padding:0;font:inherit;font-weight:800}
+.kw:hover{background:var(--card)}
+
+/* Vragen */
+.quiz{margin-top:1rem;background:var(--card);border-radius:18px;padding:1rem 1.1rem;border:2px dashed var(--line)}
+.quiz h3{font-size:1.2rem;margin-bottom:.4rem}
+.quiz .q{font-size:1.15rem;font-weight:700;margin:.4rem 0 .6rem;display:flex;gap:.5rem;align-items:center}
+.quiz .q button{background:var(--panel);border:2px solid var(--line);border-radius:999px;width:40px;height:40px;font-size:1.1rem;flex:none}
+.opts{display:grid;gap:.5rem}
+.opt{text-align:left;padding:.7rem .9rem;border-radius:14px;border:2px solid var(--line);background:var(--panel);font-size:1.05rem;color:var(--fg)}
+.opt.good{border-color:var(--good);background:var(--good-bg)} .opt.bad{border-color:var(--bad);background:var(--bad-bg)}
+.opt:disabled{cursor:default}
+.quiz .foot{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-top:.8rem;color:var(--muted);font-size:.95rem}
+.score{font-family:var(--display);font-weight:600}
+
+/* Speler onderin */
+.player{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--line);padding:.6rem max(16px,env(safe-area-inset-right,0px)) max(.6rem,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));z-index:50;box-shadow:0 -6px 20px rgba(0,0,0,.08)}
+.player .inner{max-width:46rem;margin:0 auto;display:flex;flex-direction:column;gap:.4rem}
+.player .title{font-family:var(--display);font-size:1rem;display:flex;justify-content:space-between;gap:.5rem;color:var(--muted)}
+.player .title b{color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player input[type=range]{width:100%;accent-color:var(--accent);height:28px}
+.ctrls{display:flex;align-items:center;justify-content:center;gap:.8rem}
+.ctrls button{border:2px solid var(--line);background:var(--panel);color:var(--fg);border-radius:50%;width:50px;height:50px;font-size:1.3rem;display:grid;place-items:center}
+.ctrls .play{width:68px;height:68px;font-size:2rem;background:var(--accent);color:var(--accent-fg);border:0;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.ctrls .play:active{transform:translateY(3px);box-shadow:none}
+.auto{display:flex;align-items:center;gap:.4rem;font-size:.9rem;color:var(--muted);margin-left:.4rem}
+.auto input{width:20px;height:20px;accent-color:var(--accent)}
+
+/* Woord-uitleg */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;z-index:70;padding:16px}
+.modal .box{background:var(--panel);border-radius:22px;padding:1.2rem 1.3rem;max-width:30rem;width:100%;display:flex;flex-direction:column;gap:.7rem;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.modal h3{font-size:1.5rem;color:var(--accent2);text-transform:capitalize}
+.modal p{margin:0;font-size:1.05rem}
+.modal .row{display:flex;gap:.6rem;justify-content:flex-end;flex-wrap:wrap}
+.glossary{display:grid;gap:.4rem;margin-top:.6rem}
+.glossary button{text-align:left;padding:.5rem .8rem;border-radius:12px;border:2px solid var(--line);background:var(--panel);font-family:var(--display);font-size:1.05rem;color:var(--accent2)}
+.toast{position:fixed;left:50%;bottom:160px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:.5rem 1rem;border-radius:999px;font-family:var(--display);z-index:80;animation:pop .3s both}
+@keyframes pop{0%{transform:translateX(-50%) scale(.6);opacity:0}100%{transform:translateX(-50%) scale(1);opacity:1}}
+.end{margin-top:1rem;text-align:center;background:var(--card);border-radius:18px;padding:1.2rem}
+.end .big{font-size:3rem}
+</style>
+</head>
+<body>
+<a class="backlink" href="../" aria-label="Terug naar de spelletjes">🏠</a>
+<div class="wrap">
+  <header class="hero">
+    <div class="emo" aria-hidden="true">🐄 🚚 🏭 🚢 🧀</div>
+    <h1 id="titel">Ronja en de verdwenen melkwagen</h1>
+    <p id="ondertitel"></p>
+    <div class="toprow">
+      <button class="btn" id="bigplay" type="button">▶ Luister vanaf het begin</button>
+      <button class="btn secondary" id="resume" type="button" hidden>⏯ Ga verder</button>
+      <button class="btn secondary" id="glossbtn" type="button">📖 Woorden</button>
+    </div>
+    <p class="score" id="scoreline"></p>
+  </header>
+
+  <section id="chapterlist" class="chapters" aria-label="Hoofdstukken"></section>
+
+  <section id="reader" class="reader" hidden>
+    <h2><small id="rnum"></small><span id="rtitle"></span></h2>
+    <div id="rtext"></div>
+    <div class="quiz" id="quiz" hidden></div>
+    <div class="end" id="endbox" hidden><div class="big">🎉</div><h3>Einde van het verhaal!</h3><p id="endtext"></p><button class="btn" id="restart" type="button">Nog een keer luisteren 🔁</button></div>
+  </section>
+
+  <section id="gloss" class="reader" hidden>
+    <h2>Belangrijke woorden <small>Tik op een woord om de uitleg te horen</small></h2>
+    <div class="glossary" id="glosslist"></div>
+  </section>
+</div>
+
+<div class="player" id="player">
+  <div class="inner">
+    <div class="title"><b id="ptitle">Kies een hoofdstuk</b><span id="ptime">0:00</span></div>
+    <input type="range" id="seek" min="0" max="100" value="0" step="0.1" aria-label="Positie in het hoofdstuk">
+    <div class="ctrls">
+      <button type="button" id="prev" aria-label="Vorig hoofdstuk">⏮</button>
+      <button type="button" id="back" aria-label="10 seconden terug">↺</button>
+      <button type="button" class="play" id="play" aria-label="Afspelen of pauzeren">▶</button>
+      <button type="button" id="fwd" aria-label="10 seconden vooruit">↻</button>
+      <button type="button" id="next" aria-label="Volgend hoofdstuk">⏭</button>
+      <label class="auto"><input type="checkbox" id="autonext" checked> Automatisch verder</label>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const AUDIO='audio/';
+const store={get(k,d){try{const v=localStorage.getItem('faqta2026.'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('faqta2026.'+k,JSON.stringify(v));}catch(e){}}};
+let D=null, TIMING=null;                      // verhaal.json en audio/timing.json
+const audio=new Audio(); audio.preload='auto';
+const fx=new Audio();                         // korte geluidjes (goed/fout/uitleg) zonder het verhaal te onderbreken
+const state={ch:-1, playing:false, quizAnswered:0, quizCorrect:0, countdown:null};
+const fmt=t=>{t=Math.max(0,Math.floor(t));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0');};
+const slug=w=>w.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+
+/* Belangrijke woorden in de tekst herkennen (langste eerst, zodat 'technische industrie' voor 'industrie' gaat). */
+const KW=[
+ ['technische industrie','technische industrie'],['industriële revolutie','industriële revolutie'],['kamer van koophandel','Kamer van Koophandel'],['kvk','Kamer van Koophandel'],
+ ['distributiecentrum','distributiecentrum'],['glastuinbouw','glastuinbouw'],['akkerbouw','akkerbouw'],['landbouw','landbouw'],['piekseizoen','piekseizoen'],['veeteelt','veeteelt'],
+ ['biologische','biologisch'],['biologisch','biologisch'],['kinderarbeid','kinderarbeid'],['stoomtrein','stoomtrein'],['industrie','industrie'],['transport','transport'],
+ ['goederen','goederen'],['logistiek','logistiek'],['luchtvaart','luchtvaart'],['scheepvaart','scheepvaart'],['vracht','vracht'],['werkzaamheden','werkzaamheden'],
+ ['diensten','dienst'],['dienst','dienst'],['winstbelang','winst'],['winst','winst'],['donatie','donatie'],['ondernemers','ondernemer'],['ondernemer','ondernemer'],
+];
+const kwRe=new RegExp('\\b('+KW.map(([k])=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')\\b','gi');
+function markup(text){ return text.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(kwRe,m=>{ const hit=KW.find(([k])=>k===m.toLowerCase()); return `<button class="kw" type="button" data-w="${hit[1]}">${m}</button>`; }); }
+
+/* ===================== LADEN ===================== */
+async function load(){
+  [D,TIMING]=await Promise.all([fetch('verhaal.json').then(r=>r.json()),fetch(AUDIO+'timing.json').then(r=>r.json())]);
+  $('#titel').textContent=D.titel; $('#ondertitel').textContent=D.ondertitel; document.title=D.titel;
+  renderList(); renderGloss(); updateScore();
+  const pos=store.get('pos',null); if(pos&&pos.ch>=0&&pos.ch<D.hoofdstukken.length){ $('#resume').hidden=false; $('#resume').textContent=`⏯ Ga verder bij hoofdstuk ${pos.ch+1}`; }
+}
+function renderList(){
+  const done=store.get('done',[]);
+  $('#chapterlist').innerHTML=D.hoofdstukken.map((h,i)=>`<button class="chap${i===state.ch?' cur':''}" type="button" data-i="${i}"><span class="n">${i+1}</span><span class="t">${h.titel}<div class="d">${fmt(TIMING[i].duur)} min</div></span>${done.includes(i)?'<span class="done">✔</span>':''}</button>`).join('');
+  $('#chapterlist').querySelectorAll('.chap').forEach(b=>b.addEventListener('click',()=>{ openChapter(+b.dataset.i); play(); }));
+}
+function renderGloss(){ $('#glosslist').innerHTML=D.woorden.map(w=>`<button type="button" data-w="${w.w}">${w.w}</button>`).join(''); $('#glosslist').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>showWord(b.dataset.w))); }
+function updateScore(){ const s=store.get('score',{ok:0,n:0}); $('#scoreline').textContent=s.n?`Vragen goed: ${s.ok} van ${s.n}`:''; }
+
+/* ===================== HOOFDSTUK ===================== */
+function openChapter(i){
+  state.ch=i; const h=D.hoofdstukken[i]; const T=TIMING[i];
+  $('#reader').hidden=false; $('#gloss').hidden=true; $('#quiz').hidden=true; $('#endbox').hidden=true;
+  $('#rnum').textContent=`Hoofdstuk ${i+1} van ${D.hoofdstukken.length}`; $('#rtitle').textContent=h.titel;
+  // zinnen per alinea, met tijdcode
+  const paras=h.tekst.map((p,pi)=>`<p>${T.zinnen.filter(z=>z.p===pi).map(z=>`<span class="s" data-t="${z.t}">${markup(z.text)}</span>`).join(' ')}</p>`).join('');
+  $('#rtext').innerHTML=paras;
+  $('#rtext').querySelectorAll('.s').forEach(s=>s.addEventListener('click',e=>{ if(e.target.classList.contains('kw')) return; audio.currentTime=+s.dataset.t; play(); }));
+  $('#rtext').querySelectorAll('.kw').forEach(k=>k.addEventListener('click',()=>showWord(k.dataset.w)));
+  audio.src=AUDIO+`h${i+1}.mp3`; audio.load();
+  $('#ptitle').textContent=`${i+1}. ${h.titel}`; $('#seek').max=T.duur; $('#seek').value=0; $('#ptime').textContent='0:00 / '+fmt(T.duur);
+  renderList(); clearCountdown();
+  $('#reader').scrollIntoView({block:'start'});
+}
+function play(){ audio.play().then(()=>{ state.playing=true; $('#play').textContent='⏸'; }).catch(()=>{}); }
+function pause(){ audio.pause(); state.playing=false; $('#play').textContent='▶'; }
+audio.addEventListener('play',()=>{ state.playing=true; $('#play').textContent='⏸'; });
+audio.addEventListener('pause',()=>{ state.playing=false; $('#play').textContent='▶'; });
+let lastCur=null;
+audio.addEventListener('timeupdate',()=>{
+  const t=audio.currentTime; $('#seek').value=t; $('#ptime').textContent=fmt(t)+' / '+fmt(audio.duration||TIMING[state.ch].duur);
+  const Z=TIMING[state.ch].zinnen; let idx=-1; for(let k=0;k<Z.length;k++){ if(Z[k].t<=t+0.05) idx=k; else break; }
+  if(idx!==lastCur){ lastCur=idx; const spans=$('#rtext').querySelectorAll('.s'); spans.forEach((s,k)=>s.classList.toggle('cur',k===idx));
+    const el=spans[idx]; if(el){ const r=el.getBoundingClientRect(); if(r.top<80||r.bottom>innerHeight-170) el.scrollIntoView({block:'center',behavior:'smooth'}); } }
+  if(Math.floor(t)%5===0) store.set('pos',{ch:state.ch,t});
+});
+audio.addEventListener('ended',()=>{ const done=store.get('done',[]); if(!done.includes(state.ch)){ done.push(state.ch); store.set('done',done); } renderList(); showQuiz(); });
+
+/* ===================== VRAGEN NA HET HOOFDSTUK ===================== */
+function showQuiz(){
+  const h=D.hoofdstukken[state.ch]; const last=state.ch===D.hoofdstukken.length-1; state.quizAnswered=0; state.quizCorrect=0;
+  const q=$('#quiz'); q.hidden=false;
+  q.innerHTML=`<h3>Drie vragen over dit hoofdstuk</h3>`+h.vragen.map((v,qi)=>`<div class="q"><button type="button" class="ask" data-f="v${state.ch+1}-${qi+1}" aria-label="Vraag voorlezen">🔊</button><span>${v.v}</span></div><div class="opts" data-q="${qi}">${v.a.map((a,ai)=>`<button class="opt" type="button" data-ai="${ai}">${a}</button>`).join('')}</div>`).join('')
+    +`<div class="foot"><button class="btn" id="goon" type="button">${last?'Klaar 🎉':'Verder luisteren ⏭'}</button><span id="cd"></span></div>`;
+  q.querySelectorAll('.ask').forEach(b=>b.addEventListener('click',()=>playFx(b.dataset.f)));
+  q.querySelectorAll('.opts').forEach(box=>{ const qi=+box.dataset.q; box.querySelectorAll('.opt').forEach(o=>o.addEventListener('click',()=>{ clearCountdown();
+    const ok=+o.dataset.ai===h.vragen[qi].goed; o.classList.add(ok?'good':'bad'); box.querySelectorAll('.opt').forEach(x=>{ x.disabled=true; if(+x.dataset.ai===h.vragen[qi].goed) x.classList.add('good'); });
+    const s=store.get('score',{ok:0,n:0}); s.n++; if(ok) s.ok++; store.set('score',s); updateScore(); playFx(ok?'goed':'fout'); state.quizAnswered++;
+    if(state.quizAnswered===h.vragen.length && $('#autonext').checked) startCountdown(4,last); })); });
+  $('#goon').addEventListener('click',()=>{ clearCountdown(); last?finish():nextChapter(); });
+  q.scrollIntoView({block:'start',behavior:'smooth'});
+  if($('#autonext').checked) startCountdown(25,last);   // zonder antwoord gaat het verhaal vanzelf verder
+}
+function startCountdown(sec,last){ clearCountdown(); let n=sec; const tick=()=>{ $('#cd').textContent=last?'':`Gaat vanzelf verder over ${n} s`; if(n<=0){ clearCountdown(); last?finish():nextChapter(); } n--; }; tick(); state.countdown=setInterval(tick,1000); }
+function clearCountdown(){ if(state.countdown){ clearInterval(state.countdown); state.countdown=null; } const c=$('#cd'); if(c) c.textContent=''; }
+function nextChapter(){ if(state.ch<D.hoofdstukken.length-1){ openChapter(state.ch+1); play(); } }
+function finish(){ $('#quiz').hidden=true; $('#endbox').hidden=false; const s=store.get('score',{ok:0,n:0}); $('#endtext').textContent=s.n?`Je had ${s.ok} van de ${s.n} vragen goed. Knap gedaan!`:'Goed geluisterd!'; store.set('pos',null); $('#resume').hidden=true; playFx('einde'); $('#endbox').scrollIntoView({block:'center'}); }
+$('#restart').addEventListener('click',()=>{ store.set('done',[]); store.set('score',{ok:0,n:0}); updateScore(); openChapter(0); play(); });
+
+/* ===================== WOORD-UITLEG ===================== */
+function showWord(w){
+  const item=D.woorden.find(x=>x.w===w); if(!item) return; const wasPlaying=state.playing; pause();
+  const m=document.createElement('div'); m.className='modal'; m.innerHTML=`<div class="box"><h3>${item.w}</h3><p>${item.u}</p><div class="row"><button class="btn secondary" type="button" id="wsay">🔊 Nog eens</button><button class="btn" type="button" id="wclose">Verder</button></div></div>`;
+  document.body.appendChild(m); const f='w-'+slug(item.w); playFx(f);
+  $('#wsay').addEventListener('click',()=>playFx(f)); const close=()=>{ fx.pause(); m.remove(); if(wasPlaying) play(); };
+  $('#wclose').addEventListener('click',close); m.addEventListener('click',e=>{ if(e.target===m) close(); });
+}
+function playFx(name){ try{ fx.src=AUDIO+name+'.mp3'; fx.play().catch(()=>{}); }catch(e){} }
+
+/* ===================== KNOPPEN ===================== */
+$('#bigplay').addEventListener('click',()=>{ openChapter(0); play(); });
+$('#resume').addEventListener('click',()=>{ const pos=store.get('pos'); openChapter(pos.ch); audio.addEventListener('loadedmetadata',()=>{ audio.currentTime=pos.t||0; },{once:true}); play(); });
+$('#glossbtn').addEventListener('click',()=>{ $('#gloss').hidden=!$('#gloss').hidden; if(!$('#gloss').hidden) $('#gloss').scrollIntoView({block:'start'}); });
+$('#play').addEventListener('click',()=>{ if(state.ch<0){ openChapter(0); play(); return; } state.playing?pause():play(); });
+$('#prev').addEventListener('click',()=>{ if(state.ch>0){ openChapter(state.ch-1); play(); } });
+$('#next').addEventListener('click',()=>{ clearCountdown(); nextChapter(); });
+$('#back').addEventListener('click',()=>{ audio.currentTime=Math.max(0,audio.currentTime-10); });
+$('#fwd').addEventListener('click',()=>{ audio.currentTime=Math.min(audio.duration||0,audio.currentTime+10); });
+$('#seek').addEventListener('input',e=>{ audio.currentTime=+e.target.value; });
+$('#autonext').checked=store.get('autonext',true); $('#autonext').addEventListener('change',e=>store.set('autonext',e.target.checked));
+document.addEventListener('keydown',e=>{ if(e.code==='Space'&&!['INPUT','BUTTON'].includes(e.target.tagName)){ e.preventDefault(); $('#play').click(); } });
+if('mediaSession' in navigator){ navigator.mediaSession.setActionHandler('play',play); navigator.mediaSession.setActionHandler('pause',pause); navigator.mediaSession.setActionHandler('nexttrack',nextChapter); }
+load().catch(e=>{ $('#ondertitel').textContent='Het verhaal kon niet laden. Open de pagina via de website, niet als los bestand.'; });
+</script>
+</body>
+</html>
