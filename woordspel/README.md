@@ -32,13 +32,12 @@ nog eens te beluisteren, en vuurwerk met je naam.
 
 ## Geluid en stem
 Alle woorden en zinnen zijn vooraf opgenomen (map `audio/`, 262 mp3-bestanden, 2 MB) met de Britse
-stem "Cori" van Piper. Daardoor klinkt het spel op elk apparaat hetzelfde, ook op een iPad, zonder dat
+Microsoft-stem "Sonia" via edge-tts. Daardoor klinkt het spel op elk apparaat hetzelfde, ook op een iPad, zonder dat
 er stemmen gedownload hoeven te worden. Alleen als een bestand niet laadt, valt het spel terug op de
 browserstem. In de stemkiezer op het startscherm kun je toch een apparaatstem kiezen.
 
 De knop bovenin zet geluid aan of uit. Zonder geluid staat het woord bij tap-vragen gewoon in beeld.
 
-Opnieuw opnemen met een andere stem: `tools/gen_audio.py` (vereist `pip install piper-tts`, `ffmpeg`
-en een Piper-stem, bijvoorbeeld uit de sherpa-onnx tts-models releases op GitHub):
+Opnieuw opnemen met een andere stem: `tools/gen_audio_edge.py` (vereist `pip install edge-tts` en `ffmpeg`):
 
-    python3 tools/gen_audio.py en_GB-cori-high audio
+    python3 tools/gen_audio_edge.py en-GB-SoniaNeural audio
