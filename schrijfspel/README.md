@@ -53,10 +53,16 @@ Het woord staat nergens geschreven.
 - Is een vakje **twee keer fout**, dan komt de letter klein boven dat vakje te
   staan om na te schrijven. Dat kost een punt: een goed woord geeft 3 punten,
   min één per voorbeeldletter (minimaal 1). De punten (🏆) blijven bewaard.
-- **Niveaus**: tot 6 goede woorden zijn de woorden 2 of 3 letters lang, daarna
-  3 of 4, en vanaf 12 goede woorden 4 of 5 letters. Op dat hoogste niveau komt
-  er geen voorbeeldletter meer boven het vakje en geeft een tip alleen nog de
-  uitleg van de stem, zonder stippellijn.
+- **Niveaus** volgen de letters zoals ze op school geleerd worden (Veilig
+  leren lezen): niveau 1 alleen woorden uit a, i, k, m, o, s (oma, sok, mok,
+  kam, kaas), niveau 2 erbij p, r, e, t, n (pen, kat, kip, maan, taart),
+  niveau 3 erbij b, d, l, h, u, v, z, g (bal, hond, huis, bloem), niveau 4 de
+  rest (wolk, jas, fiets). Pas als er op een niveau vijf woorden goed zijn,
+  komen de nieuwe letters erbij; de stem zegt dan welke. Bij de start van een
+  ronde zie je even de letters van het niveau.
+- Op niveau 3 komt er geen voorbeeldletter meer boven het vakje, op niveau 4
+  geeft een tip alleen nog de uitleg van de stem, zonder stippellijn.
+- De namen oskar, ronja en linda zitten ook tussen de woorden.
 
 ## Belonen
 
