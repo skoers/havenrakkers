@@ -15,6 +15,22 @@ Speel het op https://skoers.github.io/havenrakkers/schrijfspel/
   groene stip" en kun je opnieuw. Na een paar keer mis wordt het spel
   vanzelf wat soepeler.
 
+## Elke letter wordt vanzelf moeilijker
+
+Per letter lopen de sterren op, en met elke ster valt er hulp weg:
+
+1. **Overtrekken** (★): dikke voorbeeldletter, het potloodje doet de
+   beweging voor, pijl en startstip.
+2. **Stippellijn** (★★): alleen nog een dunne stippellijn om te volgen.
+3. **Kies de letter** (★★★): de letter is niet te zien. Het kind ziet het
+   plaatje, hoort "Olifant! Welke letter hoor je vooraan?" en kiest uit vier
+   letters. Bij cijfers: tel de aardbeien. Alleen in één keer goed geeft de ster.
+4. **Uit het hoofd** (★★★★): plaatje en stem, en een leeg vak. Het kind
+   schrijft de letter zelf. Gaat het mis, dan verschijnt eerst de startstip
+   en daarna een stippellijn als hulp; de ster krijg je dan niet.
+
+Bij "Kies zelf" (letterkaart) zie je per letter hoeveel sterren er al zijn.
+
 ## Belonen
 
 - Nederlandse voorleesstem (de stem van de iPad zelf): "Schrijf de b. b van
@@ -29,8 +45,8 @@ Speel het op https://skoers.github.io/havenrakkers/schrijfspel/
 ## Voor ouders (tandwieltje op het startscherm)
 
 - Stem en geluid aan of uit.
-- **Met hulp** aan: dikke voorbeeldletter en het potloodje doet het voor.
-  Uit: alleen een dunne stippellijn, en je moet preciezer volgen.
+- Moeilijkheid: vanzelf moeilijker (standaard), of altijd één vaste stap:
+  overtrekken, stippellijn, kiezen uit vier, of zelf schrijven.
 - Vanzelf verder na een letter, of zelf op "Verder" tikken.
 - Alle sterren, stickers en pennen wissen.
 

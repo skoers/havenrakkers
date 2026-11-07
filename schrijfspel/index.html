@@ -66,7 +66,8 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 .progressline{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;font-family:var(--display);font-size:1.05rem;color:var(--muted)}
 .progressline b{color:var(--fg)}
 #settings{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:1rem;display:flex;flex-direction:column;gap:.8rem;max-width:34rem;text-align:left}
-#settings label{display:flex;gap:.6rem;align-items:center;font-size:1rem}
+#settings label{display:flex;gap:.6rem;align-items:center;font-size:1rem;flex-wrap:wrap}
+#settings select{font:inherit;font-size:.95rem;padding:.3rem .5rem;border-radius:10px;border:2px solid var(--line);background:var(--panel);color:var(--fg);max-width:100%}
 .gear{background:none;border:0;font-size:1.6rem;position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:12px;opacity:.6;z-index:5}
 .stickerbook{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;font-size:2rem;background:var(--card);border-radius:16px;padding:.5rem .8rem;max-width:min(100%,560px)}
 .stickerbook span{animation:pop .6s both}
@@ -75,9 +76,10 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 /* Letterkaart */
 #letters{gap:.6rem;overflow:auto}
 #letters .topbar h2{font-size:1.5rem}
+#letters .legend{color:var(--muted);width:100%}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:.5rem}
 .cell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1rem;min-height:74px;border-radius:16px;border:3px solid var(--line);background:var(--panel);font-family:var(--display);font-size:2rem;font-weight:600;line-height:1;box-shadow:0 3px 0 var(--line)}
-.cell small{font-size:.7rem;letter-spacing:-.05em;color:#d4a017;min-height:.9em}
+.cell small{font-size:.6rem;letter-spacing:-.08em;color:#d4a017;min-height:.9em}
 .cell.done{border-color:#d4a017;background:var(--card)}
 .grid h3{grid-column:1/-1;font-size:1.1rem;color:var(--muted);margin-top:.4rem}
 
@@ -113,6 +115,16 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 .prompt{display:flex;align-items:center;gap:.6rem;font-family:var(--display);font-size:clamp(1.15rem,3.4vw,1.6rem);text-align:center;color:var(--muted);flex-wrap:wrap;justify-content:center}
 .prompt .big{font-size:1.6em;color:var(--accent);font-weight:700;line-height:1}
 .prompt button{background:var(--card);border:2px solid var(--line);border-radius:999px;font-size:1.3rem;width:48px;height:48px;flex:none}
+.lvlpill{font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:.25rem .7rem;border-radius:999px;background:var(--hl);color:#3a2600}
+.lvlpill.stippel{background:#ffb347}.lvlpill.kiezen{background:#8a4fff;color:#fff}.lvlpill.geheugen{background:#ff4fa3;color:#fff}
+.prompt .pic{font-size:2.2em;line-height:1;animation:float 2s ease-in-out infinite}
+.answers{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;width:min(100%,40rem);margin:auto 0}
+@media (max-width:480px){.answers{grid-template-columns:repeat(2,1fr)}}
+.choice{min-height:110px;border-radius:22px;border:3px solid var(--line);background:var(--paper);color:var(--fg);font-family:var(--display);font-size:clamp(2.6rem,9vw,4rem);font-weight:700;box-shadow:0 5px 0 var(--line);transition:transform .08s}
+.choice:active{transform:translateY(3px);box-shadow:none}
+.choice.good{background:var(--good-bg);border-color:var(--good);color:var(--good);animation:pop .5s both}
+.choice.bad{background:var(--bad-bg);border-color:var(--bad);color:var(--bad);animation:shake .4s;opacity:.5}
+.choice:disabled{cursor:default}
 .prompt .woord{display:inline-flex;align-items:center;gap:.3rem;background:var(--card);border-radius:999px;padding:.1rem .8rem;font-size:.9em}
 .canvaswrap{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
 canvas.paper{touch-action:none;border-radius:18px;box-shadow:0 6px 18px rgba(0,0,0,.12);background:var(--paper);cursor:crosshair}
@@ -155,7 +167,7 @@ canvas.paper{touch-action:none;border-radius:18px;box-shadow:0 6px 18px rgba(0,0
   <button class="gear" id="gearbtn" type="button" aria-label="Instellingen">⚙️</button>
   <div class="hero" aria-hidden="true"><span>a</span><span>b</span><span>c</span><span>✏️</span><span>1</span></div>
   <h1>Schrijfspel</h1>
-  <p>Volg de letter met je vinger. Begin bij de groene stip en volg de pijl. Je wint sterren, stickers en nieuwe pennen!</p>
+  <p>Elke letter wordt stap voor stap moeilijker: overtrekken, stippellijn, de letter kiezen bij een plaatje, en tot slot de letter zelf schrijven uit je hoofd. Je wint sterren, stickers en nieuwe pennen!</p>
 
   <div class="namebox">
     <span class="label">Hoe heet je?</span>
@@ -178,7 +190,14 @@ canvas.paper{touch-action:none;border-radius:18px;box-shadow:0 6px 18px rgba(0,0
 
   <div id="settings" hidden>
     <label><input type="checkbox" id="soundopt" checked> Stem en geluid aan</label>
-    <label><input type="checkbox" id="hulpopt" checked> Met hulp (voorbeeld-streepje en dikke letter)</label>
+    <label>Moeilijkheid
+      <select id="niveauopt">
+        <option value="auto">Vanzelf moeilijker (per letter, met sterren)</option>
+        <option value="hulp">Altijd overtrekken</option>
+        <option value="stippel">Altijd stippellijn</option>
+        <option value="kiezen">Altijd plaatje: letter kiezen uit 4</option>
+        <option value="geheugen">Altijd plaatje: letter zelf schrijven</option>
+      </select></label>
     <label><input type="checkbox" id="autoopt" checked> Vanzelf verder na een letter</label>
     <button class="btn secondary" type="button" id="resetbtn">Alle sterren en stickers wissen</button>
   </div>
@@ -189,6 +208,7 @@ canvas.paper{touch-action:none;border-radius:18px;box-shadow:0 6px 18px rgba(0,0
   <div class="topbar">
     <button class="home" id="kaartterug" type="button" aria-label="Terug">🏠</button>
     <h2>Tik op een letter om te oefenen</h2>
+    <small class="legend">★ overgetrokken · ★★ stippellijn · ★★★ gekozen bij plaatje · ★★★★ uit het hoofd geschreven</small>
   </div>
   <div class="grid" id="lettergrid"></div>
 </section>
@@ -209,10 +229,12 @@ canvas.paper{touch-action:none;border-radius:18px;box-shadow:0 6px 18px rgba(0,0
   <div class="stage" id="stage">
     <div class="prompt" id="prompt">
       <button type="button" id="replay" aria-label="Nog eens voorlezen">🔊</button>
-      <span>Schrijf de</span> <span class="big" id="bigletter">a</span>
+      <span id="vraag">Schrijf de</span> <span class="big" id="bigletter">a</span>
       <span class="woord" id="woord"></span>
+      <span class="lvlpill" id="lvlpill"></span>
     </div>
     <div class="canvaswrap" id="canvaswrap"><canvas class="paper" id="paper"></canvas></div>
+    <div class="answers" id="answers" hidden></div>
     <div class="tools">
       <button class="btn secondary" type="button" id="voordoen">👀 Doe voor</button>
       <button class="btn secondary" type="button" id="opnieuw">🧽 Opnieuw</button>
@@ -356,13 +378,25 @@ const PRAISE=['Goed zo!','Super!','Knap gedaan!','Wauw, wat mooi!','Dat is \'m!'
 
 /* ===================== STAND ===================== */
 const state={
-  naam:store.get('naam',''), avatar:store.get('avatar','🐸'), sound:store.get('sound',true), hulp:store.get('hulp',true), auto:store.get('auto',true),
+  naam:store.get('naam',''), avatar:store.get('avatar','🐸'), sound:store.get('sound',true), mode:store.get('mode','auto'), auto:store.get('auto',true), lvl:'hulp', peek:0, firstTry:true,
   stars:store.get('stars',{}), total:store.get('total',0), stickers:store.get('stickers',[]), pen:store.get('pen','oranje'),
   set:null, list:[], idx:0, letter:null, strokes:[], si:0, busy:false, earned:[], sessionStars:0, fails:0, demo:null,
 };
-function save(){ store.set('naam',state.naam); store.set('avatar',state.avatar); store.set('sound',state.sound); store.set('hulp',state.hulp); store.set('auto',state.auto); store.set('stars',state.stars); store.set('total',state.total); store.set('stickers',state.stickers); store.set('pen',state.pen); }
+function save(){ store.set('naam',state.naam); store.set('avatar',state.avatar); store.set('sound',state.sound); store.set('mode',state.mode); store.set('auto',state.auto); store.set('stars',state.stars); store.set('total',state.total); store.set('stickers',state.stickers); store.set('pen',state.pen); }
 function penUnlocked(p){ return state.total>=p.need; }
 function curPen(){ const p=PENS.find(p=>p.id===state.pen); return (p&&penUnlocked(p))?p:PENS[0]; }
+
+/* Niveau per letter, oplopend met de sterren:
+   0 = overtrekken (dikke letter, potloodje doet voor), 1 = stippellijn,
+   2 = alleen het plaatje: kies de letter uit vier, 3+ = alleen het plaatje: schrijf de letter zelf in een leeg vak. */
+const LVL_NAME={hulp:'overtrekken',stippel:'stippellijn',kiezen:'kies de letter',geheugen:'uit je hoofd'};
+const MAXSTAR={hulp:1,stippel:2,kiezen:3,geheugen:4};
+function levelFor(ch){ if(state.mode!=='auto') return state.mode; const st=state.stars[ch]||0; return st>=3?'geheugen':st>=2?'kiezen':st>=1?'stippel':'hulp'; }
+const hidden=()=>state.lvl==='kiezen'||state.lvl==='geheugen';   // letter niet laten zien, alleen plaatje en stem
+const guideMode=()=>{ if(state.lvl==='hulp'||performance.now()<state.peek) return 'dik'; if(state.lvl==='stippel'||state.fails>=2) return 'stippel'; return 'geen'; };
+const showDot=()=>state.lvl!=='geheugen'||state.fails>=1||performance.now()<state.peek;
+function groupOf(ch){ return isDigit(ch)?'0123456789':(ch===ch.toUpperCase()?'ABCDEFGHIJKLMNOPQRSTUVWXYZ':'abcdefghijklmnopqrstuvwxyz'); }
+function picQuestion(ch){ const w=wordFor(ch); if(!isDigit(ch)) return `${w[0]}! Welke letter hoor je vooraan bij ${w[0]}?`; return ch==='0'?'Het potje is leeg. Hoeveel aardbeien zijn er? Nul!':'Tel de aardbeien. Hoeveel zijn het?'; }
 
 /* ===================== STEM EN GELUID ===================== */
 let nlVoice=null;
@@ -400,7 +434,7 @@ function draw(now){
   const pen=curPen(); const W=11;
   // hulplijn van de hele letter
   ctx.lineCap='round'; ctx.lineJoin='round';
-  for(const st of state.strokes){ if(state.hulp){ ctx.strokeStyle='#e4e1ea'; ctx.lineWidth=W; poly(st.pts); } else { ctx.strokeStyle='#cfcbd8'; ctx.lineWidth=2; ctx.setLineDash([3,3]); poly(st.pts); ctx.setLineDash([]); } }
+  const gm=guideMode(); for(const st of state.strokes){ if(gm==='dik'){ ctx.strokeStyle='#e4e1ea'; ctx.lineWidth=W; poly(st.pts); } else if(gm==='stippel'){ ctx.strokeStyle='#cfcbd8'; ctx.lineWidth=2; ctx.setLineDash([3,3]); poly(st.pts); ctx.setLineDash([]); } }
   // geschreven delen
   state.strokes.forEach((st,i)=>{ if(st.done) drawInk(st.pts,st.pts.length-1,pen,W); else if(i===state.si&&st.prog>0) drawInk(st.pts,st.prog,pen,W); });
   // spoor van de vinger
@@ -408,13 +442,13 @@ function draw(now){
   const st=state.strokes[state.si];
   if(st&&!state.busy){
     // voorbeeld-stip die de beweging laat zien
-    if(state.demo!=null){ const t=(now-state.demo)/1400; const i=Math.min(st.pts.length-1,Math.floor(t*st.pts.length)); if(t<0){} else if(t<=1){ ctx.strokeStyle='rgba(79,124,255,.55)'; ctx.lineWidth=W*0.7; poly(st.pts,0,i); ctx.fillStyle='#4f7cff'; ctx.beginPath(); ctx.arc(st.pts[i][0],st.pts[i][1],5,0,Math.PI*2); ctx.fill(); ctx.font='9px sans-serif'; ctx.fillText('✏️',st.pts[i][0]+2,st.pts[i][1]-3); } else if(t>2.2 && state.hulp && !drawing) state.demo=now; }
+    if(state.demo!=null){ const t=(now-state.demo)/1400; const i=Math.min(st.pts.length-1,Math.floor(t*st.pts.length)); if(t<0){} else if(t<=1){ ctx.strokeStyle='rgba(79,124,255,.55)'; ctx.lineWidth=W*0.7; poly(st.pts,0,i); ctx.fillStyle='#4f7cff'; ctx.beginPath(); ctx.arc(st.pts[i][0],st.pts[i][1],5,0,Math.PI*2); ctx.fill(); ctx.font='9px sans-serif'; ctx.fillText('✏️',st.pts[i][0]+2,st.pts[i][1]-3); } else if(t>2.2 && state.lvl==='hulp' && !drawing) state.demo=now; }
     // pijl en groene startstip
-    if(st.pts.length>8 && st.prog<st.pts.length-10) arrowAt(st.pts,Math.min(st.pts.length-1,Math.max(st.prog+6,Math.floor(st.pts.length*0.14))));
-    const s=st.pts[0]; const pulse=1+0.12*Math.sin(now/220)+(now-lastHint<600?0.5:0);
+    if(gm!=='geen' && st.pts.length>8 && st.prog<st.pts.length-10) arrowAt(st.pts,Math.min(st.pts.length-1,Math.max(st.prog+6,Math.floor(st.pts.length*0.14))));
+    if(showDot()){ const s=st.pts[0]; const pulse=1+0.12*Math.sin(now/220)+(now-lastHint<600?0.5:0);
     ctx.fillStyle='rgba(31,157,85,.25)'; ctx.beginPath(); ctx.arc(s[0],s[1],8*pulse,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='#1f9d55'; ctx.beginPath(); ctx.arc(s[0],s[1],5.2,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#fff'; ctx.font='bold 6.5px Fredoka, Nunito, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(String(state.si+1),s[0],s[1]+0.3);
+    ctx.fillStyle='#fff'; ctx.font='bold 6.5px Fredoka, Nunito, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(String(state.si+1),s[0],s[1]+0.3); }
   }
   // glitters
   for(const p of sparks){ p.x+=p.vx; p.y+=p.vy; p.vy+=0.05; p.life-=0.03; ctx.globalAlpha=Math.max(0,p.life); ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); }
@@ -424,7 +458,7 @@ function spark(x,y,n=10,c){ for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*
 let raf=0; function loop(now){ draw(now); raf=requestAnimationFrame(loop); }
 
 /* ===================== OVERTREKKEN ===================== */
-const tol=()=>(state.hulp?13:9)+Math.min(6,state.fails*2);
+const tol=()=>({hulp:13,stippel:10,kiezen:12,geheugen:14}[state.lvl])+Math.min(6,state.fails*2);
 function strokeDone(st){ return st.prog>=st.pts.length-3; }
 function hintStart(){ const n=performance.now(); lastHint=n; if(n-hintT>2500){ hintT=n; say('Begin bij de groene stip.'); } }
 cv.addEventListener('pointerdown',e=>{
@@ -433,6 +467,7 @@ cv.addEventListener('pointerdown',e=>{
   if(st.pts.length<8){ if(dist(p,st.pts[0])<T+4){ trail=[]; completeStroke(); } else hintStart(); return; }
   if(dist(p,st.pts[0])<T){ st.prog=0; drawing=true; trail=[p]; misses=0; }
   else if(st.prog>0 && dist(p,st.pts[st.prog])<T){ drawing=true; trail=[p]; misses=0; }
+  else if(!showDot()){ st.prog=0; drawing=true; trail=[p]; misses=0; }   // uit het hoofd: gewoon beginnen, de letter moet wel kloppen
   else hintStart();
 });
 cv.addEventListener('pointermove',e=>{
@@ -445,28 +480,44 @@ cv.addEventListener('pointermove',e=>{
 });
 function endPointer(e){ if(!drawing) return; drawing=false; const st=state.strokes[state.si]; if(!st||st.done) return; trail=[]; if(strokeDone(st)) completeStroke(); else if(st.prog>3){ const n=performance.now(); if(n-hintT>2500){ hintT=n; say('Ga door tot het einde van de lijn.'); } } else st.prog=0; }
 cv.addEventListener('pointerup',endPointer); cv.addEventListener('pointercancel',endPointer); cv.addEventListener('pointerleave',endPointer);
-function failStroke(){ drawing=false; trail=[]; const st=state.strokes[state.si]; st.prog=0; misses=0; state.fails++; oei(); cv.classList.remove('shake'); void cv.offsetWidth; cv.classList.add('shake'); say('Oei! Begin bij de groene stip en volg de pijl.'); if(state.hulp) state.demo=performance.now()+300; }
+function failStroke(){ drawing=false; trail=[]; const st=state.strokes[state.si]; st.prog=0; misses=0; state.fails++; if(state.lvl==='geheugen') state.firstTry=false; oei(); cv.classList.remove('shake'); void cv.offsetWidth; cv.classList.add('shake'); say(state.lvl==='geheugen'&&state.fails===1?'Oei! Probeer het nog eens. Begin bij de groene stip.':'Oei! Begin bij de groene stip en volg de pijl.'); if(state.lvl==='hulp') state.demo=performance.now()+300; if(state.lvl==='geheugen'&&state.fails===2){ state.peek=performance.now()+1500; say(`Kijk, dit is de ${spoken(state.letter)}.`,{keep:true}); } }
 function completeStroke(){
   const st=state.strokes[state.si]; st.prog=st.pts.length-1; st.done=true; drawing=false; trail=[]; misses=0; const e=st.pts[st.pts.length-1]; spark(e[0],e[1],14);
   state.si++;
   if(state.si>=state.strokes.length) letterDone();
-  else { pling(); if(state.hulp) state.demo=performance.now()+200; }
+  else { pling(); if(state.lvl==='hulp') state.demo=performance.now()+200; }
 }
 
 /* ===================== LETTERS EN SESSIE ===================== */
 function loadLetter(ch){
-  state.letter=ch; state.si=0; state.fails=0; trail=[]; drawing=false; state.busy=false;
+  state.letter=ch; state.si=0; state.fails=0; trail=[]; drawing=false; state.busy=false; state.firstTry=true; state.lvl=levelFor(ch); state.peek=0;
   state.strokes=SHAPES[ch].map(pts=>({pts,prog:0,done:false}));
-  const w=wordFor(ch); $('#bigletter').textContent=ch; $('#woord').innerHTML=`<span>${w[1]}</span> ${isDigit(ch)?'':ch+' van '}${w[0]}`;
+  const pill=$('#lvlpill'); pill.textContent=LVL_NAME[state.lvl]; pill.className='lvlpill '+state.lvl;
+  const w=wordFor(ch);
+  $('#vraag').textContent=state.lvl==='kiezen'?(isDigit(ch)?'Hoeveel? Kies':'Welke letter hoor je bij'):state.lvl==='geheugen'?(isDigit(ch)?'Hoeveel? Schrijf':'Schrijf de letter van'):'Schrijf de';
+  if(hidden()){ $('#bigletter').textContent='?'; $('#woord').innerHTML=`<span class="pic">${w[1]}</span>`; }
+  else { $('#bigletter').textContent=ch; $('#woord').innerHTML=`<span>${w[1]}</span> ${isDigit(ch)?'':ch+' van '}${w[0]}`; }
+  const kies=state.lvl==='kiezen'; $('#answers').hidden=!kies; $('#canvaswrap').hidden=kies; $('#stage').querySelector('.tools').hidden=kies;
+  if(kies) buildChoices(ch);
   $('#counter').textContent=`${state.idx+1} / ${state.list.length}`;
   $('#stage').querySelectorAll('.feedback,.verder').forEach(x=>x.remove());
-  speakLetter(); state.demo=state.hulp?performance.now()+900:null;
+  speakLetter(); state.demo=state.lvl==='hulp'?performance.now()+900:null;
 }
-function speakLetter(){ const ch=state.letter, w=wordFor(ch); say(isDigit(ch)?`Schrijf de ${w[0]}. Begin bij de groene stip.`:`Schrijf de ${spoken(ch)}. ${spoken(ch)} van ${w[0]}. Begin bij de groene stip.`); }
+function speakLetter(){ const ch=state.letter, w=wordFor(ch);
+  if(state.lvl==='kiezen') return say(`${picQuestion(ch)} Tik op ${isDigit(ch)?'het cijfer':'de letter'}.`);
+  if(state.lvl==='geheugen') return say(`${picQuestion(ch)} Schrijf ${isDigit(ch)?'het cijfer':'die letter'} zelf in het vak.`);
+  const extra=state.lvl==='hulp'?'Begin bij de groene stip.':'Volg de stippellijn.';
+  say(isDigit(ch)?`Schrijf de ${w[0]}. ${extra}`:`Schrijf de ${spoken(ch)}. ${spoken(ch)} van ${w[0]}. ${extra}`); }
+/* Niveau "kiezen": vier letters, alleen het plaatje en de stem geven de hint. */
+function buildChoices(ch){ const box=$('#answers'); box.innerHTML=''; const pool=groupOf(ch).split('').filter(c=>c!==ch).sort(()=>Math.random()-0.5).slice(0,3); const opts=[ch,...pool].sort(()=>Math.random()-0.5);
+  for(const c of opts){ const b=document.createElement('button'); b.type='button'; b.className='choice'; b.textContent=c; b.addEventListener('click',()=>{ if(state.busy) return;
+    if(c===ch){ b.classList.add('good'); box.querySelectorAll('.choice').forEach(x=>x.disabled=true); letterDone(); }
+    else { b.classList.add('bad'); b.disabled=true; state.firstTry=false; oei(); say(`Nee, dat is de ${spoken(c)}. ${picQuestion(ch)}`); } }); box.appendChild(b); } }
 function letterDone(){
-  state.busy=true; fanfare(); const r=cv.getBoundingClientRect(); confetti(r.left+r.width/2,r.top+r.height/2,90);
-  const ch=state.letter, w=wordFor(ch); const key=ch; state.stars[key]=Math.min(3,(state.stars[key]||0)+1); state.total++; state.sessionStars++; save();
+  state.busy=true; fanfare(); const r=(state.lvl==='kiezen'?$('#answers'):cv).getBoundingClientRect(); confetti(r.left+r.width/2,r.top+r.height/2,90);
+  const ch=state.letter, w=wordFor(ch); const key=ch; const old=state.stars[key]||0; if(state.firstTry) state.stars[key]=Math.max(old,Math.min(MAXSTAR[state.lvl],old+1)); state.total++; state.sessionStars++; save();
   const fb=document.createElement('div'); fb.className='feedback good'; fb.innerHTML=`<span class="emo">${w[1].slice(0,2)}</span> ${rnd(PRAISE)} ${isDigit(ch)?w[0]:ch+' van '+w[0]}`; $('#stage').appendChild(fb);
+  if(hidden()){ $('#vraag').textContent='Dat is de'; $('#bigletter').textContent=ch; $('#woord').innerHTML=`<span>${w[1]}</span> ${isDigit(ch)?'':ch+' van '}${w[0]}`; }
   say(`${rnd(PRAISE)} ${isDigit(ch)?'De '+w[0]+'!':spoken(ch)+' van '+w[0]+'!'}`);
   const newPen=PENS.find(p=>p.need===state.total); const done=updateJourney();
   let delay=2400;
@@ -475,7 +526,7 @@ function letterDone(){
   const b=document.createElement('button'); b.className='btn verder'; b.type='button'; b.textContent='Verder ➡️'; b.addEventListener('click',()=>{ if(canSpeak()) speechSynthesis.cancel(); next(); }); $('#stage').appendChild(b);
   if(state.auto) state.autoT=setTimeout(next,delay);
 }
-function next(){ clearTimeout(state.autoT); if(!state.busy) return; state.idx++; if(state.idx>=state.list.length) endGame(); else loadLetter(state.list[state.idx]); }
+function next(){ clearTimeout(state.autoT); if(!state.busy) return; state.idx++; if(state.idx>=state.list.length) endGame(); else { loadLetter(state.list[state.idx]); requestAnimationFrame(sizeCanvas); } }
 function startSession(set,list){
   state.set=set; state.list=list; state.idx=0; state.earned=[]; state.sessionStars=0; state.busy=false;
   $('#who').innerHTML=`<span>${state.avatar}</span> ${state.naam||''}`; $('#walker').textContent=state.avatar; $('#soundbtn').textContent=state.sound?'🔊':'🔇';
@@ -539,16 +590,16 @@ document.querySelectorAll('.settile').forEach(b=>b.addEventListener('click',()=>
 $('#naam').value=state.naam; $('#naam').addEventListener('change',()=>{ state.naam=$('#naam').value.trim(); save(); });
 const av=$('#avatars'); AVATARS.forEach(a=>{ const b=document.createElement('button'); b.type='button'; b.className='avatar'+(a===state.avatar?' sel':''); b.textContent=a; b.addEventListener('click',()=>{ unlockAudio(); state.avatar=a; save(); av.querySelectorAll('.avatar').forEach(x=>x.classList.toggle('sel',x===b)); say('Die is leuk!'); }); av.appendChild(b); });
 $('#gearbtn').addEventListener('click',()=>{ $('#settings').hidden=!$('#settings').hidden; });
-$('#soundopt').checked=state.sound; $('#hulpopt').checked=state.hulp; $('#autoopt').checked=state.auto;
+$('#soundopt').checked=state.sound; $('#niveauopt').value=state.mode; $('#autoopt').checked=state.auto;
 $('#soundopt').addEventListener('change',e=>{ state.sound=e.target.checked; save(); $('#soundbtn').textContent=state.sound?'🔊':'🔇'; });
-$('#hulpopt').addEventListener('change',e=>{ state.hulp=e.target.checked; save(); });
+$('#niveauopt').addEventListener('change',e=>{ state.mode=e.target.value; save(); });
 $('#autoopt').addEventListener('change',e=>{ state.auto=e.target.checked; save(); });
 $('#resetbtn').addEventListener('click',()=>{ if(confirm('Alle sterren, stickers en pennen wissen?')){ state.stars={}; state.total=0; state.stickers=[]; state.pen='oranje'; save(); updateStart(); } });
 $('#soundbtn').addEventListener('click',()=>{ state.sound=!state.sound; save(); $('#soundbtn').textContent=state.sound?'🔊':'🔇'; $('#soundopt').checked=state.sound; if(!state.sound&&canSpeak()) speechSynthesis.cancel(); });
 $('#homebtn').addEventListener('click',()=>{ clearTimeout(state.autoT); if(canSpeak()) speechSynthesis.cancel(); state.strokes=[]; show('start'); });
 $('#kaartterug').addEventListener('click',()=>show('start'));
-$('#replay').addEventListener('click',()=>{ speakLetter(); if(state.hulp) state.demo=performance.now(); });
-$('#voordoen').addEventListener('click',()=>{ if(state.busy) return; state.demo=performance.now(); say('Kijk, zo doe je het.'); });
+$('#replay').addEventListener('click',()=>{ speakLetter(); if(state.lvl==='hulp') state.demo=performance.now(); });
+$('#voordoen').addEventListener('click',()=>{ if(state.busy) return; state.demo=performance.now(); state.peek=performance.now()+1800; say(hidden()?`Kijk, dit is de ${spoken(state.letter)}. Zo doe je het.`:'Kijk, zo doe je het.'); });
 $('#opnieuw').addEventListener('click',()=>{ if(state.busy) return; loadLetter(state.letter); });
 $('#again').addEventListener('click',()=>{ if(fw) fw.stop(); const set=state.set; if(set==='naam') startSession('naam',nameLetters(state.naam)); else if(set==='kaart') startSession('kaart',state.list.slice()); else startSession(set,pickList(SETS[set],8)); });
 $('#tostart').addEventListener('click',()=>{ if(fw) fw.stop(); show('start'); });
