@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#fff7e6">
+<title>Schrijfspel: letters schrijven</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* Schrijfspel voor 5-jarigen: letters, hoofdletters en cijfers overtrekken met je vinger op de iPad.
+   Een stem leest alles voor, je verdient sterren, stickers en nieuwe pennen, en aan het einde een diploma. */
+:root{
+  --bg:#fff7e6; --panel:#ffffff; --fg:#2b2340; --muted:#6b6380; --line:#eadcc8;
+  --accent:#ff7a1a; --accent-fg:#ffffff; --accent2:#4f7cff;
+  --good:#1f9d55; --good-bg:#e4f6ea; --bad:#d64545; --bad-bg:#fcebea;
+  --hl:#ffd400; --card:#fff3cf; --paper:#fffdf7; --paperline:#bcd4ea;
+  --display:"Fredoka","Nunito",system-ui,sans-serif; --body:"Nunito",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#1c1830; --panel:#2a2444; --fg:#f4f0ff; --muted:#b8b0d0; --line:#4a4270;
+  --accent:#ff9448; --accent-fg:#201200; --accent2:#7c9cff; --card:#3a3260; --paper:#fffdf7; --paperline:#bcd4ea;
+  --good:#4fcf84; --good-bg:#1a3a2a; --bad:#ff7b7b; --bad-bg:#432326; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#1c1830; --panel:#2a2444; --fg:#f4f0ff; --muted:#b8b0d0; --line:#4a4270;
+  --accent:#ff9448; --accent-fg:#201200; --accent2:#7c9cff; --card:#3a3260; --paper:#fffdf7; --paperline:#bcd4ea;
+  --good:#4fcf84; --good-bg:#1a3a2a; --bad:#ff7b7b; --bad-bg:#432326; color-scheme:dark }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;overscroll-behavior:none}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.4;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;
+  background-image:radial-gradient(circle at 10% 10%,rgba(255,122,26,.10),transparent 40%),radial-gradient(circle at 90% 90%,rgba(79,124,255,.12),transparent 40%)}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;color:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:56px;padding:.6rem 1.5rem;border-radius:999px;border:0;
+  background:var(--accent);color:var(--accent-fg);font-family:var(--display);font-size:1.3rem;font-weight:600;box-shadow:0 4px 0 rgba(0,0,0,.18);transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:none}
+.btn.secondary{background:var(--panel);color:var(--fg);border:2px solid var(--line)}
+.btn:focus-visible,input:focus-visible,.settile:focus-visible,.avatar:focus-visible,.pen:focus-visible,.cell:focus-visible{outline:4px solid var(--accent2);outline-offset:3px}
+.screen{height:100%;display:flex;flex-direction:column}
+
+/* Startscherm */
+#start{align-items:center;justify-content:flex-start;text-align:center;gap:.9rem;overflow:auto;padding-bottom:1rem}
+#start h1{font-size:clamp(1.9rem,6vw,3.2rem);color:var(--accent);margin-top:.4rem}
+#start p{max-width:36ch;margin:0;color:var(--muted);font-size:1.05rem}
+.hero{font-family:var(--display);font-weight:700;font-size:clamp(2.4rem,9vw,4.2rem);line-height:1.1;letter-spacing:.06em;filter:drop-shadow(0 6px 10px rgba(0,0,0,.15));animation:float 3s ease-in-out infinite}
+.hero span:nth-child(1){color:#ff7a1a}.hero span:nth-child(2){color:#4f7cff}.hero span:nth-child(3){color:#1f9d55}.hero span:nth-child(4){color:#ff4fa3}.hero span:nth-child(5){color:#8a4fff}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.namebox{display:flex;flex-wrap:wrap;gap:.7rem;justify-content:center;align-items:center}
+input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:14px;border:2px solid var(--line);background:var(--panel);color:var(--fg);min-width:min(16rem,80vw);-webkit-user-select:text;user-select:text}
+.avatars{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center}
+.avatar{font-size:2.2rem;width:66px;height:66px;border-radius:50%;border:3px solid var(--line);background:var(--panel);transition:transform .1s}
+.avatar.sel{border-color:var(--accent);background:var(--card);transform:scale(1.12);box-shadow:0 0 0 4px rgba(255,122,26,.25)}
+.label{font-family:var(--display);font-size:1.1rem;color:var(--muted)}
+.sets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:.8rem;width:min(100%,720px)}
+.settile{display:flex;flex-direction:column;align-items:center;gap:.3rem;padding:.9rem .6rem;border-radius:22px;background:var(--panel);border:3px solid var(--line);box-shadow:0 6px 0 var(--line);transition:transform .1s;--c:var(--accent)}
+.settile:active{transform:translateY(4px);box-shadow:none}
+.settile .ico{font-family:var(--display);font-weight:700;font-size:2.6rem;line-height:1;color:var(--c)}
+.settile b{font-family:var(--display);font-size:1.15rem;font-weight:600}
+.settile small{color:var(--muted);font-size:.85rem}
+.settile.naam{--c:#ff4fa3}.settile.klein{--c:#4f7cff}.settile.groot{--c:#1f9d55}.settile.cijfer{--c:#8a4fff}.settile.kaart{--c:#ff7a1a}
+.progressline{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;font-family:var(--display);font-size:1.05rem;color:var(--muted)}
+.progressline b{color:var(--fg)}
+#settings{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:1rem;display:flex;flex-direction:column;gap:.8rem;max-width:34rem;text-align:left}
+#settings label{display:flex;gap:.6rem;align-items:center;font-size:1rem;flex-wrap:wrap}
+#settings select{font:inherit;font-size:.95rem;padding:.3rem .5rem;border-radius:10px;border:2px solid var(--line);background:var(--panel);color:var(--fg);max-width:100%}
+.gear{background:none;border:0;font-size:1.6rem;position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:12px;opacity:.6;z-index:5}
+.stickerbook{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;font-size:2rem;background:var(--card);border-radius:16px;padding:.5rem .8rem;max-width:min(100%,560px)}
+.stickerbook span{animation:pop .6s both}
+.stickerbook .empty{font-size:1rem;color:var(--muted);font-family:var(--display)}
+
+/* Letterkaart */
+#letters{gap:.6rem;overflow:auto}
+#letters .topbar h2{font-size:1.5rem}
+#letters .legend{color:var(--muted);width:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:.5rem}
+.cell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1rem;min-height:74px;border-radius:16px;border:3px solid var(--line);background:var(--panel);font-family:var(--display);font-size:2rem;font-weight:600;line-height:1;box-shadow:0 3px 0 var(--line)}
+.cell small{font-size:.6rem;letter-spacing:-.08em;color:#d4a017;min-height:.9em}
+.cell.done{border-color:#d4a017;background:var(--card)}
+.grid h3{grid-column:1/-1;font-size:1.1rem;color:var(--muted);margin-top:.4rem}
+
+/* Spelscherm */
+#game{gap:6px}
+.topbar{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.topbar .who{font-family:var(--display);font-size:1.25rem;display:flex;align-items:center;gap:.4rem}
+.counter{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap;margin-left:auto}
+.sound,.home{background:none;border:0;font-size:1.5rem;line-height:1}
+.pens{display:flex;gap:.3rem;flex-wrap:wrap}
+.pen{width:38px;height:38px;border-radius:50%;border:3px solid var(--panel);box-shadow:0 0 0 2px var(--line);background:var(--pc);font-size:1rem;display:grid;place-items:center;position:relative;transition:transform .1s}
+.pen.sel{transform:scale(1.2);box-shadow:0 0 0 3px var(--fg)}
+.pen.lock{opacity:.45;filter:grayscale(.6)}
+.pen.lock::after{content:"🔒";font-size:.9rem}
+.pen.rainbow{background:conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)}
+.pen.goud{background:linear-gradient(135deg,#ffe36b,#d4a017)}
+.pen.new{animation:pop .6s cubic-bezier(.2,1.4,.4,1) both}
+
+/* Reis met stickers */
+.journey{position:relative;padding:34px 10px 4px}
+.track{display:flex;justify-content:space-between;align-items:center;position:relative}
+.track::before{content:"";position:absolute;left:4%;right:4%;top:50%;height:8px;border-radius:4px;background:var(--line);transform:translateY(-50%)}
+.track .fill{position:absolute;left:4%;top:50%;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));transform:translateY(-50%);transition:width .6s cubic-bezier(.2,1,.3,1);width:0}
+.station{position:relative;z-index:1;width:28px;height:28px;border-radius:50%;background:var(--panel);border:3px solid var(--line);display:grid;place-items:center;font-size:1rem;transition:transform .3s}
+.station.done{border-color:var(--accent);background:var(--card);font-size:1.3rem;width:38px;height:38px}
+.station.done.new{animation:pop .6s cubic-bezier(.2,1.4,.4,1) both}
+.walker{position:absolute;top:-12px;left:4%;font-size:1.9rem;transform:translateX(-50%);transition:left .7s cubic-bezier(.3,1.3,.5,1);filter:drop-shadow(0 3px 3px rgba(0,0,0,.25));z-index:2}
+.walker.hop{animation:hop .7s ease-in-out}
+@keyframes hop{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-18px) rotate(-10deg)}}
+
+/* Schrijfpodium */
+.stage{flex:1;min-height:0;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:.5rem .8rem .6rem;display:flex;flex-direction:column;align-items:center;gap:.3rem;position:relative;overflow:hidden}
+.prompt{display:flex;align-items:center;gap:.6rem;font-family:var(--display);font-size:clamp(1.15rem,3.4vw,1.6rem);text-align:center;color:var(--muted);flex-wrap:wrap;justify-content:center}
+.prompt .big{font-size:1.6em;color:var(--accent);font-weight:700;line-height:1}
+.prompt button{background:var(--card);border:2px solid var(--line);border-radius:999px;font-size:1.3rem;width:48px;height:48px;flex:none}
+.lvlpill{font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:.25rem .7rem;border-radius:999px;background:var(--hl);color:#3a2600}
+.lvlpill.stippel{background:#ffb347}.lvlpill.kiezen{background:#8a4fff;color:#fff}.lvlpill.geheugen{background:#ff4fa3;color:#fff}
+.prompt .pic{font-size:2.2em;line-height:1;animation:float 2s ease-in-out infinite}
+.answers{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;width:min(100%,40rem);margin:auto 0}
+@media (max-width:480px){.answers{grid-template-columns:repeat(2,1fr)}}
+.choice{min-height:110px;border-radius:22px;border:3px solid var(--line);background:var(--paper);color:var(--fg);font-family:var(--display);font-size:clamp(2.6rem,9vw,4rem);font-weight:700;box-shadow:0 5px 0 var(--line);transition:transform .08s}
+.choice:active{transform:translateY(3px);box-shadow:none}
+.choice.good{background:var(--good-bg);border-color:var(--good);color:var(--good);animation:pop .5s both}
+.choice.bad{background:var(--bad-bg);border-color:var(--bad);color:var(--bad);animation:shake .4s;opacity:.5}
+.choice:disabled{cursor:default}
+.prompt .woord{display:inline-flex;align-items:center;gap:.3rem;background:var(--card);border-radius:999px;padding:.1rem .8rem;font-size:.9em}
+.canvaswrap{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
+canvas.paper{touch-action:none;border-radius:18px;box-shadow:0 6px 18px rgba(0,0,0,.12);background:var(--paper);cursor:crosshair}
+.tools{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;justify-content:center}
+.tools .btn{min-height:46px;font-size:1.05rem;padding:.4rem 1.1rem}
+.feedback{position:absolute;left:0;right:0;bottom:16%;margin:auto;width:fit-content;max-width:92%;border-radius:999px;padding:.6rem 1.4rem;font-family:var(--display);font-size:1.5rem;font-weight:600;animation:pop .4s both;z-index:3;display:flex;align-items:center;gap:.6rem;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.feedback.good{background:var(--good);color:#fff} .feedback.bad{background:var(--bad);color:#fff}
+.feedback .emo{font-size:2.2rem;animation:float 1.2s ease-in-out infinite}
+.verder{position:absolute;right:12px;bottom:12px;z-index:3}
+.sticker-toast{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:50}
+.sticker-toast div{font-size:clamp(5rem,30vw,10rem);animation:stick 1.6s cubic-bezier(.2,1.2,.4,1) both;filter:drop-shadow(0 10px 20px rgba(0,0,0,.35))}
+@keyframes stick{0%{transform:scale(0) rotate(-30deg);opacity:0}40%{transform:scale(1.2) rotate(8deg);opacity:1}75%{transform:scale(1) rotate(0);opacity:1}100%{transform:scale(.6) translateY(-40vh);opacity:0}}
+.toast{position:fixed;left:50%;top:14%;transform:translateX(-50%);background:var(--fg);color:var(--bg);border-radius:999px;padding:.6rem 1.3rem;font-family:var(--display);font-size:1.2rem;z-index:60;animation:pop .4s both;box-shadow:0 8px 24px rgba(0,0,0,.3);white-space:nowrap;max-width:94vw;overflow:hidden;text-overflow:ellipsis}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@keyframes pop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+.shake{animation:shake .4s}
+
+/* Eindscherm */
+#end{align-items:center;justify-content:flex-end;text-align:center;gap:1rem;position:relative;padding-bottom:4vh}
+#fw{position:fixed;inset:0;width:100%;height:100%;z-index:0;background:#070b1a}
+#end .endcard{position:relative;z-index:1;max-height:62vh;overflow:auto;background:color-mix(in srgb,var(--panel) 92%,transparent);border-radius:22px;padding:1.2rem 1.4rem;max-width:36rem;display:flex;flex-direction:column;gap:.7rem;align-items:center}
+#end h1{font-size:clamp(1.7rem,6vw,2.8rem)}
+#end .big{font-family:var(--display);font-size:1.3rem;margin:0}
+.stars{font-size:2rem;letter-spacing:.1em}
+.diploma{border:4px double #c9a227;border-radius:14px;padding:.9rem 1.2rem;background:linear-gradient(135deg,#fff8dc,#ffe9a3);color:#3a2600;display:flex;flex-direction:column;gap:.15rem;align-items:center;max-width:100%;box-shadow:0 6px 18px rgba(0,0,0,.25);animation:pop .7s cubic-bezier(.2,1.4,.4,1) both}
+.diploma .medal{font-size:3rem;line-height:1;animation:spin 2.4s ease-in-out infinite}
+.diploma .kop{font-size:.8rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#8a6a0a}
+.diploma .naam{font-family:var(--display);font-size:2rem;font-weight:700;color:#b5471b}
+.diploma .sub{font-size:.95rem;color:#5a4a1a}
+.diploma .geschreven{font-family:var(--display);font-size:1.6rem;letter-spacing:.15em;color:#2b4fb5}
+@keyframes spin{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+.endbtns{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center;position:relative;z-index:1}
+</style>
+</head>
+<body>
+
+<!-- ===================== STARTSCHERM ===================== -->
+<section id="start" class="screen">
+  <button class="gear" id="gearbtn" type="button" aria-label="Instellingen">⚙️</button>
+  <div class="hero" aria-hidden="true"><span>a</span><span>b</span><span>c</span><span>✏️</span><span>1</span></div>
+  <h1>Schrijfspel</h1>
+  <p>Elke letter wordt stap voor stap moeilijker: overtrekken, stippellijn, de letter kiezen bij een plaatje, en tot slot de letter zelf schrijven uit je hoofd. Je wint sterren, stickers en nieuwe pennen!</p>
+
+  <div class="namebox">
+    <span class="label">Hoe heet je?</span>
+    <input type="text" id="naam" placeholder="Jouw naam" autocomplete="off" maxlength="20" enterkeyhint="done">
+  </div>
+  <span class="label">Kies je figuurtje</span>
+  <div class="avatars" id="avatars"></div>
+
+  <span class="label">Wat ga je schrijven?</span>
+  <div class="sets">
+    <button class="settile naam" type="button" data-set="naam"><span class="ico">✍️</span><b>Mijn naam</b><small>de letters van je naam</small></button>
+    <button class="settile klein" type="button" data-set="klein"><span class="ico">a b c</span><b>Kleine letters</b><small>a tot en met z</small></button>
+    <button class="settile groot" type="button" data-set="groot"><span class="ico">A B C</span><b>Hoofdletters</b><small>A tot en met Z</small></button>
+    <button class="settile cijfer" type="button" data-set="cijfer"><span class="ico">1 2 3</span><b>Cijfers</b><small>0 tot en met 9</small></button>
+    <button class="settile kaart" type="button" data-set="kaart"><span class="ico">🗂️</span><b>Kies zelf</b><small>de letterkaart met sterren</small></button>
+  </div>
+
+  <div class="progressline" id="progressline"></div>
+  <div class="stickerbook" id="book0"></div>
+
+  <div id="settings" hidden>
+    <label><input type="checkbox" id="soundopt" checked> Stem en geluid aan</label>
+    <label>Moeilijkheid
+      <select id="niveauopt">
+        <option value="auto">Vanzelf moeilijker (per letter, met sterren)</option>
+        <option value="hulp">Altijd overtrekken</option>
+        <option value="stippel">Altijd stippellijn</option>
+        <option value="kiezen">Altijd plaatje: letter kiezen uit 4</option>
+        <option value="geheugen">Altijd plaatje: letter zelf schrijven</option>
+      </select></label>
+    <label><input type="checkbox" id="autoopt" checked> Vanzelf verder na een letter</label>
+    <button class="btn secondary" type="button" id="resetbtn">Alle sterren en stickers wissen</button>
+  </div>
+</section>
+
+<!-- ===================== LETTERKAART ===================== -->
+<section id="letters" class="screen" hidden>
+  <div class="topbar">
+    <button class="home" id="kaartterug" type="button" aria-label="Terug">🏠</button>
+    <h2>Tik op een letter om te oefenen</h2>
+    <small class="legend">★ overgetrokken · ★★ stippellijn · ★★★ gekozen bij plaatje · ★★★★ uit het hoofd geschreven</small>
+  </div>
+  <div class="grid" id="lettergrid"></div>
+</section>
+
+<!-- ===================== SPELSCHERM ===================== -->
+<section id="game" class="screen" hidden>
+  <div class="topbar">
+    <button class="home" id="homebtn" type="button" aria-label="Terug naar start">🏠</button>
+    <div class="who" id="who"></div>
+    <div class="pens" id="pens" aria-label="Kies een pen"></div>
+    <div class="counter" id="counter"></div>
+    <button class="sound" id="soundbtn" type="button" aria-label="Geluid aan of uit">🔊</button>
+  </div>
+  <div class="journey">
+    <div class="track" id="track"><div class="fill" id="fill"></div></div>
+    <div class="walker" id="walker">🐸</div>
+  </div>
+  <div class="stage" id="stage">
+    <div class="prompt" id="prompt">
+      <button type="button" id="replay" aria-label="Nog eens voorlezen">🔊</button>
+      <span id="vraag">Schrijf de</span> <span class="big" id="bigletter">a</span>
+      <span class="woord" id="woord"></span>
+      <span class="lvlpill" id="lvlpill"></span>
+    </div>
+    <div class="canvaswrap" id="canvaswrap"><canvas class="paper" id="paper"></canvas></div>
+    <div class="answers" id="answers" hidden></div>
+    <div class="tools">
+      <button class="btn secondary" type="button" id="voordoen">👀 Doe voor</button>
+      <button class="btn secondary" type="button" id="opnieuw">🧽 Opnieuw</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EINDSCHERM ===================== -->
+<section id="end" class="screen" hidden>
+  <canvas id="fw"></canvas>
+  <div class="endcard">
+    <h1 id="endtitle">Hoera!</h1>
+    <div class="stars" id="endstars"></div>
+    <div class="diploma" id="diploma">
+      <div class="medal">🏅</div>
+      <div class="kop">Schrijfdiploma</div>
+      <div class="naam" id="dipnaam"></div>
+      <div class="geschreven" id="dipletters"></div>
+      <div class="sub" id="dipsub"></div>
+    </div>
+    <p class="big">Jouw stickers:</p>
+    <div class="stickerbook" id="book"></div>
+  </div>
+  <div class="endbtns">
+    <button class="btn" type="button" id="again">Nog een keer ✍️</button>
+    <button class="btn secondary" type="button" id="tostart">Iets anders 🏠</button>
+  </div>
+</section>
+
+<canvas id="confetti"></canvas>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem('schrijfspel.'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('schrijfspel.'+k,JSON.stringify(v));}catch(e){}}};
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+
+/* ===================== LETTERVORMEN =====================
+   Eenheden: 100 breed, 150 hoog. Schrijflijnen: kop 20, romp 60, grondlijn 100, staart 130.
+   Hoeken in graden zoals op het scherm: 0 = rechts, 90 = onder, -90 = boven. Oplopend = met de klok mee. */
+const TOP=20, MID=60, BASE=100, BOT=130, STEP=1.5;
+const rad=d=>d*Math.PI/180;
+function A(...a){ let [cx,cy,rx,ry,a0,a1]=a; if(a.length===5){ a1=a0; a0=ry; ry=rx; } const span=a1-a0; const n=Math.max(8,Math.round(Math.abs(span)/360*2*Math.PI*Math.max(rx,ry)/STEP)); const p=[]; for(let i=0;i<=n;i++){ const t=rad(a0+span*i/n); p.push([cx+rx*Math.cos(t),cy+ry*Math.sin(t)]); } return p; }
+function L(x0,y0,x1,y1){ const n=Math.max(2,Math.round(Math.hypot(x1-x0,y1-y0)/STEP)); const p=[]; for(let i=0;i<=n;i++) p.push([x0+(x1-x0)*i/n,y0+(y1-y0)*i/n]); return p; }
+function B(x0,y0,x1,y1,x2,y2,x3,y3){ const p=[]; for(let i=0;i<=40;i++){ const t=i/40,u=1-t; p.push([u*u*u*x0+3*u*u*t*x1+3*u*t*t*x2+t*t*t*x3, u*u*u*y0+3*u*u*t*y1+3*u*t*t*y2+t*t*t*y3]); } return p; }
+const D=(x,y)=>A(x,y,2.2,0,360);           // puntje van de i en de j
+function resample(parts,step=STEP){ const raw=parts.flat(); const out=[raw[0]]; let acc=0; for(let i=1;i<raw.length;i++){ let a=raw[i-1],b=raw[i]; let d=dist(a,b); while(acc+d>=step){ const t=(step-acc)/d; a=[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]; out.push(a); d=dist(a,b); acc=0; } acc+=d; } out.push(raw[raw.length-1]); return out; }
+const S=(...parts)=>resample(parts);
+
+const SHAPES={
+  a:[S(A(48,80,20,-50,-410),L(61,65,68,64),L(68,64,68,100))],
+  b:[S(L(35,20,35,100)),S(A(51,80,17,-155,205))],
+  c:[S(A(50,80,20,-40,-320))],
+  d:[S(A(48,80,20,-50,-410),L(61,65,68,64)),S(L(68,20,68,100))],
+  e:[S(L(32,80,69,80),A(50,80,20,0,-320))],
+  f:[S(A(60,32,12,-90,-180),L(48,32,48,100)),S(L(36,60,60,60))],
+  g:[S(A(48,80,20,-50,-410),L(61,65,68,64)),S(L(68,64,68,114),A(52,114,16,0,180))],
+  h:[S(L(35,20,35,100)),S(L(35,100,35,78),A(50,78,15,180,360),L(65,78,65,100))],
+  i:[S(L(50,60,50,100)),S(D(50,44))],
+  j:[S(L(58,60,58,114),A(44,114,14,0,180)),S(D(58,44))],
+  k:[S(L(35,20,35,100)),S(L(63,62,37,84),L(37,84,65,100))],
+  l:[S(L(50,20,50,100))],
+  m:[S(L(27,60,27,100)),S(L(27,100,27,76),A(38.5,76,11.5,180,360),L(50,76,50,100)),S(L(50,100,50,76),A(61.5,76,11.5,180,360),L(73,76,73,100))],
+  n:[S(L(35,60,35,100)),S(L(35,100,35,76),A(50,76,15,180,360),L(65,76,65,100))],
+  o:[S(A(50,80,20,-50,-410))],
+  p:[S(L(35,60,35,130)),S(A(51,80,17,-155,205))],
+  q:[S(A(48,80,20,-50,-410),L(61,65,68,64)),S(L(68,64,68,130))],
+  r:[S(L(38,60,38,100)),S(L(38,100,38,76),A(52,76,14,180,330))],
+  s:[S(B(63,66,42,56,30,76,50,80),B(50,80,70,84,60,106,37,94))],
+  t:[S(L(48,30,48,100)),S(L(34,60,62,60))],
+  u:[S(L(35,60,35,85),A(50,85,15,180,0),L(65,85,65,60),L(65,60,65,100))],
+  v:[S(L(32,60,50,100),L(50,100,68,60))],
+  w:[S(L(24,60,37,100),L(37,100,50,60),L(50,60,63,100),L(63,100,76,60))],
+  x:[S(L(34,60,66,100)),S(L(66,60,34,100))],
+  y:[S(L(34,60,51,97)),S(L(66,60,38,130))],
+  z:[S(L(34,60,66,60),L(66,60,34,100),L(34,100,66,100))],
+
+  A:[S(L(50,20,28,100)),S(L(50,20,72,100)),S(L(37,72,63,72))],
+  B:[S(L(34,20,34,100)),S(L(34,20,54,20),A(54,38,18,-90,90),L(54,56,34,56)),S(L(34,56,54,56),A(54,78,22,-90,90),L(54,100,34,100))],
+  C:[S(A(52,60,28,40,-40,-320))],
+  D:[S(L(34,20,34,100)),S(L(34,20,46,20),A(46,60,26,40,-90,90),L(46,100,34,100))],
+  E:[S(L(66,20,34,20),L(34,20,34,100),L(34,100,66,100)),S(L(34,60,60,60))],
+  F:[S(L(66,20,34,20),L(34,20,34,100)),S(L(34,60,60,60))],
+  G:[S(A(50,60,30,40,-40,-360),L(80,60,52,60))],
+  H:[S(L(32,20,32,100)),S(L(68,20,68,100)),S(L(32,60,68,60))],
+  I:[S(L(50,20,50,100))],
+  J:[S(L(60,20,60,86),A(46,86,14,0,180))],
+  K:[S(L(34,20,34,100)),S(L(68,20,35,62),L(35,62,68,100))],
+  L:[S(L(34,20,34,100),L(34,100,68,100))],
+  M:[S(L(28,20,28,100)),S(L(28,20,50,80),L(50,80,72,20),L(72,20,72,100))],
+  N:[S(L(32,20,32,100)),S(L(32,20,68,100),L(68,100,68,20))],
+  O:[S(A(50,60,30,40,-50,-410))],
+  P:[S(L(34,20,34,100)),S(L(34,20,52,20),A(52,42,20,22,-90,90),L(52,64,34,64))],
+  Q:[S(A(50,60,30,40,-50,-410)),S(L(58,78,76,104))],
+  R:[S(L(34,20,34,100)),S(L(34,20,52,20),A(52,42,20,22,-90,90),L(52,64,34,64)),S(L(44,64,70,100))],
+  S:[S(B(70,30,40,10,24,52,50,60),B(50,60,78,68,70,108,30,92))],
+  T:[S(L(28,20,72,20)),S(L(50,20,50,100))],
+  U:[S(L(32,20,32,76),A(50,76,18,24,180,0),L(68,76,68,20))],
+  V:[S(L(28,20,50,100),L(50,100,72,20))],
+  W:[S(L(22,20,36,100),L(36,100,50,40),L(50,40,64,100),L(64,100,78,20))],
+  X:[S(L(30,20,70,100)),S(L(70,20,30,100))],
+  Y:[S(L(30,20,50,62),L(50,62,70,20)),S(L(50,62,50,100))],
+  Z:[S(L(30,20,70,20),L(70,20,30,100),L(30,100,70,100))],
+
+  '0':[S(A(50,60,24,40,-50,-410))],
+  '1':[S(L(36,36,50,20),L(50,20,50,100))],
+  '2':[S(A(50,40,20,-160,50),L(63,55,30,100),L(30,100,70,100))],
+  '3':[S(A(50,40,18,-150,90),A(50,80,20,-90,150))],
+  '4':[S(L(58,20,30,72),L(30,72,72,72)),S(L(58,20,58,100))],
+  '5':[S(L(68,20,34,20),L(34,20,32,58),A(50,78,22,-115,150))],
+  '6':[S(B(66,24,40,36,30,66,30,80),A(50,80,20,180,-180))],
+  '7':[S(L(30,20,70,20),L(70,20,42,100))],
+  '8':[S(A(50,40,18,-45,-270),A(50,78,22,-90,270),A(50,40,18,90,-45))],
+  '9':[S(A(50,40,20,0,-360),L(70,40,66,100))],
+};
+const WORDS={a:['aap','🐒'],b:['bal','⚽'],c:['citroen','🍋'],d:['dino','🦖'],e:['egel','🦔'],f:['fiets','🚲'],g:['gitaar','🎸'],h:['hond','🐶'],i:['inktvis','🦑'],j:['jas','🧥'],k:['kat','🐱'],l:['leeuw','🦁'],m:['maan','🌙'],n:['neus','👃'],o:['olifant','🐘'],p:['paard','🐴'],q:['quiz','❓'],r:['raket','🚀'],s:['slang','🐍'],t:['taart','🎂'],u:['uil','🦉'],v:['vis','🐟'],w:['wolk','☁️'],x:['xylofoon','🎼'],y:['yoghurt','🥣'],z:['zon','☀️'],
+  '0':['nul','🫙'],'1':['een','🍓'],'2':['twee','🍓🍓'],'3':['drie','🍓🍓🍓'],'4':['vier','🍓🍓🍓🍓'],'5':['vijf','🍓🍓🍓🍓🍓'],'6':['zes','🍓🍓🍓🍓🍓🍓'],'7':['zeven','🍓🍓🍓🍓🍓🍓🍓'],'8':['acht','🍓🍓🍓🍓🍓🍓🍓🍓'],'9':['negen','🍓🍓🍓🍓🍓🍓🍓🍓🍓']};
+function wordFor(ch){ return WORDS[ch.toLowerCase()]; }
+const isDigit=ch=>/[0-9]/.test(ch);
+const spoken=ch=>isDigit(ch)?wordFor(ch)[0]:ch.toLowerCase();   // "de drie", "de b"
+
+/* Oefenvolgorde: letters met dezelfde beweging bij elkaar. */
+const SETS={
+  klein:'litjocadgqnmrhbpuyvwesfkxz'.split(''),
+  groot:'LITJOCGQDBPRNMHUVWYEFKXZAS'.split(''),
+  cijfer:'0123456789'.split(''),
+};
+const AVATARS=['🐸','🐱','🦊','🐼','🦁','🐧','🦄','🐙'];
+const STICKERS=['🦄','🐬','🦋','🌈','🚀','🐢','🦊','🐼','🍦','🎈','⚽','🧸','🦕','🐙','🌟','🎸','🍩','🐸','🦁','🎠','🛸','🧁','🐳','🦜','🍉','🐝','🎨','🏆'];
+const PENS=[
+  {id:'oranje',naam:'oranje pen',color:'#ff7a1a',need:0},
+  {id:'blauw',naam:'blauwe pen',color:'#2f7cff',need:3},
+  {id:'groen',naam:'groene pen',color:'#1fb05a',need:6},
+  {id:'roze',naam:'roze pen',color:'#ff4fa3',need:10},
+  {id:'paars',naam:'paarse pen',color:'#8a4fff',need:15},
+  {id:'rainbow',naam:'regenboogpen',color:'rainbow',need:20},
+  {id:'goud',naam:'gouden glitterpen',color:'#d4a017',need:30},
+];
+const PRAISE=['Goed zo!','Super!','Knap gedaan!','Wauw, wat mooi!','Dat is \'m!','Prachtig!','Top!','Heel knap!'];
+
+/* ===================== STAND ===================== */
+const state={
+  naam:store.get('naam',''), avatar:store.get('avatar','🐸'), sound:store.get('sound',true), mode:store.get('mode','auto'), auto:store.get('auto',true), lvl:'hulp', peek:0, firstTry:true,
+  stars:store.get('stars',{}), total:store.get('total',0), stickers:store.get('stickers',[]), pen:store.get('pen','oranje'),
+  set:null, list:[], idx:0, letter:null, strokes:[], si:0, busy:false, earned:[], sessionStars:0, fails:0, demo:null,
+};
+function save(){ store.set('naam',state.naam); store.set('avatar',state.avatar); store.set('sound',state.sound); store.set('mode',state.mode); store.set('auto',state.auto); store.set('stars',state.stars); store.set('total',state.total); store.set('stickers',state.stickers); store.set('pen',state.pen); }
+function penUnlocked(p){ return state.total>=p.need; }
+function curPen(){ const p=PENS.find(p=>p.id===state.pen); return (p&&penUnlocked(p))?p:PENS[0]; }
+
+/* Niveau per letter, oplopend met de sterren:
+   0 = overtrekken (dikke letter, potloodje doet voor), 1 = stippellijn,
+   2 = alleen het plaatje: kies de letter uit vier, 3+ = alleen het plaatje: schrijf de letter zelf in een leeg vak. */
+const LVL_NAME={hulp:'overtrekken',stippel:'stippellijn',kiezen:'kies de letter',geheugen:'uit je hoofd'};
+const MAXSTAR={hulp:1,stippel:2,kiezen:3,geheugen:4};
+function levelFor(ch){ if(state.mode!=='auto') return state.mode; const st=state.stars[ch]||0; return st>=3?'geheugen':st>=2?'kiezen':st>=1?'stippel':'hulp'; }
+const hidden=()=>state.lvl==='kiezen'||state.lvl==='geheugen';   // letter niet laten zien, alleen plaatje en stem
+const guideMode=()=>{ if(state.lvl==='hulp'||performance.now()<state.peek) return 'dik'; if(state.lvl==='stippel'||state.fails>=2) return 'stippel'; return 'geen'; };
+const showDot=()=>state.lvl!=='geheugen'||state.fails>=1||performance.now()<state.peek;
+function groupOf(ch){ return isDigit(ch)?'0123456789':(ch===ch.toUpperCase()?'ABCDEFGHIJKLMNOPQRSTUVWXYZ':'abcdefghijklmnopqrstuvwxyz'); }
+function picQuestion(ch){ const w=wordFor(ch); if(!isDigit(ch)) return `${w[0]}! Welke letter hoor je vooraan bij ${w[0]}?`; return ch==='0'?'Het potje is leeg. Hoeveel aardbeien zijn er? Nul!':'Tel de aardbeien. Hoeveel zijn het?'; }
+
+/* ===================== STEM EN GELUID ===================== */
+let nlVoice=null;
+function pickVoice(){ if(!('speechSynthesis' in window)) return; const vs=speechSynthesis.getVoices(); nlVoice=vs.find(v=>/^nl(-|_)NL/i.test(v.lang))||vs.find(v=>/^nl/i.test(v.lang))||null; }
+if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
+const canSpeak=()=>'speechSynthesis' in window;
+function say(text,opts={}){ if(!state.sound||!canSpeak()) return; try{ if(!opts.keep) speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang='nl-NL'; if(nlVoice) u.voice=nlVoice; u.rate=opts.rate||0.9; u.pitch=1.1; speechSynthesis.speak(u); }catch(e){} }
+let actx=null;
+function audio(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(actx&&actx.state==='suspended') actx.resume(); return actx; }
+function tone(freq,dur=0.15,type='sine',when=0,vol=0.18){ if(!state.sound) return; const ac=audio(); if(!ac) return; const o=ac.createOscillator(), g=ac.createGain(); o.type=type; o.frequency.value=freq; g.gain.setValueAtTime(0.0001,ac.currentTime+when); g.gain.exponentialRampToValueAtTime(vol,ac.currentTime+when+0.02); g.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+when+dur); o.connect(g).connect(ac.destination); o.start(ac.currentTime+when); o.stop(ac.currentTime+when+dur+0.05); }
+const pling=()=>{ tone(880,0.12); tone(1320,0.18,'sine',0.08); };
+const fanfare=()=>{ [523,659,784,1047].forEach((f,i)=>tone(f,0.22,'triangle',i*0.11,0.2)); };
+const oei=()=>{ tone(220,0.25,'sawtooth',0,0.06); };
+function unlockAudio(){ audio(); if(canSpeak()&&state.sound){ try{ const u=new SpeechSynthesisUtterance(''); u.lang='nl-NL'; speechSynthesis.speak(u); }catch(e){} } }
+
+/* ===================== CANVAS ===================== */
+const cv=$('#paper'), ctx=cv.getContext('2d');
+let cssW=300, dpr=1;
+function sizeCanvas(){ const wrap=$('#canvaswrap'); const w=wrap.clientWidth, h=wrap.clientHeight; if(!w||!h) return; cssW=Math.max(120,Math.floor(Math.min(w,h/1.5))); dpr=Math.min(3,window.devicePixelRatio||1); cv.style.width=cssW+'px'; cv.style.height=Math.floor(cssW*1.5)+'px'; cv.width=Math.round(cssW*dpr); cv.height=Math.round(cssW*1.5*dpr); }
+window.addEventListener('resize',()=>{ sizeCanvas(); });
+const toUnits=e=>{ const r=cv.getBoundingClientRect(); return [(e.clientX-r.left)/r.width*100,(e.clientY-r.top)/r.height*150]; };
+
+let trail=[], drawing=false, misses=0, sparks=[], hintT=0, lastHint=0;
+function poly(pts,from=0,to=pts.length-1){ if(to<=from) return; ctx.beginPath(); ctx.moveTo(pts[from][0],pts[from][1]); for(let i=from+1;i<=to;i++) ctx.lineTo(pts[i][0],pts[i][1]); ctx.stroke(); }
+function inkStyle(pen,i){ return pen.color==='rainbow'?`hsl(${(i*5)%360} 95% 55%)`:pen.color; }
+function drawInk(pts,to,pen,width){ ctx.lineWidth=width; ctx.lineCap='round'; ctx.lineJoin='round'; if(pen.color!=='rainbow'){ ctx.strokeStyle=pen.color; poly(pts,0,to); return; } for(let i=1;i<=to;i++){ ctx.strokeStyle=inkStyle(pen,i); ctx.beginPath(); ctx.moveTo(pts[i-1][0],pts[i-1][1]); ctx.lineTo(pts[i][0],pts[i][1]); ctx.stroke(); } }
+function arrowAt(pts,i){ const a=pts[Math.max(0,i-3)], b=pts[Math.min(pts.length-1,i+3)]; const ang=Math.atan2(b[1]-a[1],b[0]-a[0]); ctx.save(); ctx.translate(pts[i][0],pts[i][1]); ctx.rotate(ang); ctx.fillStyle='#ffffff'; ctx.strokeStyle='#1f9d55'; ctx.lineWidth=1.4; ctx.beginPath(); ctx.moveTo(4,0); ctx.lineTo(-3,-4); ctx.lineTo(-1,0); ctx.lineTo(-3,4); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
+
+function draw(now){
+  const sc=cv.width/100; ctx.setTransform(sc,0,0,sc,0,0); ctx.clearRect(0,0,100,150);
+  // papier en schrijflijnen
+  ctx.strokeStyle='#bcd4ea'; ctx.lineWidth=0.6; ctx.setLineDash([2,2]); for(const y of [TOP,MID,BOT]){ ctx.beginPath(); ctx.moveTo(4,y); ctx.lineTo(96,y); ctx.stroke(); }
+  ctx.setLineDash([]); ctx.lineWidth=1.2; ctx.strokeStyle='#7fa6cf'; ctx.beginPath(); ctx.moveTo(4,BASE); ctx.lineTo(96,BASE); ctx.stroke();
+  if(!state.strokes.length) return;
+  const pen=curPen(); const W=11;
+  // hulplijn van de hele letter
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  const gm=guideMode(); for(const st of state.strokes){ if(gm==='dik'){ ctx.strokeStyle='#e4e1ea'; ctx.lineWidth=W; poly(st.pts); } else if(gm==='stippel'){ ctx.strokeStyle='#cfcbd8'; ctx.lineWidth=2; ctx.setLineDash([3,3]); poly(st.pts); ctx.setLineDash([]); } }
+  // geschreven delen
+  state.strokes.forEach((st,i)=>{ if(st.done) drawInk(st.pts,st.pts.length-1,pen,W); else if(i===state.si&&st.prog>0) drawInk(st.pts,st.prog,pen,W); });
+  // spoor van de vinger
+  if(trail.length>1){ ctx.globalAlpha=0.35; ctx.strokeStyle=pen.color==='rainbow'?'#ff4fa3':pen.color; ctx.lineWidth=7; poly(trail); ctx.globalAlpha=1; }
+  const st=state.strokes[state.si];
+  if(st&&!state.busy){
+    // voorbeeld-stip die de beweging laat zien
+    if(state.demo!=null){ const t=(now-state.demo)/1400; const i=Math.min(st.pts.length-1,Math.floor(t*st.pts.length)); if(t<0){} else if(t<=1){ ctx.strokeStyle='rgba(79,124,255,.55)'; ctx.lineWidth=W*0.7; poly(st.pts,0,i); ctx.fillStyle='#4f7cff'; ctx.beginPath(); ctx.arc(st.pts[i][0],st.pts[i][1],5,0,Math.PI*2); ctx.fill(); ctx.font='9px sans-serif'; ctx.fillText('✏️',st.pts[i][0]+2,st.pts[i][1]-3); } else if(t>2.2 && state.lvl==='hulp' && !drawing) state.demo=now; }
+    // pijl en groene startstip
+    if(gm!=='geen' && st.pts.length>8 && st.prog<st.pts.length-10) arrowAt(st.pts,Math.min(st.pts.length-1,Math.max(st.prog+6,Math.floor(st.pts.length*0.14))));
+    if(showDot()){ const s=st.pts[0]; const pulse=1+0.12*Math.sin(now/220)+(now-lastHint<600?0.5:0);
+    ctx.fillStyle='rgba(31,157,85,.25)'; ctx.beginPath(); ctx.arc(s[0],s[1],8*pulse,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#1f9d55'; ctx.beginPath(); ctx.arc(s[0],s[1],5.2,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='bold 6.5px Fredoka, Nunito, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(String(state.si+1),s[0],s[1]+0.3); }
+  }
+  // glitters
+  for(const p of sparks){ p.x+=p.vx; p.y+=p.vy; p.vy+=0.05; p.life-=0.03; ctx.globalAlpha=Math.max(0,p.life); ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); }
+  ctx.globalAlpha=1; sparks=sparks.filter(p=>p.life>0);
+}
+function spark(x,y,n=10,c){ for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, s=Math.random()*1.2+0.3; sparks.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-0.6,life:1,r:Math.random()*1.4+0.6,c:c||`hsl(${Math.random()*360} 90% 60%)`}); } }
+let raf=0; function loop(now){ draw(now); raf=requestAnimationFrame(loop); }
+
+/* ===================== OVERTREKKEN ===================== */
+const tol=()=>({hulp:13,stippel:10,kiezen:12,geheugen:14}[state.lvl])+Math.min(6,state.fails*2);
+function strokeDone(st){ return st.prog>=st.pts.length-3; }
+function hintStart(){ const n=performance.now(); lastHint=n; if(n-hintT>2500){ hintT=n; say('Begin bij de groene stip.'); } }
+cv.addEventListener('pointerdown',e=>{
+  e.preventDefault(); if(state.busy) return; const st=state.strokes[state.si]; if(!st) return; try{ cv.setPointerCapture(e.pointerId); }catch(x){}
+  const p=toUnits(e), T=tol()+4; state.demo=null;
+  if(st.pts.length<8){ if(dist(p,st.pts[0])<T+4){ trail=[]; completeStroke(); } else hintStart(); return; }
+  if(dist(p,st.pts[0])<T){ st.prog=0; drawing=true; trail=[p]; misses=0; }
+  else if(st.prog>0 && dist(p,st.pts[st.prog])<T){ drawing=true; trail=[p]; misses=0; }
+  else if(!showDot()){ st.prog=0; drawing=true; trail=[p]; misses=0; }   // uit het hoofd: gewoon beginnen, de letter moet wel kloppen
+  else hintStart();
+});
+cv.addEventListener('pointermove',e=>{
+  if(!drawing||state.busy) return; e.preventDefault(); const st=state.strokes[state.si]; const p=toUnits(e); trail.push(p); if(trail.length>400) trail.shift();
+  const T=tol(), n=st.pts.length; let adv=false;
+  for(let i=st.prog;i<=Math.min(st.prog+14,n-1);i++){ if(dist(p,st.pts[i])<T){ st.prog=i; adv=true; } }
+  if(adv){ misses=0; if(curPen().id==='goud'&&Math.random()<0.5) spark(p[0],p[1],2,'#ffe36b'); }
+  else if(dist(p,st.pts[st.prog])>T*1.9){ if(++misses>18) failStroke(); }
+  if(strokeDone(st)) completeStroke();
+});
+function endPointer(e){ if(!drawing) return; drawing=false; const st=state.strokes[state.si]; if(!st||st.done) return; trail=[]; if(strokeDone(st)) completeStroke(); else if(st.prog>3){ const n=performance.now(); if(n-hintT>2500){ hintT=n; say('Ga door tot het einde van de lijn.'); } } else st.prog=0; }
+cv.addEventListener('pointerup',endPointer); cv.addEventListener('pointercancel',endPointer); cv.addEventListener('pointerleave',endPointer);
+function failStroke(){ drawing=false; trail=[]; const st=state.strokes[state.si]; st.prog=0; misses=0; state.fails++; if(state.lvl==='geheugen') state.firstTry=false; oei(); cv.classList.remove('shake'); void cv.offsetWidth; cv.classList.add('shake'); say(state.lvl==='geheugen'&&state.fails===1?'Oei! Probeer het nog eens. Begin bij de groene stip.':'Oei! Begin bij de groene stip en volg de pijl.'); if(state.lvl==='hulp') state.demo=performance.now()+300; if(state.lvl==='geheugen'&&state.fails===2){ state.peek=performance.now()+1500; say(`Kijk, dit is de ${spoken(state.letter)}.`,{keep:true}); } }
+function completeStroke(){
+  const st=state.strokes[state.si]; st.prog=st.pts.length-1; st.done=true; drawing=false; trail=[]; misses=0; const e=st.pts[st.pts.length-1]; spark(e[0],e[1],14);
+  state.si++;
+  if(state.si>=state.strokes.length) letterDone();
+  else { pling(); if(state.lvl==='hulp') state.demo=performance.now()+200; }
+}
+
+/* ===================== LETTERS EN SESSIE ===================== */
+function loadLetter(ch){
+  state.letter=ch; state.si=0; state.fails=0; trail=[]; drawing=false; state.busy=false; state.firstTry=true; state.lvl=levelFor(ch); state.peek=0;
+  state.strokes=SHAPES[ch].map(pts=>({pts,prog:0,done:false}));
+  const pill=$('#lvlpill'); pill.textContent=LVL_NAME[state.lvl]; pill.className='lvlpill '+state.lvl;
+  const w=wordFor(ch);
+  $('#vraag').textContent=state.lvl==='kiezen'?(isDigit(ch)?'Hoeveel? Kies':'Welke letter hoor je bij'):state.lvl==='geheugen'?(isDigit(ch)?'Hoeveel? Schrijf':'Schrijf de letter van'):'Schrijf de';
+  if(hidden()){ $('#bigletter').textContent='?'; $('#woord').innerHTML=`<span class="pic">${w[1]}</span>`; }
+  else { $('#bigletter').textContent=ch; $('#woord').innerHTML=`<span>${w[1]}</span> ${isDigit(ch)?'':ch+' van '}${w[0]}`; }
+  const kies=state.lvl==='kiezen'; $('#answers').hidden=!kies; $('#canvaswrap').hidden=kies; $('#stage').querySelector('.tools').hidden=kies;
+  if(kies) buildChoices(ch);
+  $('#counter').textContent=`${state.idx+1} / ${state.list.length}`;
+  $('#stage').querySelectorAll('.feedback,.verder').forEach(x=>x.remove());
+  speakLetter(); state.demo=state.lvl==='hulp'?performance.now()+900:null;
+}
+function speakLetter(){ const ch=state.letter, w=wordFor(ch);
+  if(state.lvl==='kiezen') return say(`${picQuestion(ch)} Tik op ${isDigit(ch)?'het cijfer':'de letter'}.`);
+  if(state.lvl==='geheugen') return say(`${picQuestion(ch)} Schrijf ${isDigit(ch)?'het cijfer':'die letter'} zelf in het vak.`);
+  const extra=state.lvl==='hulp'?'Begin bij de groene stip.':'Volg de stippellijn.';
+  say(isDigit(ch)?`Schrijf de ${w[0]}. ${extra}`:`Schrijf de ${spoken(ch)}. ${spoken(ch)} van ${w[0]}. ${extra}`); }
+/* Niveau "kiezen": vier letters, alleen het plaatje en de stem geven de hint. */
+function buildChoices(ch){ const box=$('#answers'); box.innerHTML=''; const pool=groupOf(ch).split('').filter(c=>c!==ch).sort(()=>Math.random()-0.5).slice(0,3); const opts=[ch,...pool].sort(()=>Math.random()-0.5);
+  for(const c of opts){ const b=document.createElement('button'); b.type='button'; b.className='choice'; b.textContent=c; b.addEventListener('click',()=>{ if(state.busy) return;
+    if(c===ch){ b.classList.add('good'); box.querySelectorAll('.choice').forEach(x=>x.disabled=true); letterDone(); }
+    else { b.classList.add('bad'); b.disabled=true; state.firstTry=false; oei(); say(`Nee, dat is de ${spoken(c)}. ${picQuestion(ch)}`); } }); box.appendChild(b); } }
+function letterDone(){
+  state.busy=true; fanfare(); const r=(state.lvl==='kiezen'?$('#answers'):cv).getBoundingClientRect(); confetti(r.left+r.width/2,r.top+r.height/2,90);
+  const ch=state.letter, w=wordFor(ch); const key=ch; const old=state.stars[key]||0; if(state.firstTry) state.stars[key]=Math.max(old,Math.min(MAXSTAR[state.lvl],old+1)); state.total++; state.sessionStars++; save();
+  const fb=document.createElement('div'); fb.className='feedback good'; fb.innerHTML=`<span class="emo">${w[1].slice(0,2)}</span> ${rnd(PRAISE)} ${isDigit(ch)?w[0]:ch+' van '+w[0]}`; $('#stage').appendChild(fb);
+  if(hidden()){ $('#vraag').textContent='Dat is de'; $('#bigletter').textContent=ch; $('#woord').innerHTML=`<span>${w[1]}</span> ${isDigit(ch)?'':ch+' van '}${w[0]}`; }
+  say(`${rnd(PRAISE)} ${isDigit(ch)?'De '+w[0]+'!':spoken(ch)+' van '+w[0]+'!'}`);
+  const newPen=PENS.find(p=>p.need===state.total); const done=updateJourney();
+  let delay=2400;
+  if(done>state.earned.length){ const sticker=rnd(STICKERS.filter(s=>!state.stickers.includes(s)))||rnd(STICKERS); state.earned.push(sticker); if(!state.stickers.includes(sticker)) state.stickers.push(sticker); save(); setTimeout(()=>{ stickerToast(sticker); say('Je hebt een sticker verdiend!',{keep:true}); },900); delay+=1200; }
+  if(newPen){ setTimeout(()=>{ buildPens(); state.pen=newPen.id; save(); buildPens(); toast(`🎉 Nieuwe pen gewonnen: de ${newPen.naam}!`); say(`Je hebt een nieuwe pen gewonnen: de ${newPen.naam}!`,{keep:true}); fanfare(); },delay-800); delay+=2200; }
+  const b=document.createElement('button'); b.className='btn verder'; b.type='button'; b.textContent='Verder ➡️'; b.addEventListener('click',()=>{ if(canSpeak()) speechSynthesis.cancel(); next(); }); $('#stage').appendChild(b);
+  if(state.auto) state.autoT=setTimeout(next,delay);
+}
+function next(){ clearTimeout(state.autoT); if(!state.busy) return; state.idx++; if(state.idx>=state.list.length) endGame(); else { loadLetter(state.list[state.idx]); requestAnimationFrame(sizeCanvas); } }
+function startSession(set,list){
+  state.set=set; state.list=list; state.idx=0; state.earned=[]; state.sessionStars=0; state.busy=false;
+  $('#who').innerHTML=`<span>${state.avatar}</span> ${state.naam||''}`; $('#walker').textContent=state.avatar; $('#soundbtn').textContent=state.sound?'🔊':'🔇';
+  buildTrack(); buildPens(); show('game'); sizeCanvas(); if(!raf) raf=requestAnimationFrame(loop);
+  setTimeout(()=>{ sizeCanvas(); updateJourney(); loadLetter(list[0]); },250);
+}
+function pickList(chars,n){ const pool=chars.slice().sort((a,b)=>(state.stars[a]||0)-(state.stars[b]||0)||Math.random()-0.5); const take=pool.slice(0,Math.min(n,pool.length)); return chars.filter(c=>take.includes(c)); }
+function nameLetters(n){ const clean=n.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9 \-]/g,''); const parts=clean.split(/[\s\-]+/).filter(Boolean).map(p=>p[0].toUpperCase()+p.slice(1).toLowerCase()); return parts.join('').split('').filter(c=>SHAPES[c]); }
+function startSet(set){
+  unlockAudio(); const n=$('#naam').value.trim(); state.naam=n; save();
+  if(set==='kaart'){ buildGrid(); show('letters'); return; }
+  let list;
+  if(set==='naam'){ list=nameLetters(n); if(!list.length){ say('Typ eerst je naam.'); $('#naam').focus(); $('#naam').classList.add('shake'); setTimeout(()=>$('#naam').classList.remove('shake'),500); return; } }
+  else list=pickList(SETS[set],8);
+  startSession(set,list); say(`Hoi ${n||''}! Daar gaan we.`);
+}
+
+/* Reis met stickers */
+const stationsFor=()=>Math.max(1,Math.ceil(state.list.length/2));
+function buildTrack(){ const t=$('#track'); t.querySelectorAll('.station').forEach(s=>s.remove()); for(let i=0;i<stationsFor();i++){ const s=document.createElement('div'); s.className='station'; s.textContent='•'; t.appendChild(s);} $('#walker').style.left='4%'; $('#fill').style.width='0'; }
+function updateJourney(){ const N=stationsFor(); const done=Math.min(N,Math.floor((state.idx+(state.busy?1:0))/2)); $('#track').querySelectorAll('.station').forEach((s,i)=>{ if(i<done&&!s.classList.contains('done')){ s.classList.add('done','new'); s.textContent=state.earned[i]||'⭐'; } });
+  const pct=4+92*((state.idx+(state.busy?1:0))/state.list.length); $('#walker').style.left=Math.min(96,pct)+'%'; $('#fill').style.width=Math.min(92,pct-4)+'%'; $('#walker').classList.remove('hop'); void $('#walker').offsetWidth; $('#walker').classList.add('hop'); return done; }
+function stickerToast(s){ const t=document.createElement('div'); t.className='sticker-toast'; t.innerHTML=`<div>${s}</div>`; document.body.appendChild(t); confetti(innerWidth/2,innerHeight/2,120); setTimeout(()=>t.remove(),1700); }
+function toast(txt){ const t=document.createElement('div'); t.className='toast'; t.textContent=txt; document.body.appendChild(t); setTimeout(()=>t.remove(),3200); }
+
+/* Pennen */
+function buildPens(){ const box=$('#pens'); const had=new Set([...box.querySelectorAll('.pen')].filter(b=>!b.classList.contains('lock')).map(b=>b.dataset.id)); box.innerHTML=''; for(const p of PENS){ const b=document.createElement('button'); b.type='button'; b.dataset.id=p.id; const un=penUnlocked(p); b.className='pen'+(p.id==='rainbow'?' rainbow':'')+(p.id==='goud'?' goud':'')+(un?'':' lock')+(p.id===curPen().id?' sel':'')+(un&&had.size&&!had.has(p.id)?' new':''); if(p.color!=='rainbow'&&p.id!=='goud') b.style.setProperty('--pc',p.color); b.title=un?p.naam:`Nog ${p.need-state.total} letters`; b.setAttribute('aria-label',b.title);
+  b.addEventListener('click',()=>{ if(!un){ say(`Nog ${p.need-state.total} letters, dan krijg je de ${p.naam}.`); toast(`🔒 Nog ${p.need-state.total} letters voor de ${p.naam}`); return; } state.pen=p.id; save(); buildPens(); say(`De ${p.naam}!`); }); box.appendChild(b); } }
+
+/* Letterkaart */
+function buildGrid(){ const g=$('#lettergrid'); g.innerHTML=''; const groups=[['Kleine letters','abcdefghijklmnopqrstuvwxyz'],['Hoofdletters','ABCDEFGHIJKLMNOPQRSTUVWXYZ'],['Cijfers','0123456789']]; for(const [t,chars] of groups){ const h=document.createElement('h3'); h.textContent=t; g.appendChild(h); for(const ch of chars){ const b=document.createElement('button'); b.type='button'; const st=state.stars[ch]||0; b.className='cell'+(st?' done':''); b.innerHTML=`${ch}<small>${'★'.repeat(st)}</small>`; b.addEventListener('click',()=>{ unlockAudio(); startSession('kaart',[ch,ch,ch]); say(`De ${spoken(ch)}. Drie keer schrijven!`); }); g.appendChild(b); } } }
+
+/* Startscherm */
+function updateStart(){ const stars=Object.values(state.stars).reduce((a,b)=>a+b,0); const pens=PENS.filter(penUnlocked).length; $('#progressline').innerHTML=`<span>⭐ <b>${stars}</b> sterren</span><span>✍️ <b>${state.total}</b> letters</span><span>🖍️ <b>${pens}</b> van ${PENS.length} pennen</span>`; const bk=$('#book0'); bk.innerHTML=state.stickers.length?state.stickers.map(s=>`<span>${s}</span>`).join(''):'<span class="empty">Nog geen stickers. Schrijf letters en win ze!</span>'; }
+function show(id){ for(const s of ['start','letters','game','end']) $('#'+s).hidden=(s!==id); if(id==='start') updateStart(); }
+
+/* ===================== EINDE EN VUURWERK ===================== */
+let fw=null;
+function endGame(){
+  if(canSpeak()) speechSynthesis.cancel(); state.busy=false;
+  const n=state.list.length; $('#endtitle').textContent=`Hoera ${state.naam||''}!`; $('#endstars').textContent='⭐'.repeat(Math.min(10,n));
+  $('#dipnaam').textContent=state.naam||'Kanjer'; $('#dipletters').textContent=state.list.join(' '); $('#dipsub').textContent=`heeft ${n} ${n===1?'letter':'letters'} geschreven op ${new Date().toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'})}`;
+  $('#book').innerHTML=state.stickers.map((s,i)=>`<span style="animation-delay:${i*0.08}s">${s}</span>`).join('');
+  show('end'); say(`Hoera ${state.naam||''}! Je hebt alle letters geschreven. Hier is je diploma!`);
+  fw=new Fireworks($('#fw')); fw.start();
+}
+class Fireworks{ constructor(c){ this.c=c; this.x=c.getContext('2d'); this.p=[]; this.on=false; }
+  start(){ this.on=true; this.c.width=innerWidth; this.c.height=innerHeight; this.t0=performance.now(); this.next=0; requestAnimationFrame(t=>this.frame(t)); }
+  stop(){ this.on=false; }
+  burst(){ const x=Math.random()*this.c.width, y=Math.random()*this.c.height*0.6+40, hue=Math.random()*360; for(let i=0;i<90;i++){ const a=Math.random()*Math.PI*2, s=Math.random()*5+1; this.p.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,hue:hue+Math.random()*40}); } }
+  frame(t){ if(!this.on) return; const x=this.x; x.fillStyle='rgba(7,11,26,.22)'; x.fillRect(0,0,this.c.width,this.c.height); if(t>this.next&&t-this.t0<20000){ this.burst(); if(Math.random()<0.4) this.burst(); this.next=t+500+Math.random()*700; }
+    for(const q of this.p){ q.x+=q.vx; q.y+=q.vy; q.vy+=0.04; q.vx*=0.985; q.vy*=0.985; q.life-=0.012; x.fillStyle=`hsla(${q.hue} 100% 65% / ${Math.max(0,q.life)})`; x.beginPath(); x.arc(q.x,q.y,2.2,0,Math.PI*2); x.fill(); } this.p=this.p.filter(q=>q.life>0); requestAnimationFrame(t=>this.frame(t)); } }
+
+/* Confetti */
+const cc=$('#confetti'), cx=cc.getContext('2d'); let confs=[]; let confRunning=false;
+function confetti(x,y,n=60){ cc.width=innerWidth; cc.height=innerHeight; for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, s=Math.random()*7+3; confs.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-4,life:1,hue:Math.random()*360,r:Math.random()*5+3,rot:Math.random()*6}); } if(!confRunning){ confRunning=true; requestAnimationFrame(confLoop); } }
+function confLoop(){ cx.clearRect(0,0,cc.width,cc.height); for(const p of confs){ p.x+=p.vx; p.y+=p.vy; p.vy+=0.25; p.vx*=0.98; p.life-=0.016; p.rot+=0.1; cx.save(); cx.translate(p.x,p.y); cx.rotate(p.rot); cx.fillStyle=`hsla(${p.hue} 90% 60% / ${Math.max(0,p.life)})`; cx.fillRect(-p.r,-p.r/2,p.r*2,p.r); cx.restore(); } confs=confs.filter(p=>p.life>0); if(confs.length) requestAnimationFrame(confLoop); else { confRunning=false; cx.clearRect(0,0,cc.width,cc.height);} }
+
+/* ===================== KNOPPEN ===================== */
+document.querySelectorAll('.settile').forEach(b=>b.addEventListener('click',()=>startSet(b.dataset.set)));
+$('#naam').value=state.naam; $('#naam').addEventListener('change',()=>{ state.naam=$('#naam').value.trim(); save(); });
+const av=$('#avatars'); AVATARS.forEach(a=>{ const b=document.createElement('button'); b.type='button'; b.className='avatar'+(a===state.avatar?' sel':''); b.textContent=a; b.addEventListener('click',()=>{ unlockAudio(); state.avatar=a; save(); av.querySelectorAll('.avatar').forEach(x=>x.classList.toggle('sel',x===b)); say('Die is leuk!'); }); av.appendChild(b); });
+$('#gearbtn').addEventListener('click',()=>{ $('#settings').hidden=!$('#settings').hidden; });
+$('#soundopt').checked=state.sound; $('#niveauopt').value=state.mode; $('#autoopt').checked=state.auto;
+$('#soundopt').addEventListener('change',e=>{ state.sound=e.target.checked; save(); $('#soundbtn').textContent=state.sound?'🔊':'🔇'; });
+$('#niveauopt').addEventListener('change',e=>{ state.mode=e.target.value; save(); });
+$('#autoopt').addEventListener('change',e=>{ state.auto=e.target.checked; save(); });
+$('#resetbtn').addEventListener('click',()=>{ if(confirm('Alle sterren, stickers en pennen wissen?')){ state.stars={}; state.total=0; state.stickers=[]; state.pen='oranje'; save(); updateStart(); } });
+$('#soundbtn').addEventListener('click',()=>{ state.sound=!state.sound; save(); $('#soundbtn').textContent=state.sound?'🔊':'🔇'; $('#soundopt').checked=state.sound; if(!state.sound&&canSpeak()) speechSynthesis.cancel(); });
+$('#homebtn').addEventListener('click',()=>{ clearTimeout(state.autoT); if(canSpeak()) speechSynthesis.cancel(); state.strokes=[]; show('start'); });
+$('#kaartterug').addEventListener('click',()=>show('start'));
+$('#replay').addEventListener('click',()=>{ speakLetter(); if(state.lvl==='hulp') state.demo=performance.now(); });
+$('#voordoen').addEventListener('click',()=>{ if(state.busy) return; state.demo=performance.now(); state.peek=performance.now()+1800; say(hidden()?`Kijk, dit is de ${spoken(state.letter)}. Zo doe je het.`:'Kijk, zo doe je het.'); });
+$('#opnieuw').addEventListener('click',()=>{ if(state.busy) return; loadLetter(state.letter); });
+$('#again').addEventListener('click',()=>{ if(fw) fw.stop(); const set=state.set; if(set==='naam') startSession('naam',nameLetters(state.naam)); else if(set==='kaart') startSession('kaart',state.list.slice()); else startSession(set,pickList(SETS[set],8)); });
+$('#tostart').addEventListener('click',()=>{ if(fw) fw.stop(); show('start'); });
+document.addEventListener('visibilitychange',()=>{ if(document.hidden&&canSpeak()) speechSynthesis.cancel(); });
+updateStart();
+</script>
+</body>
+</html>
