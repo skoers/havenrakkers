@@ -121,7 +121,6 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 .prompt .pic{font-size:2.2em;line-height:1;animation:float 2s ease-in-out infinite}
 .wordwrap{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center;gap:.4rem}
 .wordcanvas{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
-.tipcount{background:#fff;color:#3a2600;border-radius:999px;padding:0 .55em;font-size:.9em;margin-left:.2em}
 .lvlpill.wrd{background:#1aa36b;color:#fff}
 .answers{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;width:min(100%,40rem);margin:auto 0}
 @media (max-width:480px){.answers{grid-template-columns:repeat(2,1fr)}}
@@ -217,7 +216,7 @@ canvas.paper{touch-action:none;border-radius:18px;box-shadow:0 6px 18px rgba(0,0
   <div class="topbar">
     <button class="home" id="kaartterug" type="button" aria-label="Terug">🏠</button>
     <h2>Tik op een letter om te oefenen</h2>
-    <small class="legend">Woorden: 💡 tips vraag je per letter; een goed woord geeft nieuwe tips. Letters: ★ overgetrokken · ★★ stippellijn · ★★★ gekozen bij plaatje · ★★★★ uit het hoofd geschreven</small>
+    <small class="legend">Letters: ★ overgetrokken · ★★ stippellijn · ★★★ gekozen bij plaatje · ★★★★ uit het hoofd geschreven</small>
   </div>
   <div class="grid" id="lettergrid"></div>
 </section>
@@ -247,7 +246,7 @@ canvas.paper{touch-action:none;border-radius:18px;box-shadow:0 6px 18px rgba(0,0
     <div class="wordwrap" id="wordwrap" hidden>
       <div class="wordcanvas" id="wordcanvaswrap"><canvas class="paper" id="wordpaper"></canvas></div>
       <div class="tools">
-        <button class="btn" type="button" id="tipbtn">💡 Tip <span class="tipcount" id="tipcount">3</span></button>
+        <button class="btn" type="button" id="tipbtn">💡 Tip</button>
         <button class="btn secondary" type="button" id="wisbtn">🧽 Wis vakje</button>
         <button class="btn" type="button" id="klaarbtn" style="background:var(--good)">✅ Klaar!</button>
       </div>
@@ -405,10 +404,10 @@ const PRAISE=['Goed zo!','Super!','Knap gedaan!','Wauw, wat mooi!','Dat is \'m!'
 /* ===================== STAND ===================== */
 const state={
   naam:store.get('naam',''), avatar:store.get('avatar','🐸'), sound:store.get('sound',true), mode:store.get('mode','auto'), auto:store.get('auto',true), lvl:'hulp', peek:0, firstTry:true, force:null,
-  stars:store.get('stars',{}), total:store.get('total',0), stickers:store.get('stickers',[]), pen:store.get('pen','oranje'), tips:store.get('tips',3), word:null,
+  stars:store.get('stars',{}), total:store.get('total',0), stickers:store.get('stickers',[]), pen:store.get('pen','oranje'), word:null,
   set:null, list:[], idx:0, letter:null, strokes:[], si:0, busy:false, earned:[], sessionStars:0, fails:0, demo:null,
 };
-function save(){ store.set('naam',state.naam); store.set('avatar',state.avatar); store.set('sound',state.sound); store.set('mode',state.mode); store.set('auto',state.auto); store.set('stars',state.stars); store.set('total',state.total); store.set('stickers',state.stickers); store.set('pen',state.pen); store.set('tips',state.tips); }
+function save(){ store.set('naam',state.naam); store.set('avatar',state.avatar); store.set('sound',state.sound); store.set('mode',state.mode); store.set('auto',state.auto); store.set('stars',state.stars); store.set('total',state.total); store.set('stickers',state.stickers); store.set('pen',state.pen);  }
 function penUnlocked(p){ return state.total>=p.need; }
 function curPen(){ const p=PENS.find(p=>p.id===state.pen); return (p&&penUnlocked(p))?p:PENS[0]; }
 
@@ -551,10 +550,10 @@ function wrongChoice(c){ const ch=state.letter, w=state.w; state.firstTry=false;
 function letterDone(){
   state.busy=true; fanfare(); const r=(state.word?$('#wordpaper'):state.lvl==='kiezen'?$('#answers'):cv).getBoundingClientRect(); confetti(r.left+r.width/2,r.top+r.height/2,90);
   const ch=state.letter, w=state.w;
-  if(state.word){ const key='woord:'+state.word.text; state.stars[key]=Math.min(4,(state.stars[key]||0)+1); state.total+=state.word.text.length; state.sessionStars++; const won=state.tipsUsed?2:3; state.tips+=won; save(); $('#tipcount').textContent=state.tips;
-    const fb=document.createElement('div'); fb.className='feedback good'; fb.innerHTML=`<span class="emo">${state.word.emoji}</span> ${rnd(PRAISE)} ${state.word.text}! +${won} 💡`; $('#stage').appendChild(fb);
+  if(state.word){ const key='woord:'+state.word.text; state.stars[key]=Math.min(4,(state.stars[key]||0)+1); state.total+=state.word.text.length; state.sessionStars++; save();
+    const fb=document.createElement('div'); fb.className='feedback good'; fb.innerHTML=`<span class="emo">${state.word.emoji}</span> ${rnd(PRAISE)} ${state.word.text}!`; $('#stage').appendChild(fb);
     $('#vraag').textContent='Dat is'; $('#bigletter').textContent=state.word.text; $('#woord').innerHTML=`<span>${state.word.emoji}</span>`;
-    say(`${rnd(PRAISE)} Je hebt ${state.word.text} geschreven! Je verdient ${won} tips.`); }
+    say(`${rnd(PRAISE)} Je hebt ${state.word.text} geschreven!`); }
   else { const key=ch; const old=state.stars[key]||0; if(state.firstTry) state.stars[key]=Math.max(old,Math.min(MAXSTAR[state.lvl],old+1)); state.total++; state.sessionStars++; save();
   const fb=document.createElement('div'); fb.className='feedback good'; fb.innerHTML=`<span class="emo">${w[1].slice(0,2)}</span> ${rnd(PRAISE)} ${isDigit(ch)?w[0]:ch+' van '+w[0]}`; $('#stage').appendChild(fb);
   if(hidden()){ $('#vraag').textContent='Dat is de'; $('#bigletter').textContent=ch; $('#woord').innerHTML=`<span>${w[1]}</span> ${isDigit(ch)?'':ch+' van '}${w[0]}`; }
@@ -605,11 +604,11 @@ function buildPens(){ const box=$('#pens'); const had=new Set([...box.querySelec
 function buildGrid(){ const g=$('#lettergrid'); g.innerHTML=''; const groups=[['Kleine letters','abcdefghijklmnopqrstuvwxyz'],['Hoofdletters','ABCDEFGHIJKLMNOPQRSTUVWXYZ'],['Cijfers','0123456789']]; for(const [t,chars] of groups){ const h=document.createElement('h3'); h.textContent=t; g.appendChild(h); for(const ch of chars){ const b=document.createElement('button'); b.type='button'; const st=state.stars[ch]||0; b.className='cell'+(st?' done':''); b.innerHTML=`${ch}<small>${'★'.repeat(st)}</small>`; b.addEventListener('click',()=>{ unlockAudio(); startSession('kaart',[ch,ch,ch]); say(`De ${spoken(ch)}. Drie keer schrijven!`); }); g.appendChild(b); } } }
 
 /* Startscherm */
-function updateStart(){ $('#tipcount').textContent=state.tips; const stars=Object.values(state.stars).reduce((a,b)=>a+b,0); const pens=PENS.filter(penUnlocked).length; $('#progressline').innerHTML=`<span>⭐ <b>${stars}</b> sterren</span><span>✍️ <b>${state.total}</b> letters</span><span>🖍️ <b>${pens}</b> van ${PENS.length} pennen</span>`; const bk=$('#book0'); bk.innerHTML=state.stickers.length?state.stickers.map(s=>`<span>${s}</span>`).join(''):'<span class="empty">Nog geen stickers. Schrijf letters en win ze!</span>'; }
+function updateStart(){ const stars=Object.values(state.stars).reduce((a,b)=>a+b,0); const pens=PENS.filter(penUnlocked).length; $('#progressline').innerHTML=`<span>⭐ <b>${stars}</b> sterren</span><span>✍️ <b>${state.total}</b> letters</span><span>🖍️ <b>${pens}</b> van ${PENS.length} pennen</span>`; const bk=$('#book0'); bk.innerHTML=state.stickers.length?state.stickers.map(s=>`<span>${s}</span>`).join(''):'<span class="empty">Nog geen stickers. Schrijf letters en win ze!</span>'; }
 function show(id){ for(const s of ['start','letters','game','end']) $('#'+s).hidden=(s!==id); if(id==='start') updateStart(); }
 
 /* ===================== WOORDEN SCHRIJVEN =====================
-   Het kind schrijft elke letter zelf in een vakje. Tips kosten een punt; een goed woord levert tips op.
+   Het kind schrijft elke letter zelf in een vakje. Tips zijn onbeperkt.
    Na "Klaar" vergelijkt het spel het handschrift per vakje met de lettervormen. */
 const wcv=$('#wordpaper'), wctx=wcv.getContext('2d');
 let wDraw=false, wBox=-1, wCur=null;
@@ -617,14 +616,14 @@ const TPL={}; for(const ch of 'abcdefghijklmnopqrstuvwxyz') TPL[ch]=SHAPES[ch].f
 function sizeWordCanvas(){ if(!state.word) return; const wrap=$('#wordcanvaswrap'); const n=state.word.text.length; const w=wrap.clientWidth, h=wrap.clientHeight; if(!w||!h) return; const W=Math.max(120,Math.floor(Math.min(w,h*n*100/150))); const d=Math.min(3,window.devicePixelRatio||1); wcv.style.width=W+'px'; wcv.style.height=Math.floor(W*150/(n*100))+'px'; wcv.width=Math.round(W*d); wcv.height=Math.round(W*150/(n*100)*d); }
 window.addEventListener('resize',sizeWordCanvas);
 function loadWord(it){
-  state.word={text:it.word,emoji:it.emoji}; state.letter=it.word; state.w=[it.word,it.emoji]; state.item=it; state.lvl='woord'; state.busy=false; state.tipsUsed=0; state.fails=0;
+  state.word={text:it.word,emoji:it.emoji}; state.letter=it.word; state.w=[it.word,it.emoji]; state.item=it; state.lvl='woord'; state.busy=false; state.fails=0;
   state.boxes=it.word.split('').map(ch=>({ch,ink:[],status:'',ghost:0})); wBox=0; wCur=null; wDraw=false;
   const pill=$('#lvlpill'); pill.textContent='woord'; pill.className='lvlpill wrd';
   $('#vraag').textContent='Schrijf het woord bij'; $('#bigletter').textContent=''; $('#woord').innerHTML=`<span class="pic">${it.emoji}</span>`;
-  $('#answers').hidden=true; $('#canvaswrap').hidden=true; $('#stage > .tools').hidden=true; $('#wordwrap').hidden=false; $('#tipcount').textContent=state.tips;
+  $('#answers').hidden=true; $('#canvaswrap').hidden=true; $('#stage > .tools').hidden=true; $('#wordwrap').hidden=false;
   $('#counter').textContent=`${state.idx+1} / ${state.list.length}`; $('#stage').querySelectorAll('.feedback,.verder').forEach(x=>x.remove());
   requestAnimationFrame(sizeWordCanvas);
-  say(`${it.word}! Schrijf het woord ${it.word}. Elke letter in een vakje. Weet je een letter niet? Vraag een tip.`);
+  say(`${it.word}! Schrijf het woord ${it.word}. Elke letter in een vakje. Weet je een letter niet? Druk op tip.`);
 }
 function wUnits(e){ const r=wcv.getBoundingClientRect(); const n=state.word.text.length; return [(e.clientX-r.left)/r.width*n*100,(e.clientY-r.top)/r.height*150]; }
 wcv.addEventListener('pointerdown',e=>{ if(!state.word||state.busy) return; e.preventDefault(); try{ wcv.setPointerCapture(e.pointerId); }catch(x){} const p=wUnits(e); const i=Math.max(0,Math.min(state.boxes.length-1,Math.floor(p[0]/100))); wBox=i; const b=state.boxes[i]; if(b.status==='bad'){ b.status=''; b.ink=[]; } wCur=[[p[0]-i*100,p[1]]]; b.ink.push(wCur); wDraw=true; });
@@ -659,8 +658,7 @@ function checkWord(){ if(!state.word||state.busy) return; const empty=state.boxe
   state.fails++; oei(); wBox=wrong[0]; const w=wrong.length;
   say(w===1?`Bijna! De ${RANG[wrong[0]]} letter klopt nog niet. Probeer die nog eens, of vraag een tip.`:`Bijna! ${w} letters kloppen nog niet, ze zijn rood. Probeer het nog eens, of vraag een tip.`); }
 function giveTip(){ if(!state.word||state.busy) return; const b=state.boxes[wBox]; if(!b) return;
-  if(state.tips<=0){ say('Je hebt geen tips meer. Schrijf eerst een woord goed, dan krijg je nieuwe tips.'); toast('💡 Geen tips meer. Een goed woord geeft nieuwe tips!'); return; }
-  state.tips--; state.tipsUsed++; save(); $('#tipcount').textContent=state.tips; b.ghost=performance.now()+6000; if(b.status==='bad'){ b.status=''; b.ink=[]; }
+  b.ghost=performance.now()+6000; if(b.status==='bad'){ b.status=''; b.ink=[]; }
   say(`De ${RANG[wBox]} letter is de ${b.ch}. ${TIP[b.ch]}. Kijk naar de stippellijn.`); }
 $('#tipbtn').addEventListener('click',giveTip);
 $('#wisbtn').addEventListener('click',()=>{ if(!state.word||state.busy) return; const b=state.boxes[wBox]; if(b){ b.ink=[]; b.status=''; } });
