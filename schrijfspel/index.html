@@ -384,7 +384,11 @@ const SETS={
   cijfer:'0123456789'.split(''),
 };
 /* Korte woorden om zelf te schrijven, met plaatje. */
-const WOORDEN=[['kat','🐱'],['bal','⚽'],['vis','🐟'],['zon','☀️'],['aap','🐒'],['koe','🐮'],['uil','🦉'],['jas','🧥'],['bus','🚌'],['pen','🖊️'],['pop','🪆'],['vos','🦊'],['kip','🐔'],['ei','🥚'],['oor','👂'],['bed','🛏️'],['maan','🌙'],['boom','🌳'],['hond','🐶'],['muis','🐭'],['neus','👃'],['huis','🏠'],['boot','⛵'],['kaas','🧀'],['roos','🌹'],['lamp','💡'],['wolk','☁️'],['duif','🕊️']];
+const WOORDEN=[['kat','🐱'],['bal','⚽'],['vis','🐟'],['zon','☀️'],['aap','🐒'],['koe','🐮'],['uil','🦉'],['jas','🧥'],['bus','🚌'],['pen','🖊️'],['pop','🪆'],['vos','🦊'],['kip','🐔'],['ei','🥚'],['oor','👂'],['bed','🛏️'],['maan','🌙'],['boom','🌳'],['hond','🐶'],['muis','🐭'],['neus','👃'],['huis','🏠'],['boot','⛵'],['kaas','🧀'],['roos','🌹'],['lamp','💡'],['wolk','☁️'],['duif','🕊️'],['melk','🥛'],['vlag','🚩'],['taart','🎂'],['fiets','🚲'],['appel','🍎'],['slang','🐍'],['trein','🚂'],['bloem','🌸'],['stoel','🪑'],['paard','🐴'],['vogel','🐦'],['kroon','👑'],['brood','🍞'],['pizza','🍕'],['worst','🌭']];
+/* Niveau bij woorden: hoe meer woorden goed, hoe langer de woorden en hoe minder hulp. */
+const wordsDone=()=>Object.keys(state.stars).filter(k=>k.startsWith('woord:')&&state.stars[k]>0).length;
+function wordLevel(){ const n=wordsDone(); return n>=12?3:n>=6?2:1; }
+const WLEN={1:[2,3],2:[3,4],3:[4,5]};
 /* Hoe maak je de letter: de tip die de stem geeft. */
 const TIP={a:'een rondje tegen de klok in, en dan een stokje omlaag',b:'een lange stok omlaag, en dan een buikje aan de rechterkant',c:'een open rondje, als een maantje',d:'een rondje, en dan een lange stok omhoog en weer omlaag',e:'een streepje, en dan een boog eromheen',f:'een haakje bovenaan, een stok omlaag, en een streepje in het midden',g:'een rondje, en dan een staart omlaag naar links',h:'een lange stok, en dan een bruggetje',i:'een stokje, en een puntje erboven',j:'een stok omlaag met een haakje, en een puntje erboven',k:'een lange stok, en dan twee schuine streepjes',l:'één lange stok omlaag',m:'een stokje en twee bruggetjes',n:'een stokje en één bruggetje',o:'een rondje, tegen de klok in',p:'een stok omlaag tot onder de lijn, en een buikje',q:'een rondje, en een stok omlaag tot onder de lijn',r:'een stokje, en een klein haakje',s:'een slang: eerst naar links, dan naar rechts',t:'een stok, en een streepje erdoor',u:'omlaag, een bocht, omhoog en weer omlaag',v:'schuin omlaag, en schuin omhoog',w:'twee keer een v',x:'twee schuine streepjes die elkaar kruisen',y:'schuin omlaag, en een lange schuine streep tot onder de lijn',z:'een streepje, schuin omlaag, en weer een streepje'};
 const RANG=['eerste','tweede','derde','vierde','vijfde'];
@@ -404,10 +408,10 @@ const PRAISE=['Goed zo!','Super!','Knap gedaan!','Wauw, wat mooi!','Dat is \'m!'
 /* ===================== STAND ===================== */
 const state={
   naam:store.get('naam',''), avatar:store.get('avatar','🐸'), sound:store.get('sound',true), mode:store.get('mode','auto'), auto:store.get('auto',true), lvl:'hulp', peek:0, firstTry:true, force:null,
-  stars:store.get('stars',{}), total:store.get('total',0), stickers:store.get('stickers',[]), pen:store.get('pen','oranje'), word:null,
+  stars:store.get('stars',{}), total:store.get('total',0), stickers:store.get('stickers',[]), pen:store.get('pen','oranje'), punten:store.get('punten',0), word:null,
   set:null, list:[], idx:0, letter:null, strokes:[], si:0, busy:false, earned:[], sessionStars:0, fails:0, demo:null,
 };
-function save(){ store.set('naam',state.naam); store.set('avatar',state.avatar); store.set('sound',state.sound); store.set('mode',state.mode); store.set('auto',state.auto); store.set('stars',state.stars); store.set('total',state.total); store.set('stickers',state.stickers); store.set('pen',state.pen);  }
+function save(){ store.set('naam',state.naam); store.set('avatar',state.avatar); store.set('sound',state.sound); store.set('mode',state.mode); store.set('auto',state.auto); store.set('stars',state.stars); store.set('total',state.total); store.set('stickers',state.stickers); store.set('pen',state.pen); store.set('punten',state.punten); }
 function penUnlocked(p){ return state.total>=p.need; }
 function curPen(){ const p=PENS.find(p=>p.id===state.pen); return (p&&penUnlocked(p))?p:PENS[0]; }
 
@@ -550,10 +554,10 @@ function wrongChoice(c){ const ch=state.letter, w=state.w; state.firstTry=false;
 function letterDone(){
   state.busy=true; fanfare(); const r=(state.word?$('#wordpaper'):state.lvl==='kiezen'?$('#answers'):cv).getBoundingClientRect(); confetti(r.left+r.width/2,r.top+r.height/2,90);
   const ch=state.letter, w=state.w;
-  if(state.word){ const key='woord:'+state.word.text; state.stars[key]=Math.min(4,(state.stars[key]||0)+1); state.total+=state.word.text.length; state.sessionStars++; save();
-    const fb=document.createElement('div'); fb.className='feedback good'; fb.innerHTML=`<span class="emo">${state.word.emoji}</span> ${rnd(PRAISE)} ${state.word.text}!`; $('#stage').appendChild(fb);
+  if(state.word){ const key='woord:'+state.word.text; state.stars[key]=Math.min(4,(state.stars[key]||0)+1); state.total+=state.word.text.length; state.sessionStars++; const won=Math.max(1,3-state.modelCount); state.punten+=won; save(); $('#counter').textContent=`🏆 ${state.punten} · ${state.idx+1} / ${state.list.length}`;
+    const fb=document.createElement('div'); fb.className='feedback good'; fb.innerHTML=`<span class="emo">${state.word.emoji}</span> ${rnd(PRAISE)} ${state.word.text}! +${won} 🏆`; $('#stage').appendChild(fb);
     $('#vraag').textContent='Dat is'; $('#bigletter').textContent=state.word.text; $('#woord').innerHTML=`<span>${state.word.emoji}</span>`;
-    say(`${rnd(PRAISE)} Je hebt ${state.word.text} geschreven!`); }
+    say(`${rnd(PRAISE)} Je hebt ${state.word.text} geschreven! ${won===1?'Eén punt':won+' punten'} erbij.`); if(wordLevel()>state.wlvl) setTimeout(()=>{ toast('🎉 Volgend niveau: langere woorden!'); say('Je gaat naar het volgende niveau. De woorden worden langer!',{keep:true}); },1800); }
   else { const key=ch; const old=state.stars[key]||0; if(state.firstTry) state.stars[key]=Math.max(old,Math.min(MAXSTAR[state.lvl],old+1)); state.total++; state.sessionStars++; save();
   const fb=document.createElement('div'); fb.className='feedback good'; fb.innerHTML=`<span class="emo">${w[1].slice(0,2)}</span> ${rnd(PRAISE)} ${isDigit(ch)?w[0]:ch+' van '+w[0]}`; $('#stage').appendChild(fb);
   if(hidden()){ $('#vraag').textContent='Dat is de'; $('#bigletter').textContent=ch; $('#woord').innerHTML=`<span>${w[1]}</span> ${isDigit(ch)?'':ch+' van '}${w[0]}`; }
@@ -574,7 +578,7 @@ function startSession(set,list){
 }
 /* Voor de vaste niveaus: liefst letters die het kind al kent (meeste sterren), de rest willekeurig. */
 function pickKnown(chars,n){ const pool=chars.slice().sort((a,b)=>(state.stars[b]||0)-(state.stars[a]||0)||Math.random()-0.5); return pool.slice(0,n).sort(()=>Math.random()-0.5); }
-function pickWords(n){ const pool=WOORDEN.slice().sort((a,b)=>(state.stars['woord:'+a[0]]||0)-(state.stars['woord:'+b[0]]||0)||a[0].length-b[0].length||Math.random()-0.5); return pool.slice(0,n).sort(()=>Math.random()-0.5).map(w=>({word:w[0],emoji:w[1]})); }
+function pickWords(n){ const [lo,hi]=WLEN[wordLevel()]; let cand=WOORDEN.filter(w=>w[0].length>=lo&&w[0].length<=hi); if(cand.length<n) cand=WOORDEN; const pool=cand.slice().sort((a,b)=>(state.stars['woord:'+a[0]]||0)-(state.stars['woord:'+b[0]]||0)||a[0].length-b[0].length||Math.random()-0.5); return pool.slice(0,n).sort(()=>Math.random()-0.5).map(w=>({word:w[0],emoji:w[1]})); }
 function pickList(chars,n){ const pool=chars.slice().sort((a,b)=>(state.stars[a]||0)-(state.stars[b]||0)||Math.random()-0.5); const take=pool.slice(0,Math.min(n,pool.length)); return chars.filter(c=>take.includes(c)); }
 function nameLetters(n){ const clean=n.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9 \-]/g,''); const parts=clean.split(/[\s\-]+/).filter(Boolean).map(p=>p[0].toUpperCase()+p.slice(1).toLowerCase()); return parts.join('').split('').filter(c=>SHAPES[c]); }
 function startSet(set){
@@ -604,7 +608,7 @@ function buildPens(){ const box=$('#pens'); const had=new Set([...box.querySelec
 function buildGrid(){ const g=$('#lettergrid'); g.innerHTML=''; const groups=[['Kleine letters','abcdefghijklmnopqrstuvwxyz'],['Hoofdletters','ABCDEFGHIJKLMNOPQRSTUVWXYZ'],['Cijfers','0123456789']]; for(const [t,chars] of groups){ const h=document.createElement('h3'); h.textContent=t; g.appendChild(h); for(const ch of chars){ const b=document.createElement('button'); b.type='button'; const st=state.stars[ch]||0; b.className='cell'+(st?' done':''); b.innerHTML=`${ch}<small>${'★'.repeat(st)}</small>`; b.addEventListener('click',()=>{ unlockAudio(); startSession('kaart',[ch,ch,ch]); say(`De ${spoken(ch)}. Drie keer schrijven!`); }); g.appendChild(b); } } }
 
 /* Startscherm */
-function updateStart(){ const stars=Object.values(state.stars).reduce((a,b)=>a+b,0); const pens=PENS.filter(penUnlocked).length; $('#progressline').innerHTML=`<span>⭐ <b>${stars}</b> sterren</span><span>✍️ <b>${state.total}</b> letters</span><span>🖍️ <b>${pens}</b> van ${PENS.length} pennen</span>`; const bk=$('#book0'); bk.innerHTML=state.stickers.length?state.stickers.map(s=>`<span>${s}</span>`).join(''):'<span class="empty">Nog geen stickers. Schrijf letters en win ze!</span>'; }
+function updateStart(){ const stars=Object.values(state.stars).reduce((a,b)=>a+b,0); const pens=PENS.filter(penUnlocked).length; $('#progressline').innerHTML=`<span>⭐ <b>${stars}</b> sterren</span><span>🏆 <b>${state.punten}</b> punten</span><span>✍️ <b>${state.total}</b> letters</span><span>🖍️ <b>${pens}</b> van ${PENS.length} pennen</span>`; const bk=$('#book0'); bk.innerHTML=state.stickers.length?state.stickers.map(s=>`<span>${s}</span>`).join(''):'<span class="empty">Nog geen stickers. Schrijf letters en win ze!</span>'; }
 function show(id){ for(const s of ['start','letters','game','end']) $('#'+s).hidden=(s!==id); if(id==='start') updateStart(); }
 
 /* ===================== WOORDEN SCHRIJVEN =====================
@@ -613,27 +617,29 @@ function show(id){ for(const s of ['start','letters','game','end']) $('#'+s).hid
 const wcv=$('#wordpaper'), wctx=wcv.getContext('2d');
 let wDraw=false, wBox=-1, wCur=null;
 const TPL={}; for(const ch of 'abcdefghijklmnopqrstuvwxyz') TPL[ch]=SHAPES[ch].flat();
-function sizeWordCanvas(){ if(!state.word) return; const wrap=$('#wordcanvaswrap'); const n=state.word.text.length; const w=wrap.clientWidth, h=wrap.clientHeight; if(!w||!h) return; const W=Math.max(120,Math.floor(Math.min(w,h*n*100/150))); const d=Math.min(3,window.devicePixelRatio||1); wcv.style.width=W+'px'; wcv.style.height=Math.floor(W*150/(n*100))+'px'; wcv.width=Math.round(W*d); wcv.height=Math.round(W*150/(n*100)*d); }
+function sizeWordCanvas(){ if(!state.word) return; const wrap=$('#wordcanvaswrap'); const n=state.word.text.length; const w=wrap.clientWidth, h=wrap.clientHeight; if(!w||!h) return; const W=Math.max(120,Math.floor(Math.min(w,h*n*100/190))); const d=Math.min(3,window.devicePixelRatio||1); wcv.style.width=W+'px'; wcv.style.height=Math.floor(W*190/(n*100))+'px'; wcv.width=Math.round(W*d); wcv.height=Math.round(W*190/(n*100)*d); }
 window.addEventListener('resize',sizeWordCanvas);
 function loadWord(it){
   state.word={text:it.word,emoji:it.emoji}; state.letter=it.word; state.w=[it.word,it.emoji]; state.item=it; state.lvl='woord'; state.busy=false; state.fails=0;
-  state.boxes=it.word.split('').map(ch=>({ch,ink:[],status:'',ghost:0})); wBox=0; wCur=null; wDraw=false;
+  state.boxes=it.word.split('').map(ch=>({ch,ink:[],status:'',ghost:0,fails:0,model:false})); state.modelCount=0; state.wlvl=wordLevel(); wBox=0; wCur=null; wDraw=false;
   const pill=$('#lvlpill'); pill.textContent='woord'; pill.className='lvlpill wrd';
   $('#vraag').textContent='Schrijf het woord bij'; $('#bigletter').textContent=''; $('#woord').innerHTML=`<span class="pic">${it.emoji}</span>`;
   $('#answers').hidden=true; $('#canvaswrap').hidden=true; $('#stage > .tools').hidden=true; $('#wordwrap').hidden=false;
-  $('#counter').textContent=`${state.idx+1} / ${state.list.length}`; $('#stage').querySelectorAll('.feedback,.verder').forEach(x=>x.remove());
+  $('#counter').textContent=`🏆 ${state.punten} · ${state.idx+1} / ${state.list.length}`; $('#stage').querySelectorAll('.feedback,.verder').forEach(x=>x.remove());
   requestAnimationFrame(sizeWordCanvas);
   say(`${it.word}! Schrijf het woord ${it.word}. Elke letter in een vakje. Weet je een letter niet? Druk op tip.`);
 }
-function wUnits(e){ const r=wcv.getBoundingClientRect(); const n=state.word.text.length; return [(e.clientX-r.left)/r.width*n*100,(e.clientY-r.top)/r.height*150]; }
-wcv.addEventListener('pointerdown',e=>{ if(!state.word||state.busy) return; e.preventDefault(); try{ wcv.setPointerCapture(e.pointerId); }catch(x){} const p=wUnits(e); const i=Math.max(0,Math.min(state.boxes.length-1,Math.floor(p[0]/100))); wBox=i; const b=state.boxes[i]; if(b.status==='bad'){ b.status=''; b.ink=[]; } wCur=[[p[0]-i*100,p[1]]]; b.ink.push(wCur); wDraw=true; });
+function wUnits(e){ const r=wcv.getBoundingClientRect(); const n=state.word.text.length; return [(e.clientX-r.left)/r.width*n*100,(e.clientY-r.top)/r.height*190-40]; }
+wcv.addEventListener('pointerdown',e=>{ if(!state.word||state.busy) return; e.preventDefault(); try{ wcv.setPointerCapture(e.pointerId); }catch(x){} const p=wUnits(e); const i=Math.max(0,Math.min(state.boxes.length-1,Math.floor(p[0]/100))); wBox=i; const b=state.boxes[i]; if(b.status==='bad'){ b.status=''; b.ink=[]; } if(p[1]<0) return; wCur=[[p[0]-i*100,p[1]]]; b.ink.push(wCur); wDraw=true; });
 wcv.addEventListener('pointermove',e=>{ if(!wDraw) return; e.preventDefault(); const p=wUnits(e); const q=[p[0]-wBox*100,p[1]]; if(q[0]<-6||q[0]>106) return; const last=wCur[wCur.length-1]; if(Math.hypot(q[0]-last[0],q[1]-last[1])>0.8) wCur.push(q); });
 const wEnd=()=>{ if(!wDraw) return; wDraw=false; if(wCur&&wCur.length<2) wCur.push([wCur[0][0]+0.5,wCur[0][1]+0.5]); wCur=null; };
 wcv.addEventListener('pointerup',wEnd); wcv.addEventListener('pointercancel',wEnd); wcv.addEventListener('pointerleave',wEnd);
 function drawWord(now){
-  if(!state.word||$('#wordwrap').hidden) return; const n=state.boxes.length; const sc=wcv.width/(n*100); wctx.setTransform(sc,0,0,sc,0,0); wctx.clearRect(0,0,n*100,150);
+  if(!state.word||$('#wordwrap').hidden) return; const n=state.boxes.length; const sc=wcv.width/(n*100); wctx.setTransform(sc,0,0,sc,0,0); wctx.clearRect(0,0,n*100,190);
   const pen=curPen();
-  state.boxes.forEach((b,i)=>{ wctx.save(); wctx.translate(i*100,0);
+  state.boxes.forEach((b,i)=>{ wctx.save(); wctx.translate(i*100,40);
+    if(b.model){ // voorbeeldletter boven het vakje om na te schrijven
+      wctx.save(); wctx.translate(50-13,-38); wctx.scale(0.26,0.26); wctx.strokeStyle='#d64545'; wctx.lineWidth=11; wctx.lineCap='round'; wctx.lineJoin='round'; for(const pts of SHAPES[b.ch]){ wctx.beginPath(); wctx.moveTo(pts[0][0],pts[0][1]); pts.forEach(q=>wctx.lineTo(q[0],q[1])); wctx.stroke(); } wctx.restore(); }
     wctx.fillStyle=b.status==='good'?'#e4f6ea':b.status==='bad'?'#fcebea':(i===wBox?'#fffbe8':'#fffdf7'); wctx.fillRect(2,2,96,146);
     wctx.strokeStyle=b.status==='good'?'#1f9d55':b.status==='bad'?'#d64545':(i===wBox?'#ffb347':'#e0d8c8'); wctx.lineWidth=i===wBox||b.status?2.5:1.2; wctx.setLineDash([]); wctx.strokeRect(2,2,96,146);
     wctx.strokeStyle='#bcd4ea'; wctx.lineWidth=0.6; wctx.setLineDash([2,2]); for(const y of [TOP,MID,BOT]){ wctx.beginPath(); wctx.moveTo(6,y); wctx.lineTo(94,y); wctx.stroke(); }
@@ -653,13 +659,15 @@ function bbox(P){ let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; for(const q of P){ x0=Math.
 function scoreLetter(P,ch){ const T=TPL[ch]; const raw=shapeDist(P,T); const bp=bbox(P), bt=bbox(T); const dx=(bt[0]+bt[2]-bp[0]-bp[2])/2, dy=(bt[1]+bt[3]-bp[1]-bp[3])/2; const Q=P.map(q=>[q[0]+dx,q[1]+dy]); return Math.min(raw,shapeDist(Q,T)+2); }
 function recognise(b){ const P=inkPoints(b); if(P.length<4) return {ok:false,best:null}; const scores={}; for(const ch in TPL) scores[ch]=scoreLetter(P,ch); const ranked=Object.keys(scores).sort((a,c)=>scores[a]-scores[c]); const best=ranked[0]; const mine=scores[b.ch]; const ok=mine<14&&mine<=scores[best]+1.0; return {ok,best,mine,bestScore:scores[best]}; }
 function checkWord(){ if(!state.word||state.busy) return; const empty=state.boxes.findIndex(b=>!b.ink.some(s=>s.length>1)); if(empty>=0){ wBox=empty; say(`Het ${RANG[empty]} vakje is nog leeg.`); return; }
-  let wrong=[]; state.boxes.forEach((b,i)=>{ const r=recognise(b); b.status=r.ok?'good':'bad'; if(!r.ok) wrong.push(i); });
+  let wrong=[]; state.boxes.forEach((b,i)=>{ const r=recognise(b); b.status=r.ok?'good':'bad'; if(!r.ok){ wrong.push(i); b.fails++; } });
   if(!wrong.length){ letterDone(); return; }
   state.fails++; oei(); wBox=wrong[0]; const w=wrong.length;
+  const nieuw=wrong.filter(i=>{ const b=state.boxes[i]; return b.fails>=2&&!b.model&&state.wlvl<3; });
+  if(nieuw.length){ nieuw.forEach(i=>{ state.boxes[i].model=true; state.modelCount++; }); say(`Bijna! Kijk, boven het ${RANG[nieuw[0]]} vakje staat nu de letter. Schrijf die na in het vakje.`); return; }
   say(w===1?`Bijna! De ${RANG[wrong[0]]} letter klopt nog niet. Probeer die nog eens, of vraag een tip.`:`Bijna! ${w} letters kloppen nog niet, ze zijn rood. Probeer het nog eens, of vraag een tip.`); }
 function giveTip(){ if(!state.word||state.busy) return; const b=state.boxes[wBox]; if(!b) return;
-  b.ghost=performance.now()+6000; if(b.status==='bad'){ b.status=''; b.ink=[]; }
-  say(`De ${RANG[wBox]} letter is de ${b.ch}. ${TIP[b.ch]}. Kijk naar de stippellijn.`); }
+  if(state.wlvl<3) b.ghost=performance.now()+6000; if(b.status==='bad'){ b.status=''; b.ink=[]; }
+  say(`De ${RANG[wBox]} letter is de ${b.ch}. ${TIP[b.ch]}.${state.wlvl<3?' Kijk naar de stippellijn.':''}`); }
 $('#tipbtn').addEventListener('click',giveTip);
 $('#wisbtn').addEventListener('click',()=>{ if(!state.word||state.busy) return; const b=state.boxes[wBox]; if(b){ b.ink=[]; b.status=''; } });
 $('#klaarbtn').addEventListener('click',checkWord);
