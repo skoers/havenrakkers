@@ -27,6 +27,10 @@ Per letter lopen de sterren op, en met elke ster valt er hulp weg:
 3. **Kies de letter** (★★★): de letter is niet te zien. Het kind ziet het
    plaatje, hoort "Olifant! Welke letter hoor je vooraan?" en kiest uit vier
    letters. Bij cijfers: tel de aardbeien. Alleen in één keer goed geeft de ster.
+   Fout gekozen? Dan zegt de stem welke letter het is en trekt het kind die
+   meteen over. De letter komt daarna nog twee keer terug in dezelfde ronde,
+   de tweede keer met een ander woord dat met dezelfde letter begint
+   (hond, dan huis).
 4. **Uit het hoofd** (★★★★): plaatje en stem, en een leeg vak. Het kind
    schrijft de letter zelf. Gaat het mis, dan verschijnt eerst de startstip
    en daarna een stippellijn als hulp; de ster krijg je dan niet.
