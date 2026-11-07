@@ -6,8 +6,10 @@ Speel het op https://skoers.github.io/havenrakkers/schrijfspel/
 ## Wat het kind doet
 
 - Typ je naam, kies een figuurtje en tik op wat je wilt schrijven:
-  **Mijn naam**, **Kleine letters**, **Hoofdletters**, **Cijfers** of
-  **Kies zelf** (letterkaart met sterren per letter).
+  **Mijn naam**, **Kleine letters**, **Hoofdletters**, **Cijfers**,
+  **Kies de letter** (alleen plaatje en stem, kies uit vier), **Uit het hoofd**
+  (alleen plaatje en stem, zelf schrijven) of **Kies zelf** (letterkaart met
+  sterren per letter). Het huisje linksboven gaat terug naar alle spelletjes.
 - Elke letter staat groot op schrijflijnen. Een groene stip met een cijfer
   laat zien waar je begint, een pijl waar je heen gaat, en een blauw
   potloodje doet de beweging voor.
