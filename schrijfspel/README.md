@@ -49,6 +49,13 @@ Het woord staat nergens geschreven.
 - **Klaar!** kijkt per vakje of het handschrift op de goede letter lijkt. Goede
   vakjes worden groen, foute rood. Een fout vakje mag je opnieuw schrijven of
   je vraagt een tip. De stem zegt niet welke letter het moet zijn, dat is de tip.
+- Is een vakje **twee keer fout**, dan komt de letter klein boven dat vakje te
+  staan om na te schrijven. Dat kost een punt: een goed woord geeft 3 punten,
+  min één per voorbeeldletter (minimaal 1). De punten (🏆) blijven bewaard.
+- **Niveaus**: tot 6 goede woorden zijn de woorden 2 of 3 letters lang, daarna
+  3 of 4, en vanaf 12 goede woorden 4 of 5 letters. Op dat hoogste niveau komt
+  er geen voorbeeldletter meer boven het vakje en geeft een tip alleen nog de
+  uitleg van de stem, zonder stippellijn.
 
 ## Belonen
 
