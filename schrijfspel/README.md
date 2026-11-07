@@ -37,6 +37,21 @@ Per letter lopen de sterren op, en met elke ster valt er hulp weg:
 
 Bij "Kies zelf" (letterkaart) zie je per letter hoeveel sterren er al zijn.
 
+## Woorden schrijven (tegel "Woorden")
+
+Korte woorden bij een plaatje: kat, bal, vis, zon, maan, boom, hond... Het kind
+hoort het woord en schrijft elke letter zelf, met de vinger, in een eigen vakje.
+Het woord staat nergens geschreven.
+
+- **Tips** kosten een punt. Een tip geldt voor één letter: de stem zegt welke
+  letter het is en hoe je hem maakt ("een lange stok en twee schuine streepjes"),
+  en er verschijnt even een stippellijn in dat vakje. Je begint met 3 tips.
+- **Klaar!** kijkt per vakje of het handschrift op de goede letter lijkt. Goede
+  vakjes worden groen, foute rood. Een fout vakje mag je opnieuw schrijven of
+  je vraagt een tip. De stem zegt niet welke letter het moet zijn, dat is de tip.
+- Een goed woord geeft 3 nieuwe tips, of 2 als je bij dat woord een tip hebt
+  gebruikt. Het aantal tips blijft bewaard.
+
 ## Belonen
 
 - Nederlandse voorleesstem (de stem van de iPad zelf): "Schrijf de b. b van
