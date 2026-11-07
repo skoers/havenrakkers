@@ -62,13 +62,14 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 .settile .ico{font-family:var(--display);font-weight:700;font-size:2.6rem;line-height:1;color:var(--c)}
 .settile b{font-family:var(--display);font-size:1.15rem;font-weight:600}
 .settile small{color:var(--muted);font-size:.85rem}
-.settile.naam{--c:#ff4fa3}.settile.klein{--c:#4f7cff}.settile.groot{--c:#1f9d55}.settile.cijfer{--c:#8a4fff}.settile.kaart{--c:#ff7a1a}
+.settile.naam{--c:#ff4fa3}.settile.klein{--c:#4f7cff}.settile.groot{--c:#1f9d55}.settile.cijfer{--c:#8a4fff}.settile.kaart{--c:#ff7a1a}.settile.kies{--c:#8a4fff}.settile.hoofd{--c:#d64545}
 .progressline{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;font-family:var(--display);font-size:1.05rem;color:var(--muted)}
 .progressline b{color:var(--fg)}
 #settings{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:1rem;display:flex;flex-direction:column;gap:.8rem;max-width:34rem;text-align:left}
 #settings label{display:flex;gap:.6rem;align-items:center;font-size:1rem;flex-wrap:wrap}
 #settings select{font:inherit;font-size:.95rem;padding:.3rem .5rem;border-radius:10px;border:2px solid var(--line);background:var(--panel);color:var(--fg);max-width:100%}
 .gear{background:none;border:0;font-size:1.6rem;position:fixed;right:max(14px,env(safe-area-inset-right,0px));top:12px;opacity:.6;z-index:5}
+.homelink{right:auto;left:max(14px,env(safe-area-inset-left,0px));opacity:.9;text-decoration:none;font-size:2rem}
 .stickerbook{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;font-size:2rem;background:var(--card);border-radius:16px;padding:.5rem .8rem;max-width:min(100%,560px)}
 .stickerbook span{animation:pop .6s both}
 .stickerbook .empty{font-size:1rem;color:var(--muted);font-family:var(--display)}
@@ -164,6 +165,7 @@ canvas.paper{touch-action:none;border-radius:18px;box-shadow:0 6px 18px rgba(0,0
 
 <!-- ===================== STARTSCHERM ===================== -->
 <section id="start" class="screen">
+  <a class="gear homelink" href="../" aria-label="Terug naar alle spelletjes">🏠</a>
   <button class="gear" id="gearbtn" type="button" aria-label="Instellingen">⚙️</button>
   <div class="hero" aria-hidden="true"><span>a</span><span>b</span><span>c</span><span>✏️</span><span>1</span></div>
   <h1>Schrijfspel</h1>
@@ -182,6 +184,8 @@ canvas.paper{touch-action:none;border-radius:18px;box-shadow:0 6px 18px rgba(0,0
     <button class="settile klein" type="button" data-set="klein"><span class="ico">a b c</span><b>Kleine letters</b><small>a tot en met z</small></button>
     <button class="settile groot" type="button" data-set="groot"><span class="ico">A B C</span><b>Hoofdletters</b><small>A tot en met Z</small></button>
     <button class="settile cijfer" type="button" data-set="cijfer"><span class="ico">1 2 3</span><b>Cijfers</b><small>0 tot en met 9</small></button>
+    <button class="settile kies" type="button" data-set="kiezen"><span class="ico">🐘 ?</span><b>Kies de letter</b><small>hoor het woord, kies uit vier</small></button>
+    <button class="settile hoofd" type="button" data-set="geheugen"><span class="ico">🐘 ✍️</span><b>Uit het hoofd</b><small>hoor het woord, schrijf zelf</small></button>
     <button class="settile kaart" type="button" data-set="kaart"><span class="ico">🗂️</span><b>Kies zelf</b><small>de letterkaart met sterren</small></button>
   </div>
 
@@ -378,7 +382,7 @@ const PRAISE=['Goed zo!','Super!','Knap gedaan!','Wauw, wat mooi!','Dat is \'m!'
 
 /* ===================== STAND ===================== */
 const state={
-  naam:store.get('naam',''), avatar:store.get('avatar','🐸'), sound:store.get('sound',true), mode:store.get('mode','auto'), auto:store.get('auto',true), lvl:'hulp', peek:0, firstTry:true,
+  naam:store.get('naam',''), avatar:store.get('avatar','🐸'), sound:store.get('sound',true), mode:store.get('mode','auto'), auto:store.get('auto',true), lvl:'hulp', peek:0, firstTry:true, force:null,
   stars:store.get('stars',{}), total:store.get('total',0), stickers:store.get('stickers',[]), pen:store.get('pen','oranje'),
   set:null, list:[], idx:0, letter:null, strokes:[], si:0, busy:false, earned:[], sessionStars:0, fails:0, demo:null,
 };
@@ -391,7 +395,7 @@ function curPen(){ const p=PENS.find(p=>p.id===state.pen); return (p&&penUnlocke
    2 = alleen het plaatje: kies de letter uit vier, 3+ = alleen het plaatje: schrijf de letter zelf in een leeg vak. */
 const LVL_NAME={hulp:'overtrekken',stippel:'stippellijn',kiezen:'kies de letter',geheugen:'uit je hoofd'};
 const MAXSTAR={hulp:1,stippel:2,kiezen:3,geheugen:4};
-function levelFor(ch){ if(state.mode!=='auto') return state.mode; const st=state.stars[ch]||0; return st>=3?'geheugen':st>=2?'kiezen':st>=1?'stippel':'hulp'; }
+function levelFor(ch){ if(state.force) return state.force; if(state.mode!=='auto') return state.mode; const st=state.stars[ch]||0; return st>=3?'geheugen':st>=2?'kiezen':st>=1?'stippel':'hulp'; }
 const hidden=()=>state.lvl==='kiezen'||state.lvl==='geheugen';   // letter niet laten zien, alleen plaatje en stem
 const guideMode=()=>{ if(state.lvl==='hulp'||performance.now()<state.peek) return 'dik'; if(state.lvl==='stippel'||state.fails>=2) return 'stippel'; return 'geen'; };
 const showDot=()=>state.lvl!=='geheugen'||state.fails>=1||performance.now()<state.peek;
@@ -528,11 +532,13 @@ function letterDone(){
 }
 function next(){ clearTimeout(state.autoT); if(!state.busy) return; state.idx++; if(state.idx>=state.list.length) endGame(); else { loadLetter(state.list[state.idx]); requestAnimationFrame(sizeCanvas); } }
 function startSession(set,list){
-  state.set=set; state.list=list; state.idx=0; state.earned=[]; state.sessionStars=0; state.busy=false;
+  state.set=set; state.force=(set==='kiezen'||set==='geheugen')?set:null; state.list=list; state.idx=0; state.earned=[]; state.sessionStars=0; state.busy=false;
   $('#who').innerHTML=`<span>${state.avatar}</span> ${state.naam||''}`; $('#walker').textContent=state.avatar; $('#soundbtn').textContent=state.sound?'🔊':'🔇';
   buildTrack(); buildPens(); show('game'); sizeCanvas(); if(!raf) raf=requestAnimationFrame(loop);
   setTimeout(()=>{ sizeCanvas(); updateJourney(); loadLetter(list[0]); },250);
 }
+/* Voor de vaste niveaus: liefst letters die het kind al kent (meeste sterren), de rest willekeurig. */
+function pickKnown(chars,n){ const pool=chars.slice().sort((a,b)=>(state.stars[b]||0)-(state.stars[a]||0)||Math.random()-0.5); return pool.slice(0,n).sort(()=>Math.random()-0.5); }
 function pickList(chars,n){ const pool=chars.slice().sort((a,b)=>(state.stars[a]||0)-(state.stars[b]||0)||Math.random()-0.5); const take=pool.slice(0,Math.min(n,pool.length)); return chars.filter(c=>take.includes(c)); }
 function nameLetters(n){ const clean=n.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9 \-]/g,''); const parts=clean.split(/[\s\-]+/).filter(Boolean).map(p=>p[0].toUpperCase()+p.slice(1).toLowerCase()); return parts.join('').split('').filter(c=>SHAPES[c]); }
 function startSet(set){
@@ -540,6 +546,7 @@ function startSet(set){
   if(set==='kaart'){ buildGrid(); show('letters'); return; }
   let list;
   if(set==='naam'){ list=nameLetters(n); if(!list.length){ say('Typ eerst je naam.'); $('#naam').focus(); $('#naam').classList.add('shake'); setTimeout(()=>$('#naam').classList.remove('shake'),500); return; } }
+  else if(set==='kiezen'||set==='geheugen') list=pickKnown(SETS.klein,8);
   else list=pickList(SETS[set],8);
   startSession(set,list); say(`Hoi ${n||''}! Daar gaan we.`);
 }
@@ -601,7 +608,7 @@ $('#kaartterug').addEventListener('click',()=>show('start'));
 $('#replay').addEventListener('click',()=>{ speakLetter(); if(state.lvl==='hulp') state.demo=performance.now(); });
 $('#voordoen').addEventListener('click',()=>{ if(state.busy) return; state.demo=performance.now(); state.peek=performance.now()+1800; say(hidden()?`Kijk, dit is de ${spoken(state.letter)}. Zo doe je het.`:'Kijk, zo doe je het.'); });
 $('#opnieuw').addEventListener('click',()=>{ if(state.busy) return; loadLetter(state.letter); });
-$('#again').addEventListener('click',()=>{ if(fw) fw.stop(); const set=state.set; if(set==='naam') startSession('naam',nameLetters(state.naam)); else if(set==='kaart') startSession('kaart',state.list.slice()); else startSession(set,pickList(SETS[set],8)); });
+$('#again').addEventListener('click',()=>{ if(fw) fw.stop(); const set=state.set; if(set==='naam') startSession('naam',nameLetters(state.naam)); else if(set==='kaart') startSession('kaart',state.list.slice()); else if(set==='kiezen'||set==='geheugen') startSession(set,pickKnown(SETS.klein,8)); else startSession(set,pickList(SETS[set],8)); });
 $('#tostart').addEventListener('click',()=>{ if(fw) fw.stop(); show('start'); });
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&canSpeak()) speechSynthesis.cancel(); });
 updateStart();
