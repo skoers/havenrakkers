@@ -47,7 +47,8 @@ Het woord staat nergens geschreven.
   stem zegt welke letter het is en hoe je hem maakt ("een lange stok en twee
   schuine streepjes"), en er verschijnt even een stippellijn in dat vakje.
 - **Klaar!** kijkt per vakje of het handschrift op de goede letter lijkt. Goede
-  vakjes worden groen, foute rood. Een fout vakje mag je opnieuw schrijven of
+  vakjes worden groen, foute rood. Het is niet streng: een letter mag wat te
+  laag, te hoog, groter of kleiner staan. Een fout vakje mag je opnieuw schrijven of
   je vraagt een tip. De stem zegt niet welke letter het moet zijn, dat is de tip.
 - Is een vakje **twee keer fout**, dan komt de letter klein boven dat vakje te
   staan om na te schrijven. Dat kost een punt: een goed woord geeft 3 punten,
