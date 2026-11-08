@@ -531,7 +531,9 @@ function draw(now){
   ctx.globalAlpha=1; sparks=sparks.filter(p=>p.life>0);
 }
 function spark(x,y,n=10,c){ for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, s=Math.random()*1.2+0.3; sparks.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-0.6,life:1,r:Math.random()*1.4+0.6,c:c||`hsl(${Math.random()*360} 90% 60%)`}); } }
-let raf=0; function loop(now){ draw(now); drawWord(now); raf=requestAnimationFrame(loop); }
+/* De tekenlus draait alleen zolang het spelscherm zichtbaar is; op het start- en eindscherm staat hij stil. */
+let raf=0; function loop(now){ if($('#game').hidden||document.hidden){ raf=0; return; } draw(now); drawWord(now); raf=requestAnimationFrame(loop); }
+function startLoop(){ if(!raf&&!$('#game').hidden&&!document.hidden) raf=requestAnimationFrame(loop); }
 
 /* ===================== OVERTREKKEN ===================== */
 const tol=()=>({hulp:13,stippel:10,kiezen:12,geheugen:14}[state.lvl])+Math.min(6,state.fails*2);
@@ -637,7 +639,7 @@ function next(){ clearTimeout(state.autoT); if(!state.busy) return; state.idx++;
 function startSession(set,list){
   state.set=set; state.force=(set==='kiezen'||set==='geheugen')?set:null; state.list=list.map(item); state.idx=0; state.earned=[]; state.sessionStars=0; state.busy=false;
   $('#who').innerHTML=`<span>${state.avatar}</span> ${state.naam||''}`; $('#walker').textContent=state.avatar; $('#soundbtn').textContent=state.sound?'🔊':'🔇';
-  buildTrack(); buildPens(); show('game'); sizeCanvas(); if(!raf) raf=requestAnimationFrame(loop);
+  buildTrack(); buildPens(); show('game'); sizeCanvas(); startLoop();
   setTimeout(()=>{ sizeCanvas(); updateJourney(); loadLetter(state.list[0]); sizeWordCanvas(); },250);
 }
 /* Voor de vaste niveaus: liefst letters die het kind al kent (meeste sterren), de rest willekeurig. */
@@ -791,11 +793,15 @@ function endGame(){
   show('end'); say(`Hoera ${state.naam||''}! Je hebt alle letters geschreven. Hier is je diploma!`);
   fw=new Fireworks($('#fw')); fw.start();
 }
-class Fireworks{ constructor(c){ this.c=c; this.x=c.getContext('2d'); this.p=[]; this.on=false; }
-  start(){ this.on=true; this.c.width=innerWidth; this.c.height=innerHeight; this.t0=performance.now(); this.next=0; requestAnimationFrame(t=>this.frame(t)); }
+/* Vuurwerk: stopt na 15 seconden met een stilstaand sterrenplaatje en pauzeert als de pagina niet zichtbaar is. */
+class Fireworks{ constructor(c){ this.c=c; this.x=c.getContext('2d'); this.p=[]; this.on=false; this.paused=false; }
+  start(){ this.on=true; this.paused=false; const d=Math.min(2,window.devicePixelRatio||1); this.c.width=innerWidth*d; this.c.height=innerHeight*d; this.x.setTransform(d,0,0,d,0,0); this.W=innerWidth; this.H=innerHeight; this.t0=performance.now(); this.next=0; this.x.fillStyle='#070b1a'; this.x.fillRect(0,0,this.W,this.H); requestAnimationFrame(t=>this.frame(t)); }
   stop(){ this.on=false; }
-  burst(){ const x=Math.random()*this.c.width, y=Math.random()*this.c.height*0.6+40, hue=Math.random()*360; for(let i=0;i<90;i++){ const a=Math.random()*Math.PI*2, s=Math.random()*5+1; this.p.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,hue:hue+Math.random()*40}); } }
-  frame(t){ if(!this.on) return; const x=this.x; x.fillStyle='rgba(7,11,26,.22)'; x.fillRect(0,0,this.c.width,this.c.height); if(t>this.next&&t-this.t0<20000){ this.burst(); if(Math.random()<0.4) this.burst(); this.next=t+500+Math.random()*700; }
+  pause(){ if(this.on){ this.paused=true; this.pausedAt=performance.now(); } }
+  resume(){ if(this.on&&this.paused){ this.paused=false; this.t0+=performance.now()-this.pausedAt; requestAnimationFrame(t=>this.frame(t)); } }
+  finish(){ this.on=false; const x=this.x; x.fillStyle='#070b1a'; x.fillRect(0,0,this.W,this.H); for(let i=0;i<80;i++){ x.fillStyle=`hsl(${Math.random()*360} 90% 70%)`; x.beginPath(); x.arc(Math.random()*this.W,Math.random()*this.H,Math.random()*2.5+1,0,7); x.fill(); } }
+  burst(){ const x=Math.random()*this.W, y=Math.random()*this.H*0.6+40, hue=Math.random()*360; for(let i=0;i<90;i++){ const a=Math.random()*Math.PI*2, s=Math.random()*5+1; this.p.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,hue:hue+Math.random()*40}); } }
+  frame(t){ if(!this.on||this.paused) return; const x=this.x; const el=t-this.t0; if(el>15000){ this.finish(); return; } x.fillStyle='rgba(7,11,26,.22)'; x.fillRect(0,0,this.W,this.H); if(t>this.next&&el<12000){ this.burst(); if(Math.random()<0.4) this.burst(); this.next=t+500+Math.random()*700; }
     for(const q of this.p){ q.x+=q.vx; q.y+=q.vy; q.vy+=0.04; q.vx*=0.985; q.vy*=0.985; q.life-=0.012; x.fillStyle=`hsla(${q.hue} 100% 65% / ${Math.max(0,q.life)})`; x.beginPath(); x.arc(q.x,q.y,2.2,0,Math.PI*2); x.fill(); } this.p=this.p.filter(q=>q.life>0); requestAnimationFrame(t=>this.frame(t)); } }
 
 /* Confetti */
@@ -821,7 +827,7 @@ $('#voordoen').addEventListener('click',()=>{ if(state.busy) return; state.demo=
 $('#opnieuw').addEventListener('click',()=>{ if(state.busy) return; loadLetter(state.letter); });
 $('#again').addEventListener('click',()=>{ if(fw) fw.stop(); const set=state.set; if(set==='naam') startSession('naam',nameLetters(state.naam)); else if(set==='kaart') startSession('kaart',state.list.slice()); else if(set==='kiezen') startSession(set,pickKies(playKies()<=2?8:6)); else if(set==='geheugen') startSession(set,pickKnown(SETS.klein,8)); else if(set==='woord') startSession(set,pickWords(5)); else startSession(set,pickList(SETS[set],8)); });
 $('#tostart').addEventListener('click',()=>{ if(fw) fw.stop(); show('start'); });
-document.addEventListener('visibilitychange',()=>{ if(document.hidden&&canSpeak()) speechSynthesis.cancel(); });
+document.addEventListener('visibilitychange',()=>{ if(document.hidden){ if(canSpeak()) speechSynthesis.cancel(); if(fw) fw.pause(); } else { startLoop(); if(fw) fw.resume(); } });
 updateStart();
 </script>
 </body>
