@@ -13,6 +13,10 @@ Speel het op https://skoers.github.io/havenrakkers/schrijfspel/
 - Elke letter staat groot op schrijflijnen. Een groene stip met een cijfer
   laat zien waar je begint, een pijl waar je heen gaat, en een blauw
   potloodje doet de beweging voor.
+- Bij de controle van woorden tellen ook de vormen goed die kinderen in groep
+  2, 3 en 4 maken: l, t en i met een haakje onderaan, i en j met een streepje
+  als punt, u met of zonder stok, y met een krul, k met hoge of grote schuine
+  streepjes, hoekige m, n en h, d met haakje, en een a met of zonder stok.
 - De kleine a is de school-a: een klein haakje bovenaan, dan het rondje
   tegen de klok in en weer omhoog naar het haakje, zonder stok. Bij het
   controleren van woorden telt een a met een stok ook goed.

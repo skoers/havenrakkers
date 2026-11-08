@@ -653,6 +653,27 @@ TPL.k.push([S(L(35,20,35,100)),S(L(66,40,36,78),L(36,78,67,100))].flat());
 TPL.k.push([S(L(35,20,35,100)),S(L(68,28,36,72),L(36,72,70,100))].flat());
 TPL.k.push([S(L(35,20,35,100)),S(L(72,48,36,84),L(36,84,72,100))].flat());
 TPL.k.push([S(L(35,20,35,100)),S(L(70,56,36,76),L(36,76,70,100))].flat());
+/* Vormen zoals kinderen in groep 2, 3 en 4 ze ook maken: tellen allemaal goed. */
+TPL.l.push(S(L(47,20,47,90),A(55,90,8,180,90)));                                   // l met een haakje onderaan
+TPL.l.push(S(L(45,20,45,88),A(55,88,10,180,60)));                                  // l met een groter haakje
+TPL.t.push([S(L(46,30,46,90),A(54,90,8,180,90)),S(L(34,60,62,60))].flat());        // t met een haakje onderaan
+TPL.i.push([S(L(48,60,48,90),A(56,90,8,180,90)),S(D(48,44))].flat());              // i met een haakje
+TPL.i.push([S(L(50,60,50,100)),S(L(50,40,50,46))].flat());                         // i met een streepje als punt
+TPL.j.push([S(L(58,60,58,114),A(44,114,14,0,180)),S(L(58,40,58,46))].flat());      // j met een streepje als punt
+TPL.u.push(S(L(35,60,35,85),A(50,85,15,180,0),L(65,85,65,60)));                    // u zonder stok aan de rechterkant
+TPL.u.push(S(L(35,60,35,85),A(50,85,15,180,0),L(65,85,65,60),L(65,60,65,100)));    // u met stok
+TPL.y.push([S(L(34,60,51,97)),S(L(66,60,50,110),A(40,110,10,30,180))].flat());    // y met een krul onderaan
+TPL.g.push([S(L(69,59,56,71),A(46,84,14,-50,-410),L(56,71,64,66)),S(L(66,64,66,114),A(50,114,16,0,180))].flat());   // g met de school-a als buik
+TPL.q.push([S(L(69,59,56,71),A(46,84,14,-50,-410),L(56,71,64,66)),S(L(66,64,66,130))].flat());
+TPL.d.push([S(A(48,80,20,-50,-410)),S(L(68,20,68,100),A(60,100,8,0,90))].flat()); // d met haakje
+TPL.f.push([S(L(56,24,48,30),L(48,30,48,100)),S(L(36,60,60,60))].flat());          // f met korter haakje
+TPL.m.push([S(L(27,60,27,100)),S(L(27,60,50,60),L(50,60,50,100)),S(L(50,60,73,60),L(73,60,73,100))].flat());  // m hoekig
+TPL.n.push([S(L(35,60,35,100)),S(L(35,60,65,60),L(65,60,65,100))].flat());         // n hoekig
+TPL.h.push([S(L(35,20,35,100)),S(L(35,60,65,60),L(65,60,65,100))].flat());         // h hoekig
+TPL.r.push([S(L(38,60,38,100)),S(L(38,66,62,60))].flat());                         // r met recht streepje
+TPL.e.push(S(L(32,80,68,80),A(50,80,20,0,-300)));                                  // e wat meer gesloten
+TPL.p.push([S(L(35,60,35,130)),S(A(50,80,15,-160,200))].flat());                   // p met kleiner buikje
+TPL.b.push([S(L(35,20,35,100)),S(A(50,80,15,-160,200))].flat());
 function sizeWordCanvas(){ if(!state.word) return; const wrap=$('#wordcanvaswrap'); const n=state.word.text.length; const outer=$('#wordwrap'); const tools=outer.querySelector('.tools'); const w=wrap.clientWidth, h=Math.min(wrap.clientHeight,outer.clientHeight-tools.offsetHeight-10); if(!w||h<60) return; const W=Math.max(120,Math.floor(Math.min(w,h*n*100/190))); const d=Math.min(3,window.devicePixelRatio||1); wcv.style.width=W+'px'; wcv.style.height=Math.floor(W*190/(n*100))+'px'; wcv.width=Math.round(W*d); wcv.height=Math.round(W*190/(n*100)*d); }
 window.addEventListener('resize',sizeWordCanvas);
 function loadWord(it){
