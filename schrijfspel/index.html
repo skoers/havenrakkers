@@ -96,7 +96,8 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 .pen.lock{opacity:.45;filter:grayscale(.6)}
 .pen.lock::after{content:"🔒";font-size:.9rem}
 .pen.rainbow{background:conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)}
-.pen.goud{background:linear-gradient(135deg,#ffe36b,#d4a017)}
+.pen.glitter::before{content:"✨";font-size:.95rem;filter:drop-shadow(0 0 2px #fff)}
+.pen.lock.glitter::before{content:""}
 .pen.new{animation:pop .6s cubic-bezier(.2,1.4,.4,1) both}
 
 /* Reis met stickers */
@@ -302,7 +303,7 @@ function resample(parts,step=STEP){ const raw=parts.flat(); const out=[raw[0]]; 
 const S=(...parts)=>resample(parts);
 
 const SHAPES={
-  a:[S(A(45,82,16,-50,-410),L(56,70,66,62),L(66,62,66,100))],
+  a:[S(L(69,59,56,71),A(46,84,14,-50,-410),L(56,71,64,66))],   // school-a: klein haakje bovenaan, rondje, en weer omhoog naar het haakje
   b:[S(L(35,20,35,100)),S(A(51,80,17,-155,205))],
   c:[S(A(50,80,20,-40,-320))],
   d:[S(A(48,80,20,-50,-410),L(61,65,68,64)),S(L(68,20,68,100))],
@@ -399,7 +400,7 @@ const doneOf=L=>wordsOf(L).filter(w=>(state.stars['woord:'+w[0]]||0)>0).length;
 function wordLevel(){ let L=1; while(L<LETTERSETS.length && doneOf(L)>=Math.min(5,wordsOf(L).length)) L++; return L; }
 const levelLetters=L=>[...LETTERSETS.slice(0,L).join('')].sort().join(' ');
 /* Hoe maak je de letter: de tip die de stem geeft. */
-const TIP={a:'een rondje tegen de klok in, en dan een stokje omlaag',b:'een lange stok omlaag, en dan een buikje aan de rechterkant',c:'een open rondje, als een maantje',d:'een rondje, en dan een lange stok omhoog en weer omlaag',e:'een streepje, en dan een boog eromheen',f:'een haakje bovenaan, een stok omlaag, en een streepje in het midden',g:'een rondje, en dan een staart omlaag naar links',h:'een lange stok, en dan een bruggetje',i:'een stokje, en een puntje erboven',j:'een stok omlaag met een haakje, en een puntje erboven',k:'een lange stok, en dan twee schuine streepjes',l:'één lange stok omlaag',m:'een stokje en twee bruggetjes',n:'een stokje en één bruggetje',o:'een rondje, tegen de klok in',p:'een stok omlaag tot onder de lijn, en een buikje',q:'een rondje, en een stok omlaag tot onder de lijn',r:'een stokje, en een klein haakje',s:'een slang: eerst naar links, dan naar rechts',t:'een stok, en een streepje erdoor',u:'omlaag, een bocht, omhoog en weer omlaag',v:'schuin omlaag, en schuin omhoog',w:'twee keer een v',x:'twee schuine streepjes die elkaar kruisen',y:'schuin omlaag, en een lange schuine streep tot onder de lijn',z:'een streepje, schuin omlaag, en weer een streepje'};
+const TIP={a:'begin bij het haakje bovenaan, een rondje tegen de klok in, en weer omhoog naar het haakje',b:'een lange stok omlaag, en dan een buikje aan de rechterkant',c:'een open rondje, als een maantje',d:'een rondje, en dan een lange stok omhoog en weer omlaag',e:'een streepje, en dan een boog eromheen',f:'een haakje bovenaan, een stok omlaag, en een streepje in het midden',g:'een rondje, en dan een staart omlaag naar links',h:'een lange stok, en dan een bruggetje',i:'een stokje, en een puntje erboven',j:'een stok omlaag met een haakje, en een puntje erboven',k:'een lange stok, en dan twee schuine streepjes',l:'één lange stok omlaag',m:'een stokje en twee bruggetjes',n:'een stokje en één bruggetje',o:'een rondje, tegen de klok in',p:'een stok omlaag tot onder de lijn, en een buikje',q:'een rondje, en een stok omlaag tot onder de lijn',r:'een stokje, en een klein haakje',s:'een slang: eerst naar links, dan naar rechts',t:'een stok, en een streepje erdoor',u:'omlaag, een bocht, omhoog en weer omlaag',v:'schuin omlaag, en schuin omhoog',w:'twee keer een v',x:'twee schuine streepjes die elkaar kruisen',y:'schuin omlaag, en een lange schuine streep tot onder de lijn',z:'een streepje, schuin omlaag, en weer een streepje'};
 const RANG=['eerste','tweede','derde','vierde','vijfde'];
 const AVATARS=['🐸','🐱','🦊','🐼','🦁','🐧','🦄','🐙'];
 const STICKERS=['🦄','🐬','🦋','🌈','🚀','🐢','🦊','🐼','🍦','🎈','⚽','🧸','🦕','🐙','🌟','🎸','🍩','🐸','🦁','🎠','🛸','🧁','🐳','🦜','🍉','🐝','🎨','🏆'];
@@ -407,10 +408,16 @@ const PENS=[
   {id:'oranje',naam:'oranje pen',color:'#ff7a1a',need:0},
   {id:'blauw',naam:'blauwe pen',color:'#2f7cff',need:3},
   {id:'groen',naam:'groene pen',color:'#1fb05a',need:6},
-  {id:'roze',naam:'roze pen',color:'#ff4fa3',need:10},
-  {id:'paars',naam:'paarse pen',color:'#8a4fff',need:15},
-  {id:'rainbow',naam:'regenboogpen',color:'rainbow',need:20},
-  {id:'goud',naam:'gouden glitterpen',color:'#d4a017',need:30},
+  {id:'rood',naam:'rode pen',color:'#e53935',need:9},
+  {id:'roze',naam:'roze pen',color:'#ff4fa3',need:12},
+  {id:'geel',naam:'gele pen',color:'#f5c400',need:15},
+  {id:'paars',naam:'paarse pen',color:'#8a4fff',need:18},
+  {id:'zee',naam:'zeeblauwe pen',color:'#00b8c4',need:22},
+  {id:'rozeglitter',naam:'roze glitterpen',color:'#ff4fa3',glitter:'#fff0f8',need:26},
+  {id:'rainbow',naam:'regenboogpen',color:'rainbow',need:30},
+  {id:'zilver',naam:'zilveren glitterpen',color:'#9aa5b1',glitter:'#ffffff',need:36},
+  {id:'goud',naam:'gouden glitterpen',color:'#d4a017',glitter:'#ffe36b',need:42},
+  {id:'rainbowglitter',naam:'regenboog glitterpen',color:'rainbow',glitter:'#ffffff',need:50},
 ];
 const PRAISE=['Goed zo!','Super!','Knap gedaan!','Wauw, wat mooi!','Dat is \'m!','Prachtig!','Top!','Heel knap!'];
 
@@ -512,7 +519,7 @@ cv.addEventListener('pointermove',e=>{
   if(!drawing||state.busy) return; e.preventDefault(); const st=state.strokes[state.si]; const p=toUnits(e); trail.push(p); if(trail.length>400) trail.shift();
   const T=tol(), n=st.pts.length; let adv=false;
   for(let i=st.prog;i<=Math.min(st.prog+14,n-1);i++){ if(dist(p,st.pts[i])<T){ st.prog=i; adv=true; } }
-  if(adv){ misses=0; if(curPen().id==='goud'&&Math.random()<0.5) spark(p[0],p[1],2,'#ffe36b'); }
+  if(adv){ misses=0; const g=curPen().glitter; if(g&&Math.random()<0.5) spark(p[0],p[1],2,g); }
   else if(dist(p,st.pts[st.prog])>T*1.9){ if(++misses>18) failStroke(); }
   if(strokeDone(st)) completeStroke();
 });
@@ -610,7 +617,7 @@ function stickerToast(s){ const t=document.createElement('div'); t.className='st
 function toast(txt){ const t=document.createElement('div'); t.className='toast'; t.textContent=txt; document.body.appendChild(t); setTimeout(()=>t.remove(),3200); }
 
 /* Pennen */
-function buildPens(){ const box=$('#pens'); const had=new Set([...box.querySelectorAll('.pen')].filter(b=>!b.classList.contains('lock')).map(b=>b.dataset.id)); box.innerHTML=''; for(const p of PENS){ const b=document.createElement('button'); b.type='button'; b.dataset.id=p.id; const un=penUnlocked(p); b.className='pen'+(p.id==='rainbow'?' rainbow':'')+(p.id==='goud'?' goud':'')+(un?'':' lock')+(p.id===curPen().id?' sel':'')+(un&&had.size&&!had.has(p.id)?' new':''); if(p.color!=='rainbow'&&p.id!=='goud') b.style.setProperty('--pc',p.color); b.title=un?p.naam:`Nog ${p.need-state.total} letters`; b.setAttribute('aria-label',b.title);
+function buildPens(){ const box=$('#pens'); const had=new Set([...box.querySelectorAll('.pen')].filter(b=>!b.classList.contains('lock')).map(b=>b.dataset.id)); box.innerHTML=''; let locked=0; for(const p of PENS){ if(!penUnlocked(p)&&++locked>2) break; const b=document.createElement('button'); b.type='button'; b.dataset.id=p.id; const un=penUnlocked(p); b.className='pen'+(p.color==='rainbow'?' rainbow':'')+(p.glitter?' glitter':'')+(un?'':' lock')+(p.id===curPen().id?' sel':'')+(un&&had.size&&!had.has(p.id)?' new':''); if(p.color!=='rainbow') b.style.setProperty('--pc',p.color); b.title=un?p.naam:`Nog ${p.need-state.total} letters`; b.setAttribute('aria-label',b.title);
   b.addEventListener('click',()=>{ if(!un){ say(`Nog ${p.need-state.total} letters, dan krijg je de ${p.naam}.`); toast(`🔒 Nog ${p.need-state.total} letters voor de ${p.naam}`); return; } state.pen=p.id; save(); buildPens(); say(`De ${p.naam}!`); }); box.appendChild(b); } }
 
 /* Letterkaart */
@@ -625,8 +632,9 @@ function show(id){ for(const s of ['start','letters','game','end']) $('#'+s).hid
    Na "Klaar" vergelijkt het spel het handschrift per vakje met de lettervormen. */
 const wcv=$('#wordpaper'), wctx=wcv.getContext('2d');
 let wDraw=false, wBox=-1, wCur=null;
-const TPL={}; for(const ch of 'abcdefghijklmnopqrstuvwxyz') TPL[ch]=SHAPES[ch].flat();
-function sizeWordCanvas(){ if(!state.word) return; const wrap=$('#wordcanvaswrap'); const n=state.word.text.length; const w=wrap.clientWidth, h=wrap.clientHeight; if(!w||!h) return; const W=Math.max(120,Math.floor(Math.min(w,h*n*100/190))); const d=Math.min(3,window.devicePixelRatio||1); wcv.style.width=W+'px'; wcv.style.height=Math.floor(W*190/(n*100))+'px'; wcv.width=Math.round(W*d); wcv.height=Math.round(W*190/(n*100)*d); }
+const TPL={}; for(const ch of 'abcdefghijklmnopqrstuvwxyz') TPL[ch]=[SHAPES[ch].flat()];
+TPL.a.push(S(A(45,82,16,-50,-410),L(56,70,66,62),L(66,62,66,100)));   // a met een stok telt ook goed
+function sizeWordCanvas(){ if(!state.word) return; const wrap=$('#wordcanvaswrap'); const n=state.word.text.length; const outer=$('#wordwrap'); const tools=outer.querySelector('.tools'); const w=wrap.clientWidth, h=Math.min(wrap.clientHeight,outer.clientHeight-tools.offsetHeight-10); if(!w||h<60) return; const W=Math.max(120,Math.floor(Math.min(w,h*n*100/190))); const d=Math.min(3,window.devicePixelRatio||1); wcv.style.width=W+'px'; wcv.style.height=Math.floor(W*190/(n*100))+'px'; wcv.width=Math.round(W*d); wcv.height=Math.round(W*190/(n*100)*d); }
 window.addEventListener('resize',sizeWordCanvas);
 function loadWord(it){
   state.word={text:it.word,emoji:it.emoji}; state.letter=it.word; state.w=[it.word,it.emoji]; state.item=it; state.lvl='woord'; state.busy=false; state.fails=0;
@@ -639,8 +647,9 @@ function loadWord(it){
   say(`${it.word}! Schrijf het woord ${it.word}. Elke letter in een vakje. Weet je een letter niet? Druk op tip.`);
 }
 function wUnits(e){ const r=wcv.getBoundingClientRect(); const n=state.word.text.length; return [(e.clientX-r.left)/r.width*n*100,(e.clientY-r.top)/r.height*190-40]; }
-wcv.addEventListener('pointerdown',e=>{ if(!state.word||state.busy) return; e.preventDefault(); try{ wcv.setPointerCapture(e.pointerId); }catch(x){} const p=wUnits(e); const i=Math.max(0,Math.min(state.boxes.length-1,Math.floor(p[0]/100))); wBox=i; const b=state.boxes[i]; if(b.status==='bad'){ b.status=''; b.ink=[]; } if(p[1]<0) return; wCur=[[p[0]-i*100,p[1]]]; b.ink.push(wCur); wDraw=true; });
-wcv.addEventListener('pointermove',e=>{ if(!wDraw) return; e.preventDefault(); const p=wUnits(e); const q=[p[0]-wBox*100,p[1]]; if(q[0]<-6||q[0]>106) return; const last=wCur[wCur.length-1]; if(Math.hypot(q[0]-last[0],q[1]-last[1])>0.8) wCur.push(q); });
+wcv.addEventListener('pointerdown',e=>{ if(!state.word||state.busy) return; e.preventDefault(); try{ wcv.setPointerCapture(e.pointerId); }catch(x){} const p=wUnits(e); const i=Math.max(0,Math.min(state.boxes.length-1,Math.floor(p[0]/100))); wBox=i; const b=state.boxes[i]; if(p[1]<0){ if(p[0]-i*100>76&&p[1]>-22){ b.ink=[]; b.status=''; b.sparks=[]; } return; }   // tik op het sponsje: vakje leeg
+  if(b.status==='bad'){ b.status=''; b.ink=[]; } wCur=[[p[0]-i*100,p[1]]]; b.ink.push(wCur); wDraw=true; });
+wcv.addEventListener('pointermove',e=>{ if(!wDraw) return; e.preventDefault(); const p=wUnits(e); const q=[p[0]-wBox*100,p[1]]; if(q[0]<-6||q[0]>106) return; const last=wCur[wCur.length-1]; if(Math.hypot(q[0]-last[0],q[1]-last[1])>0.8){ wCur.push(q); const g=curPen().glitter; if(g&&Math.random()<0.4){ const bx=state.boxes[wBox]; (bx.sparks=bx.sparks||[]).push({x:q[0],y:q[1],vx:(Math.random()-.5)*1.4,vy:-Math.random()*1.2,life:1,r:Math.random()*1.3+0.5,c:g}); } } });
 const wEnd=()=>{ if(!wDraw) return; wDraw=false; if(wCur&&wCur.length<2) wCur.push([wCur[0][0]+0.5,wCur[0][1]+0.5]); wCur=null; };
 wcv.addEventListener('pointerup',wEnd); wcv.addEventListener('pointercancel',wEnd); wcv.addEventListener('pointerleave',wEnd);
 function drawWord(now){
@@ -654,7 +663,11 @@ function drawWord(now){
     wctx.strokeStyle='#bcd4ea'; wctx.lineWidth=0.6; wctx.setLineDash([2,2]); for(const y of [TOP,MID,BOT]){ wctx.beginPath(); wctx.moveTo(6,y); wctx.lineTo(94,y); wctx.stroke(); }
     wctx.setLineDash([]); wctx.lineWidth=1.2; wctx.strokeStyle='#7fa6cf'; wctx.beginPath(); wctx.moveTo(6,BASE); wctx.lineTo(94,BASE); wctx.stroke();
     if(now<b.ghost){ wctx.strokeStyle='#b8b0d0'; wctx.lineWidth=2.5; wctx.setLineDash([3,3]); wctx.lineCap='round'; wctx.lineJoin='round'; for(const pts of SHAPES[b.ch]){ wctx.beginPath(); wctx.moveTo(pts[0][0],pts[0][1]); pts.forEach(q=>wctx.lineTo(q[0],q[1])); wctx.stroke(); } wctx.setLineDash([]); const s=SHAPES[b.ch][0][0]; wctx.fillStyle='#1f9d55'; wctx.beginPath(); wctx.arc(s[0],s[1],4,0,7); wctx.fill(); }
-    wctx.lineCap='round'; wctx.lineJoin='round'; wctx.lineWidth=7; b.ink.forEach((st,k)=>{ wctx.strokeStyle=pen.color==='rainbow'?`hsl(${(k*60+i*90)%360} 95% 55%)`:pen.color; wctx.beginPath(); wctx.moveTo(st[0][0],st[0][1]); st.forEach(q=>wctx.lineTo(q[0],q[1])); wctx.stroke(); });
+    wctx.lineCap='round'; wctx.lineJoin='round'; wctx.lineWidth=7; let hue=i*40;
+    b.ink.forEach(st=>{ if(pen.color!=='rainbow'){ wctx.strokeStyle=pen.color; wctx.beginPath(); wctx.moveTo(st[0][0],st[0][1]); st.forEach(q=>wctx.lineTo(q[0],q[1])); wctx.stroke(); }
+      else for(let k=1;k<st.length;k++){ wctx.strokeStyle=`hsl(${(hue+=4)%360} 95% 55%)`; wctx.beginPath(); wctx.moveTo(st[k-1][0],st[k-1][1]); wctx.lineTo(st[k][0],st[k][1]); wctx.stroke(); } });
+    if(b.ink.some(st=>st.length>1)){ wctx.font='9px sans-serif'; wctx.textAlign='center'; wctx.textBaseline='middle'; wctx.fillText('🧽',88,-10); }   // wis dit vakje
+    for(const q of b.sparks||[]){ q.x+=q.vx; q.y+=q.vy; q.life-=0.03; wctx.globalAlpha=Math.max(0,q.life); wctx.fillStyle=q.c; wctx.beginPath(); wctx.arc(q.x,q.y,q.r,0,7); wctx.fill(); } wctx.globalAlpha=1; if(b.sparks) b.sparks=b.sparks.filter(q=>q.life>0);
     wctx.restore(); });
 }
 /* Herkenning: gemiddelde afstand van het handschrift tot de lettervorm en andersom; ook met het handschrift verschoven naar het midden van de letter. */
@@ -666,7 +679,8 @@ const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
 function shapeDist(P,T){ const d1=dists(P,T), d2=dists(T,P); return 0.5*(mean(d1)+mean(d2))+0.25*(pct(d1,.9)+pct(d2,.9)); }
 function bbox(P){ let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; for(const q of P){ x0=Math.min(x0,q[0]); y0=Math.min(y0,q[1]); x1=Math.max(x1,q[0]); y1=Math.max(y1,q[1]); } return [x0,y0,x1,y1]; }
 /* Niet te streng: het handschrift mag verschoven zijn (ook over de onderste lijn) en groter of kleiner; dat kost maar een klein beetje. */
-function scoreLetter(P,ch){ const T=TPL[ch]; const bp=bbox(P), bt=bbox(T); const raw=shapeDist(P,T);
+function scoreLetter(P,ch){ return Math.min(...TPL[ch].map(T=>scoreTpl(P,T))); }
+function scoreTpl(P,T){ const bp=bbox(P), bt=bbox(T); const raw=shapeDist(P,T);
   const dx=(bt[0]+bt[2]-bp[0]-bp[2])/2, dy=(bt[1]+bt[3]-bp[1]-bp[3])/2; const Q=P.map(q=>[q[0]+dx,q[1]+dy]); const shifted=shapeDist(Q,T)+1;
   const sp=Math.max(bp[2]-bp[0],bp[3]-bp[1]), st=Math.max(bt[2]-bt[0],bt[3]-bt[1]); const k=Math.max(0.6,Math.min(1.6,st/Math.max(1,sp))); const cxp=(bp[0]+bp[2])/2, cyp=(bp[1]+bp[3])/2, cxt=(bt[0]+bt[2])/2, cyt=(bt[1]+bt[3])/2;
   const R=P.map(q=>[cxt+(q[0]-cxp)*k, cyt+(q[1]-cyp)*k]); const scaled=shapeDist(R,T)+2+Math.abs(1-k)*3;
@@ -683,7 +697,7 @@ function giveTip(){ if(!state.word||state.busy) return; const b=state.boxes[wBox
   if(state.wlvl<=3) b.ghost=performance.now()+6000; if(b.status==='bad'){ b.status=''; b.ink=[]; }
   say(`De ${RANG[wBox]} letter is de ${b.ch}. ${TIP[b.ch]}.${state.wlvl<=3?' Kijk naar de stippellijn.':''}`); }
 $('#tipbtn').addEventListener('click',giveTip);
-$('#wisbtn').addEventListener('click',()=>{ if(!state.word||state.busy) return; const b=state.boxes[wBox]; if(b){ b.ink=[]; b.status=''; } });
+$('#wisbtn').addEventListener('click',()=>{ if(!state.word||state.busy) return; const b=state.boxes[wBox]; const leeg=!b||!b.ink.some(st=>st.length>1); if(!leeg){ b.ink=[]; b.status=''; b.sparks=[]; return; } const rood=state.boxes.filter(x=>x.status==='bad'); (rood.length?rood:state.boxes).forEach(x=>{ x.ink=[]; x.status=''; x.sparks=[]; }); });
 $('#klaarbtn').addEventListener('click',checkWord);
 
 /* ===================== EINDE EN VUURWERK ===================== */

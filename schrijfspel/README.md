@@ -13,6 +13,9 @@ Speel het op https://skoers.github.io/havenrakkers/schrijfspel/
 - Elke letter staat groot op schrijflijnen. Een groene stip met een cijfer
   laat zien waar je begint, een pijl waar je heen gaat, en een blauw
   potloodje doet de beweging voor.
+- De kleine a is de school-a: een klein haakje bovenaan, dan het rondje
+  tegen de klok in en weer omhoog naar het haakje, zonder stok. Bij het
+  controleren van woorden telt een a met een stok ook goed.
 - Volg de lijn met je vinger. Lukt het niet, dan zegt de stem "Begin bij de
   groene stip" en kun je opnieuw. Na een paar keer mis wordt het spel
   vanzelf wat soepeler.
@@ -49,7 +52,8 @@ Het woord staat nergens geschreven.
 - **Klaar!** kijkt per vakje of het handschrift op de goede letter lijkt. Goede
   vakjes worden groen, foute rood. Het is niet streng: een letter mag wat te
   laag, te hoog, groter of kleiner staan. Een fout vakje mag je opnieuw schrijven of
-  je vraagt een tip. De stem zegt niet welke letter het moet zijn, dat is de tip.
+  je vraagt een tip. Wissen kan met het sponsje boven elk vakje, of met de
+  knop "Wis vakje" (het actieve vakje, of alle rode vakjes als dat al leeg is). De stem zegt niet welke letter het moet zijn, dat is de tip.
 - Is een vakje **twee keer fout**, dan komt de letter klein boven dat vakje te
   staan om na te schrijven. Dat kost een punt: een goed woord geeft 3 punten,
   min één per voorbeeldletter (minimaal 1). De punten (🏆) blijven bewaard.
@@ -71,8 +75,11 @@ Het woord staat nergens geschreven.
 - Bij elke letter hoort een plaatje en een woord (a van aap, k van kat...).
 - Sterren per letter (maximaal 3), confetti en geluidjes.
 - Om de twee letters een sticker; het stickerboek blijft bewaard op de iPad.
-- Nieuwe pennen vrijspelen: blauw, groen, roze, paars, regenboog en goud
-  met glitter, na 3, 6, 10, 15, 20 en 30 geschreven letters.
+- Nieuwe pennen vrijspelen, dertien in totaal: na 3, 6, 9, 12, 15, 18, 22, 26,
+  30, 36, 42 en 50 geschreven letters komen er kleuren bij (blauw, groen, rood,
+  roze, geel, paars, zeeblauw), glitterpennen (roze, zilver, goud) en de
+  regenboogpen en regenboog-glitterpen. Je ziet steeds de volgende twee die
+  je nog kunt winnen.
 - Aan het einde een schrijfdiploma met naam en datum, plus vuurwerk.
 
 ## Voor ouders (tandwieltje op het startscherm)
