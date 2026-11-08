@@ -488,9 +488,13 @@ class Fireworks{
     while(pts.length>1400){ pts=pts.filter((_,i)=>i%2===0); }
     return pts;
   }
-  start(){ this.running=true; addEventListener('resize',this.resize); this.resize(); this.last=performance.now(); this.phase='wait'; this.phaseT=this.name?0.8:9e9;
+  /* Het vuurwerk stopt na ongeveer 15 seconden met een stilstaand eindplaatje, en pauzeert zodra de pagina niet zichtbaar is.
+     Zo blijft de iPad niet urenlang op volle kracht tekenen als het eindscherm blijft staan. */
+  start(){ this.running=true; this.paused=false; addEventListener('resize',this.resize); this.onVis=()=>{ if(document.hidden){ this.paused=true; } else if(this.paused&&this.running){ this.paused=false; this.last=performance.now(); requestAnimationFrame(t=>this.loop(t)); } };
+    document.addEventListener('visibilitychange',this.onVis); this.resize(); this.last=performance.now(); this.phase='wait'; this.phaseT=this.name?0.8:9e9;
     if(this.reduced){ this.drawStatic(); return; } requestAnimationFrame(t=>this.loop(t)); }
-  stop(){ this.running=false; removeEventListener('resize',this.resize); }
+  stop(){ this.running=false; removeEventListener('resize',this.resize); if(this.onVis) document.removeEventListener('visibilitychange',this.onVis); }
+  finish(){ this.stop(); this.drawStatic(); }
   drawStatic(){ const g=this.ctx; g.fillStyle='#070b1a'; g.fillRect(0,0,this.W,this.H); g.fillStyle='#ffd166';
     for(const [x,y] of this.targets){ g.beginPath(); g.arc(x,y,2.2,0,7); g.fill(); }
     for(let i=0;i<60;i++){ g.fillStyle=`hsl(${Math.random()*360} 90% 65%)`; g.beginPath(); g.arc(Math.random()*this.W,Math.random()*this.H,Math.random()*3+1,0,7); g.fill(); } }
@@ -508,7 +512,8 @@ class Fireworks{
     }
   }
   loop(now){
-    if(!this.running) return;
+    if(!this.running||this.paused) return;
+    if(this.t>15 && (this.phase==='wait' || !this.name)){ this.finish(); return; }
     const dt=Math.min(0.05,(now-this.last)/1000); this.last=now; this.t+=dt; this.phaseT-=dt;
     const g=this.ctx; g.globalCompositeOperation='source-over'; g.fillStyle='rgba(7,11,26,0.22)'; g.fillRect(0,0,this.W,this.H); g.globalCompositeOperation='lighter';
     if(Math.random()<(this.grand?0.14:0.02)) this.launch();
