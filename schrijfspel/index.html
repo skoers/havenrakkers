@@ -249,6 +249,7 @@ canvas.paper{touch-action:none;border-radius:18px;box-shadow:0 6px 18px rgba(0,0
     </div>
     <div class="canvaswrap" id="canvaswrap"><canvas class="paper" id="paper"></canvas></div>
     <div class="answers" id="answers" hidden></div>
+    <div class="lvlrow" id="kieslvl" hidden></div>
     <div class="wordwrap" id="wordwrap" hidden>
       <div class="wordcanvas" id="wordcanvaswrap"><canvas class="paper" id="wordpaper"></canvas></div>
       <div class="lvlrow" id="lvlrow" aria-label="Kies een niveau"></div>
@@ -401,6 +402,22 @@ const WOORDEN=[
   ['bal','⚽'],['vis','🐟'],['zon','☀️'],['uil','🦉'],['bus','🚌'],['bed','🛏️'],['hond','🐶'],['huis','🏠'],['boot','⛵'],['lamp','💡'],['boom','🌳'],['bloem','🌸'],['vlag','🚩'],['slang','🐍'],['hoed','🎩'],['vos','🦊'],['duif','🕊️'],['muis','🐭'],['melk','🥛'],['stoel','🪑'],['paard','🐴'],['brood','🍞'],['vogel','🐦'],['appel','🍎'],['kroon','👑'],['glas','🥛'],['bank','🛋️'],['zeep','🧼'],['deur','🚪'],['bril','👓'],['blad','🍃'],['geit','🐐'],['berg','⛰️'],['hand','✋'],['tand','🦷'],['neus','👃'],['pizza','🍕'],
   ['wolk','☁️'],['jas','🧥'],['fiets','🚲'],['worst','🌭'],['wortel','🥕'],['jojo','🪀'],['fles','🍾'],['giraf','🦒'],['wiel','🛞'],['juf','👩‍🏫'],['wc','🚽'],
   ['oskar','👦'],['ronja','👧'],['linda','👩‍🦰']];
+/* "Kies de letter" in vijf niveaus: 1 = beginletter, 2 = ook de tweede letter, 3 = drie letters van makkelijke
+   woorden (groep 2, begin 3), 4 = drie letters van iets moeilijkere woorden, 5 = vier letters van makkelijke woorden.
+   Geen ui, oe, ij, ei of ou. Zes keer in één keer goed, dan een niveau hoger. */
+const KIES_MAKKELIJK=[['kat','🐱'],['sok','🧦'],['pen','🖊️'],['bal','⚽'],['vis','🐟'],['zon','☀️'],['kip','🐔'],['pet','🧢'],['tak','🌿'],['pan','🍳'],['aap','🐒'],['mok','☕'],['kam','🪮'],['bus','🚌'],['bed','🛏️'],['vos','🦊'],['pop','🪆'],['tas','👜'],['rat','🐀'],['kok','🧑‍🍳'],['oor','👂'],['bel','🔔'],['mes','🔪']];
+const KIES_MOEILIJK=[['jas','🧥'],['hut','🛖'],['zes','6️⃣'],['web','🕸️'],['juf','👩‍🏫'],['lip','👄'],['bok','🐐'],['zak','🛍️'],['hek','🚧'],['pad','🐸'],['wol','🧶'],['bes','🫐'],['gat','🕳️'],['big','🐷'],['wip','🎠'],['gum','🧽'],['vlo','🪳'],['rug','🧍']];
+const KIES_VIER=[['maan','🌙'],['boom','🌳'],['hond','🐶'],['boot','⛵'],['lamp','💡'],['roos','🌹'],['kaas','🧀'],['melk','🥛'],['vlag','🚩'],['tent','⛺'],['trap','🪜'],['noot','🥜'],['nest','🪺'],['step','🛴'],['ster','⭐'],['peer','🍐'],['glas','🥛'],['bank','🛋️'],['zeep','🧼'],['hand','✋'],['tand','🦷'],['berg','⛰️'],['neus','👃'],['poes','🐈']];
+const KIES_LVL={1:{n:1},2:{n:2},3:{n:3,src:KIES_MAKKELIJK},4:{n:3,src:KIES_MOEILIJK},5:{n:4,src:KIES_VIER}};
+const KIES_MAX=5, KIES_NODIG=6;
+function kiesLevel(){ let L=1; while(L<KIES_MAX && (state.kiesprog[L]||0)>=KIES_NODIG) L++; return L; }
+const playKies=()=>(state.kpick&&state.kpick<=kiesLevel())?state.kpick:kiesLevel();
+function pickKies(n){ const L=playKies(); const K=KIES_LVL[L];
+  if(!K.src) return pickKnown(SETS.klein.filter(c=>!'cqxy'.includes(c)),n).map(ch=>({kies:WORDS[ch][0],emoji:WORDS[ch][1],n:L}));
+  const pool=K.src.slice().sort((a,b)=>(state.stars['kies:'+a[0]]||0)-(state.stars['kies:'+b[0]]||0)||Math.random()-0.5); return pool.slice(0,n).sort(()=>Math.random()-0.5).map(w=>({kies:w[0],emoji:w[1],n:Math.min(K.n,w[0].length)})); }
+const KIES_UITLEG={1:'de eerste letter',2:'de eerste en de tweede letter',3:'drie letters van makkelijke woorden',4:'drie letters van moeilijkere woorden',5:'vier letters'};
+
+/* Niveau bij woorden: hoe meer woorden goed, hoe langer de woorden en hoe minder hulp. */
 /* Woorden met een tweetekenklank (oe, ui, ei, ij) komen pas op niveau 5, als alle andere niveaus gehaald zijn. */
 const KLANKEN=['oe','ui','ei','ij'];
 const MAXLVL=LETTERSETS.length+1;
@@ -437,11 +454,11 @@ const PRAISE=['Goed zo!','Super!','Knap gedaan!','Wauw, wat mooi!','Dat is \'m!'
 
 /* ===================== STAND ===================== */
 const state={
-  naam:store.get('naam',''), avatar:store.get('avatar','🐸'), sound:store.get('sound',true), mode:store.get('mode','auto'), wpick:store.get('wpick',0), auto:store.get('auto',true), lvl:'hulp', peek:0, firstTry:true, force:null,
+  naam:store.get('naam',''), avatar:store.get('avatar','🐸'), sound:store.get('sound',true), mode:store.get('mode','auto'), wpick:store.get('wpick',0), kpick:store.get('kpick',0), kiesprog:store.get('kiesprog',{}), kw:null, auto:store.get('auto',true), lvl:'hulp', peek:0, firstTry:true, force:null,
   stars:store.get('stars',{}), total:store.get('total',0), stickers:store.get('stickers',[]), pen:store.get('pen','oranje'), punten:store.get('punten',0), word:null,
   set:null, list:[], idx:0, letter:null, strokes:[], si:0, busy:false, earned:[], sessionStars:0, fails:0, demo:null,
 };
-function save(){ store.set('naam',state.naam); store.set('avatar',state.avatar); store.set('sound',state.sound); store.set('mode',state.mode); store.set('auto',state.auto); store.set('stars',state.stars); store.set('total',state.total); store.set('stickers',state.stickers); store.set('pen',state.pen); store.set('punten',state.punten); store.set('wpick',state.wpick); }
+function save(){ store.set('naam',state.naam); store.set('avatar',state.avatar); store.set('sound',state.sound); store.set('mode',state.mode); store.set('auto',state.auto); store.set('stars',state.stars); store.set('total',state.total); store.set('stickers',state.stickers); store.set('pen',state.pen); store.set('punten',state.punten); store.set('wpick',state.wpick); store.set('kpick',state.kpick); store.set('kiesprog',state.kiesprog); }
 function penUnlocked(p){ return state.total>=p.need; }
 function curPen(){ const p=PENS.find(p=>p.id===state.pen); return (p&&penUnlocked(p))?p:PENS[0]; }
 
@@ -548,7 +565,7 @@ function completeStroke(){
 }
 
 /* ===================== LETTERS EN SESSIE ===================== */
-function loadLetter(it){ it=item(it); if(it.word) return loadWord(it); state.word=null; $('#wordwrap').hidden=true; const ch=it.ch; state.item=it; state.w=wordFor(ch,it.alt);
+function loadLetter(it){ it=item(it); if(it.word) return loadWord(it); if(it.kies) return loadKies(it); state.word=null; state.kw=null; $('#wordwrap').hidden=true; $('#kieslvl').hidden=true; const ch=it.ch; state.item=it; state.w=wordFor(ch,it.alt);
   state.letter=ch; state.si=0; state.fails=0; trail=[]; drawing=false; state.busy=false; state.firstTry=true; state.lvl=levelFor(ch); state.peek=0;
   state.strokes=SHAPES[ch].map(pts=>({pts,prog:0,done:false}));
   const pill=$('#lvlpill'); pill.textContent=LVL_NAME[state.lvl]; pill.className='lvlpill '+state.lvl;
@@ -563,28 +580,45 @@ function loadLetter(it){ it=item(it); if(it.word) return loadWord(it); state.wor
   speakLetter(); state.demo=state.lvl==='hulp'?performance.now()+900:null;
 }
 function speakLetter(){ const ch=state.letter, w=state.w; if(state.word) return say(`Schrijf het woord ${state.word.text}. Elke letter in een vakje.`);
+  if(state.kw&&state.lvl==='kiezen'){ const k=state.kw; return say(k.pos===0?`${k.word}! Welke letter hoor je vooraan bij ${k.word}? Tik op de letter.`:`${k.word}. Na de ${k.word.slice(0,k.pos).split('').join(', ')}: welke letter hoor je daarna in ${k.word}?`); }
   if(state.lvl==='kiezen') return say(`${picQuestion(ch)} Tik op ${isDigit(ch)?'het cijfer':'de letter'}.`);
   if(state.lvl==='geheugen') return say(`${picQuestion(ch)} Schrijf ${isDigit(ch)?'het cijfer':'die letter'} zelf in het vak.`);
   const extra=state.lvl==='hulp'?'Begin bij de groene stip.':'Volg de stippellijn.';
   say(isDigit(ch)?`Schrijf de ${w[0]}. ${extra}`:`Schrijf de ${spoken(ch)}. ${spoken(ch)} van ${w[0]}. ${extra}`); }
+/* Kies de letter, met meerdere letters van een woord achter elkaar. */
+function loadKies(it){ state.word=null; $('#wordwrap').hidden=true; state.item=it; state.kw={word:it.kies,emoji:it.emoji,n:it.n,pos:0,lvl:playKies()}; state.w=[it.kies,it.emoji];
+  state.letter=it.kies[0]; state.si=0; state.fails=0; trail=[]; drawing=false; state.busy=false; state.firstTry=true; state.lvl='kiezen'; state.peek=0;
+  state.strokes=SHAPES[state.letter].map(pts=>({pts,prog:0,done:false}));
+  const pill=$('#lvlpill'); pill.textContent=`kies de letter · niveau ${state.kw.lvl}`; pill.className='lvlpill kiezen';
+  $('#vraag').textContent='Welke letter hoor je bij'; $('#bigletter').textContent='?'; $('#woord').innerHTML=`<span class="pic">${it.emoji}</span>`;
+  $('#answers').hidden=false; $('#canvaswrap').hidden=true; $('#stage > .tools').hidden=true; $('#kieslvl').hidden=false; buildKiesRow(); buildChoices(state.letter);
+  $('#counter').textContent=`${state.idx+1} / ${state.list.length}`; $('#stage').querySelectorAll('.feedback,.verder').forEach(x=>x.remove());
+  speakLetter(); state.demo=null; }
+function buildKiesRow(){ const row=$('#kieslvl'); row.innerHTML='<span>Niveau</span>'; const top=kiesLevel(); for(let L=1;L<=KIES_MAX;L++){ const b=document.createElement('button'); b.type='button'; b.className='nivo'+(L===playKies()?' sel':'')+(L>top?' lock':''); b.textContent=L>top?'🔒':L; b.title=L>top?'Nog niet vrijgespeeld':`Niveau ${L}: ${KIES_UITLEG[L]}`;
+  b.addEventListener('click',()=>{ if(L>top){ say('Dat niveau is nog niet vrijgespeeld.'); return; } if(L===playKies()) return; state.kpick=(L===top)?0:L; save(); clearTimeout(state.autoT); if(canSpeak()) speechSynthesis.cancel(); startSession('kiezen',pickKies(L<=2?8:6)); toast(`Niveau ${L}: ${KIES_UITLEG[L]}`); say(`Niveau ${L}: ${KIES_UITLEG[L]}.`); }); row.appendChild(b); } }
 /* Niveau "kiezen": vier letters, alleen het plaatje en de stem geven de hint. */
 function buildChoices(ch){ const box=$('#answers'); box.innerHTML=''; const pool=groupOf(ch).split('').filter(c=>c!==ch).sort(()=>Math.random()-0.5).slice(0,3); const opts=[ch,...pool].sort(()=>Math.random()-0.5);
   for(const c of opts){ const b=document.createElement('button'); b.type='button'; b.className='choice'; b.textContent=c; b.addEventListener('click',()=>{ if(state.busy) return;
-    if(c===ch){ b.classList.add('good'); box.querySelectorAll('.choice').forEach(x=>x.disabled=true); letterDone(); }
+    if(c===ch){ b.classList.add('good'); box.querySelectorAll('.choice').forEach(x=>x.disabled=true); const k=state.kw; if(k&&k.pos+1<k.n){ k.pos++; state.letter=k.word[k.pos]; state.strokes=SHAPES[state.letter].map(pts=>({pts,prog:0,done:false})); pling(); $('#bigletter').textContent=k.word.slice(0,k.pos)+'?'; $('#vraag').textContent='En daarna? Welke letter hoor je in'; say(`Goed! ${k.word.slice(0,k.pos).split('').join(', ')}. ${k.word}. Welke letter hoor je daarna?`); setTimeout(()=>buildChoices(state.letter),500); } else letterDone(); }
     else { b.classList.add('bad'); oei(); box.querySelectorAll('.choice').forEach(x=>x.disabled=true); [...box.querySelectorAll('.choice')].find(x=>x.textContent===ch).classList.add('good'); setTimeout(()=>wrongChoice(c),900); } }); box.appendChild(b); } }
 /* Fout gekozen: de goede letter meteen overtrekken, en de letter komt nog twee keer terug in deze ronde. */
 function wrongChoice(c){ const ch=state.letter, w=state.w; state.firstTry=false; state.lvl='hulp'; state.fails=0;
   const pill=$('#lvlpill'); pill.textContent=LVL_NAME.hulp; pill.className='lvlpill hulp';
   $('#vraag').textContent='Schrijf de'; $('#bigletter').textContent=ch; $('#woord').innerHTML=`<span>${w[1]}</span> ${isDigit(ch)?'':ch+' van '}${w[0]}`;
   $('#answers').hidden=true; $('#canvaswrap').hidden=false; $('#stage > .tools').hidden=false; requestAnimationFrame(sizeCanvas);
-  say(isDigit(ch)?`Nee, dat is de ${spoken(c)}. Het is de ${w[0]}. Schrijf de ${w[0]} maar eens over.`:`Nee, dat is de ${spoken(c)}. Het is de ${spoken(ch)}. ${spoken(ch)} van ${w[0]}. Schrijf de ${spoken(ch)} maar eens over.`);
+  const k=state.kw; say(k&&k.pos>0?`Nee, dat is de ${spoken(c)}. De ${RANG[k.pos]} letter van ${k.word} is de ${spoken(ch)}. Schrijf de ${spoken(ch)} maar eens over.`:isDigit(ch)?`Nee, dat is de ${spoken(c)}. Het is de ${w[0]}. Schrijf de ${w[0]} maar eens over.`:`Nee, dat is de ${spoken(c)}. Het is de ${spoken(ch)}. ${spoken(ch)} van ${w[0]}. Schrijf de ${spoken(ch)} maar eens over.`);
   state.demo=performance.now()+1500;
-  if(!state.item.retry){ const later=[{ch,alt:false,retry:true},{ch,alt:true,retry:true}]; const at1=Math.min(state.list.length,state.idx+2), at2=Math.min(state.list.length,state.idx+4);
+  if(!state.item.retry){ const later=k?[{...state.item,retry:true},{...state.item,retry:true}]:[{ch,alt:false,retry:true},{ch,alt:true,retry:true}]; const at1=Math.min(state.list.length,state.idx+2), at2=Math.min(state.list.length,state.idx+4);
     state.list.splice(at2,0,later[1]); state.list.splice(at1,0,later[0]); buildTrack(); updateJourney(); $('#counter').textContent=`${state.idx+1} / ${state.list.length}`; } }
 function letterDone(){
   state.busy=true; fanfare(); const r=(state.word?$('#wordpaper'):state.lvl==='kiezen'?$('#answers'):cv).getBoundingClientRect(); confetti(r.left+r.width/2,r.top+r.height/2,90);
   const ch=state.letter, w=state.w;
-  if(state.word){ const key='woord:'+state.word.text; state.stars[key]=Math.min(4,(state.stars[key]||0)+1); state.total+=state.word.text.length; state.sessionStars++; const won=Math.max(1,3-state.modelCount); state.punten+=won; save(); $('#counter').textContent=`🏆 ${state.punten} · ${state.idx+1} / ${state.list.length}`;
+  if(state.kw){ const k=state.kw; const L=k.lvl; if(state.firstTry&&state.lvl==='kiezen'){ state.kiesprog[L]=(state.kiesprog[L]||0)+1; state.stars['kies:'+k.word]=Math.min(4,(state.stars['kies:'+k.word]||0)+1); } state.total++; state.sessionStars++; save();
+    const fb=document.createElement('div'); fb.className='feedback good'; fb.innerHTML=`<span class="emo">${k.emoji}</span> ${rnd(PRAISE)} ${k.word}!`; $('#stage').appendChild(fb);
+    $('#vraag').textContent='Dat is'; $('#bigletter').textContent=k.word; $('#woord').innerHTML=`<span>${k.emoji}</span>`;
+    say(`${rnd(PRAISE)} ${k.word.slice(0,k.n).split('').join(', ')}. ${k.word}!`);
+    if(!state.kpick&&kiesLevel()>L) setTimeout(()=>{ toast(`🎉 Niveau ${kiesLevel()}: ${KIES_UITLEG[kiesLevel()]}`); say(`Je gaat naar niveau ${kiesLevel()}: ${KIES_UITLEG[kiesLevel()]}!`,{keep:true}); },1800); }
+  else if(state.word){ const key='woord:'+state.word.text; state.stars[key]=Math.min(4,(state.stars[key]||0)+1); state.total+=state.word.text.length; state.sessionStars++; const won=Math.max(1,3-state.modelCount); state.punten+=won; save(); $('#counter').textContent=`🏆 ${state.punten} · ${state.idx+1} / ${state.list.length}`;
     const fb=document.createElement('div'); fb.className='feedback good'; fb.innerHTML=`<span class="emo">${state.word.emoji}</span> ${rnd(PRAISE)} ${state.word.text}! +${won} 🏆`; $('#stage').appendChild(fb);
     $('#vraag').textContent='Dat is'; $('#bigletter').textContent=state.word.text; $('#woord').innerHTML=`<span>${state.word.emoji}</span>`;
     say(`${rnd(PRAISE)} Je hebt ${state.word.text} geschreven! ${won===1?'Eén punt':won+' punten'} erbij.`); if(!state.wpick&&wordLevel()>state.wlvl) setTimeout(()=>{ toast(`🎉 Niveau ${wordLevel()}: nieuwe letters ${newLetters(wordLevel()).join(' ')}`); say(`Je gaat naar niveau ${wordLevel()}! Er komen nieuwe letters bij: ${newLetters(wordLevel()).join(', ')}.`,{keep:true}); },1800); }
@@ -616,7 +650,8 @@ function startSet(set){
   if(set==='kaart'){ buildGrid(); show('letters'); return; }
   let list;
   if(set==='naam'){ list=nameLetters(n); if(!list.length){ say('Typ eerst je naam.'); $('#naam').focus(); $('#naam').classList.add('shake'); setTimeout(()=>$('#naam').classList.remove('shake'),500); return; } }
-  else if(set==='kiezen'||set==='geheugen') list=pickKnown(SETS.klein,8);
+  else if(set==='kiezen'){ list=pickKies(playKies()<=2?8:6); setTimeout(()=>{ toast(`Niveau ${playKies()}: ${KIES_UITLEG[playKies()]}`); },300); }
+  else if(set==='geheugen') list=pickKnown(SETS.klein,8);
   else if(set==='woord'){ list=pickWords(5); setTimeout(()=>{ toast(`Niveau ${playLevel()} · letters: ${levelLetters(playLevel())}`); },300); }
   else list=pickList(SETS[set],8);
   startSession(set,list); say(`Hoi ${n||''}! Daar gaan we.`);
@@ -676,7 +711,7 @@ TPL.p.push([S(L(35,60,35,130)),S(A(50,80,15,-160,200))].flat());                
 TPL.b.push([S(L(35,20,35,100)),S(A(50,80,15,-160,200))].flat());
 function sizeWordCanvas(){ if(!state.word) return; const wrap=$('#wordcanvaswrap'); const n=state.word.text.length; const outer=$('#wordwrap'); const tools=outer.querySelector('.tools'); const w=wrap.clientWidth, h=Math.min(wrap.clientHeight,outer.clientHeight-tools.offsetHeight-10); if(!w||h<60) return; const W=Math.max(120,Math.floor(Math.min(w,h*n*100/190))); const d=Math.min(3,window.devicePixelRatio||1); wcv.style.width=W+'px'; wcv.style.height=Math.floor(W*190/(n*100))+'px'; wcv.width=Math.round(W*d); wcv.height=Math.round(W*190/(n*100)*d); }
 window.addEventListener('resize',sizeWordCanvas);
-function loadWord(it){
+function loadWord(it){ state.kw=null; $('#kieslvl').hidden=true;
   state.word={text:it.word,emoji:it.emoji}; state.letter=it.word; state.w=[it.word,it.emoji]; state.item=it; state.lvl='woord'; state.busy=false; state.fails=0;
   state.boxes=it.word.split('').map(ch=>({ch,ink:[],status:'',ghost:0,fails:0,model:false})); state.modelCount=0; state.wlvl=playLevel(); buildLevelRow(); wBox=0; wCur=null; wDraw=false;
   const pill=$('#lvlpill'); pill.textContent='woord'; pill.className='lvlpill wrd';
@@ -784,7 +819,7 @@ $('#kaartterug').addEventListener('click',()=>show('start'));
 $('#replay').addEventListener('click',()=>{ speakLetter(); if(state.lvl==='hulp') state.demo=performance.now(); });
 $('#voordoen').addEventListener('click',()=>{ if(state.busy) return; state.demo=performance.now(); state.peek=performance.now()+1800; say(hidden()?`Kijk, dit is de ${spoken(state.letter)}. Zo doe je het.`:'Kijk, zo doe je het.'); });
 $('#opnieuw').addEventListener('click',()=>{ if(state.busy) return; loadLetter(state.letter); });
-$('#again').addEventListener('click',()=>{ if(fw) fw.stop(); const set=state.set; if(set==='naam') startSession('naam',nameLetters(state.naam)); else if(set==='kaart') startSession('kaart',state.list.slice()); else if(set==='kiezen'||set==='geheugen') startSession(set,pickKnown(SETS.klein,8)); else if(set==='woord') startSession(set,pickWords(5)); else startSession(set,pickList(SETS[set],8)); });
+$('#again').addEventListener('click',()=>{ if(fw) fw.stop(); const set=state.set; if(set==='naam') startSession('naam',nameLetters(state.naam)); else if(set==='kaart') startSession('kaart',state.list.slice()); else if(set==='kiezen') startSession(set,pickKies(playKies()<=2?8:6)); else if(set==='geheugen') startSession(set,pickKnown(SETS.klein,8)); else if(set==='woord') startSession(set,pickWords(5)); else startSession(set,pickList(SETS[set],8)); });
 $('#tostart').addEventListener('click',()=>{ if(fw) fw.stop(); show('start'); });
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&canSpeak()) speechSynthesis.cancel(); });
 updateStart();

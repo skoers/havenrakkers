@@ -80,6 +80,21 @@ Het woord staat nergens geschreven.
   zonder ster.
 - De namen oskar, ronja en linda zitten ook tussen de woorden.
 
+## Kies de letter (tegel "Kies de letter")
+
+Het kind ziet alleen een plaatje, hoort het woord en kiest uit vier letters.
+Vijf niveaus; na zes keer in één keer goed ga je een niveau hoger, en met de
+niveauknoppen onder de letters kun je terug om nog te oefenen:
+
+1. De eerste letter (s van slang).
+2. De eerste én de tweede letter (s, l van slang).
+3. Drie letters van makkelijke woorden uit groep 2 en begin groep 3 (kat, sok, pen, bal, vis, zon...).
+4. Drie letters van iets moeilijkere woorden (jas, hut, zes, web, juf, lip...).
+5. Vier letters van makkelijke woorden (maan, boom, hond, boot, lamp...).
+
+Geen woorden met ui, oe, ij, ei of ou. Fout gekozen? Dan zegt de stem welke
+letter het is, trekt het kind die over, en komt het woord nog twee keer terug.
+
 ## Belonen
 
 - Nederlandse voorleesstem (de stem van de iPad zelf): "Schrijf de b. b van
