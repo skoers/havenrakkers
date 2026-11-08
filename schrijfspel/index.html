@@ -634,6 +634,11 @@ const wcv=$('#wordpaper'), wctx=wcv.getContext('2d');
 let wDraw=false, wBox=-1, wCur=null;
 const TPL={}; for(const ch of 'abcdefghijklmnopqrstuvwxyz') TPL[ch]=[SHAPES[ch].flat()];
 TPL.a.push(S(A(45,82,16,-50,-410),L(56,70,66,62),L(66,62,66,100)));   // a met een stok telt ook goed
+/* k: kinderen maken de schuine streepjes vaak hoger en groter; die vormen tellen ook goed. */
+TPL.k.push([S(L(35,20,35,100)),S(L(66,40,36,78),L(36,78,67,100))].flat());
+TPL.k.push([S(L(35,20,35,100)),S(L(68,28,36,72),L(36,72,70,100))].flat());
+TPL.k.push([S(L(35,20,35,100)),S(L(72,48,36,84),L(36,84,72,100))].flat());
+TPL.k.push([S(L(35,20,35,100)),S(L(70,56,36,76),L(36,76,70,100))].flat());
 function sizeWordCanvas(){ if(!state.word) return; const wrap=$('#wordcanvaswrap'); const n=state.word.text.length; const outer=$('#wordwrap'); const tools=outer.querySelector('.tools'); const w=wrap.clientWidth, h=Math.min(wrap.clientHeight,outer.clientHeight-tools.offsetHeight-10); if(!w||h<60) return; const W=Math.max(120,Math.floor(Math.min(w,h*n*100/190))); const d=Math.min(3,window.devicePixelRatio||1); wcv.style.width=W+'px'; wcv.style.height=Math.floor(W*190/(n*100))+'px'; wcv.width=Math.round(W*d); wcv.height=Math.round(W*190/(n*100)*d); }
 window.addEventListener('resize',sizeWordCanvas);
 function loadWord(it){
