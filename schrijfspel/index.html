@@ -120,6 +120,11 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 .lvlpill{font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:.25rem .7rem;border-radius:999px;background:var(--hl);color:#3a2600}
 .lvlpill.stippel{background:#ffb347}.lvlpill.kiezen{background:#8a4fff;color:#fff}.lvlpill.geheugen{background:#ff4fa3;color:#fff}
 .prompt .pic{font-size:2.2em;line-height:1;animation:float 2s ease-in-out infinite}
+.lvlrow{display:flex;gap:.35rem;flex-wrap:wrap;justify-content:center;align-items:center}
+.lvlrow span{font-family:var(--display);color:var(--muted);font-size:.95rem;margin-right:.2rem}
+.nivo{min-width:44px;height:38px;border-radius:12px;border:2px solid var(--line);background:var(--panel);font-family:var(--display);font-weight:600;font-size:1rem}
+.nivo.sel{border-color:var(--accent);background:var(--card);box-shadow:0 0 0 3px rgba(255,122,26,.25)}
+.nivo.lock{opacity:.45}
 .wordwrap{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center;gap:.4rem}
 .wordcanvas{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
 .lvlpill.wrd{background:#1aa36b;color:#fff}
@@ -246,15 +251,18 @@ canvas.paper{touch-action:none;border-radius:18px;box-shadow:0 6px 18px rgba(0,0
     <div class="answers" id="answers" hidden></div>
     <div class="wordwrap" id="wordwrap" hidden>
       <div class="wordcanvas" id="wordcanvaswrap"><canvas class="paper" id="wordpaper"></canvas></div>
+      <div class="lvlrow" id="lvlrow" aria-label="Kies een niveau"></div>
       <div class="tools">
         <button class="btn" type="button" id="tipbtn">💡 Tip</button>
         <button class="btn secondary" type="button" id="wisbtn">🧽 Wis vakje</button>
         <button class="btn" type="button" id="klaarbtn" style="background:var(--good)">✅ Klaar!</button>
+        <button class="btn secondary" type="button" id="skip2">⏭️ Overslaan</button>
       </div>
     </div>
     <div class="tools">
       <button class="btn secondary" type="button" id="voordoen">👀 Doe voor</button>
       <button class="btn secondary" type="button" id="opnieuw">🧽 Opnieuw</button>
+      <button class="btn secondary" type="button" id="skip1">⏭️ Overslaan</button>
     </div>
   </div>
 </section>
@@ -393,12 +401,18 @@ const WOORDEN=[
   ['bal','⚽'],['vis','🐟'],['zon','☀️'],['uil','🦉'],['bus','🚌'],['bed','🛏️'],['hond','🐶'],['huis','🏠'],['boot','⛵'],['lamp','💡'],['boom','🌳'],['bloem','🌸'],['vlag','🚩'],['slang','🐍'],['hoed','🎩'],['vos','🦊'],['duif','🕊️'],['muis','🐭'],['melk','🥛'],['stoel','🪑'],['paard','🐴'],['brood','🍞'],['vogel','🐦'],['appel','🍎'],['kroon','👑'],['glas','🥛'],['bank','🛋️'],['zeep','🧼'],['deur','🚪'],['bril','👓'],['blad','🍃'],['geit','🐐'],['berg','⛰️'],['hand','✋'],['tand','🦷'],['neus','👃'],['pizza','🍕'],
   ['wolk','☁️'],['jas','🧥'],['fiets','🚲'],['worst','🌭'],['wortel','🥕'],['jojo','🪀'],['fles','🍾'],['giraf','🦒'],['wiel','🛞'],['juf','👩‍🏫'],['wc','🚽'],
   ['oskar','👦'],['ronja','👧'],['linda','👩‍🦰']];
-function wordLevelOf(w){ let set=''; for(let L=0;L<LETTERSETS.length;L++){ set+=LETTERSETS[L]; if([...w].every(c=>set.includes(c))) return L+1; } return LETTERSETS.length; }
+/* Woorden met een tweetekenklank (oe, ui, ei, ij) komen pas op niveau 5, als alle andere niveaus gehaald zijn. */
+const KLANKEN=['oe','ui','ei','ij'];
+const MAXLVL=LETTERSETS.length+1;
+function wordLevelOf(w){ if(KLANKEN.some(k=>w.includes(k))) return MAXLVL; let set=''; for(let L=0;L<LETTERSETS.length;L++){ set+=LETTERSETS[L]; if([...w].every(c=>set.includes(c))) return L+1; } return LETTERSETS.length; }
 const wordsOf=L=>WOORDEN.filter(w=>wordLevelOf(w[0])===L);
 const doneOf=L=>wordsOf(L).filter(w=>(state.stars['woord:'+w[0]]||0)>0).length;
 /* Pas een niveau hoger als er op het niveau ervoor minstens vijf woorden goed zijn (of alle, als het er minder zijn). */
-function wordLevel(){ let L=1; while(L<LETTERSETS.length && doneOf(L)>=Math.min(5,wordsOf(L).length)) L++; return L; }
-const levelLetters=L=>[...LETTERSETS.slice(0,L).join('')].sort().join(' ');
+function wordLevel(){ let L=1; while(L<MAXLVL && doneOf(L)>=Math.min(5,wordsOf(L).length)) L++; return L; }
+/* Gekozen niveau (knoppen in het spel), anders het niveau dat bij de voortgang hoort. */
+const playLevel=()=>(state.wpick&&state.wpick<=wordLevel())?state.wpick:wordLevel();
+const newLetters=L=>L===MAXLVL?KLANKEN:[...LETTERSETS[L-1]];
+const levelLetters=L=>[...LETTERSETS.slice(0,Math.min(L,LETTERSETS.length)).join('')].sort().join(' ')+(L===MAXLVL?' · '+KLANKEN.join(' '):'');
 /* Hoe maak je de letter: de tip die de stem geeft. */
 const TIP={a:'begin bij het haakje bovenaan, een rondje tegen de klok in, en weer omhoog naar het haakje',b:'een lange stok omlaag, en dan een buikje aan de rechterkant',c:'een open rondje, als een maantje',d:'een rondje, en dan een lange stok omhoog en weer omlaag',e:'een streepje, en dan een boog eromheen',f:'een haakje bovenaan, een stok omlaag, en een streepje in het midden',g:'een rondje, en dan een staart omlaag naar links',h:'een lange stok, en dan een bruggetje',i:'een stokje, en een puntje erboven',j:'een stok omlaag met een haakje, en een puntje erboven',k:'een lange stok, en dan twee schuine streepjes',l:'één lange stok omlaag',m:'een stokje en twee bruggetjes',n:'een stokje en één bruggetje',o:'een rondje, tegen de klok in',p:'een stok omlaag tot onder de lijn, en een buikje',q:'een rondje, en een stok omlaag tot onder de lijn',r:'een stokje, en een klein haakje',s:'een slang: eerst naar links, dan naar rechts',t:'een stok, en een streepje erdoor',u:'omlaag, een bocht, omhoog en weer omlaag',v:'schuin omlaag, en schuin omhoog',w:'twee keer een v',x:'twee schuine streepjes die elkaar kruisen',y:'schuin omlaag, en een lange schuine streep tot onder de lijn',z:'een streepje, schuin omlaag, en weer een streepje'};
 const RANG=['eerste','tweede','derde','vierde','vijfde'];
@@ -423,11 +437,11 @@ const PRAISE=['Goed zo!','Super!','Knap gedaan!','Wauw, wat mooi!','Dat is \'m!'
 
 /* ===================== STAND ===================== */
 const state={
-  naam:store.get('naam',''), avatar:store.get('avatar','🐸'), sound:store.get('sound',true), mode:store.get('mode','auto'), auto:store.get('auto',true), lvl:'hulp', peek:0, firstTry:true, force:null,
+  naam:store.get('naam',''), avatar:store.get('avatar','🐸'), sound:store.get('sound',true), mode:store.get('mode','auto'), wpick:store.get('wpick',0), auto:store.get('auto',true), lvl:'hulp', peek:0, firstTry:true, force:null,
   stars:store.get('stars',{}), total:store.get('total',0), stickers:store.get('stickers',[]), pen:store.get('pen','oranje'), punten:store.get('punten',0), word:null,
   set:null, list:[], idx:0, letter:null, strokes:[], si:0, busy:false, earned:[], sessionStars:0, fails:0, demo:null,
 };
-function save(){ store.set('naam',state.naam); store.set('avatar',state.avatar); store.set('sound',state.sound); store.set('mode',state.mode); store.set('auto',state.auto); store.set('stars',state.stars); store.set('total',state.total); store.set('stickers',state.stickers); store.set('pen',state.pen); store.set('punten',state.punten); }
+function save(){ store.set('naam',state.naam); store.set('avatar',state.avatar); store.set('sound',state.sound); store.set('mode',state.mode); store.set('auto',state.auto); store.set('stars',state.stars); store.set('total',state.total); store.set('stickers',state.stickers); store.set('pen',state.pen); store.set('punten',state.punten); store.set('wpick',state.wpick); }
 function penUnlocked(p){ return state.total>=p.need; }
 function curPen(){ const p=PENS.find(p=>p.id===state.pen); return (p&&penUnlocked(p))?p:PENS[0]; }
 
@@ -573,7 +587,7 @@ function letterDone(){
   if(state.word){ const key='woord:'+state.word.text; state.stars[key]=Math.min(4,(state.stars[key]||0)+1); state.total+=state.word.text.length; state.sessionStars++; const won=Math.max(1,3-state.modelCount); state.punten+=won; save(); $('#counter').textContent=`🏆 ${state.punten} · ${state.idx+1} / ${state.list.length}`;
     const fb=document.createElement('div'); fb.className='feedback good'; fb.innerHTML=`<span class="emo">${state.word.emoji}</span> ${rnd(PRAISE)} ${state.word.text}! +${won} 🏆`; $('#stage').appendChild(fb);
     $('#vraag').textContent='Dat is'; $('#bigletter').textContent=state.word.text; $('#woord').innerHTML=`<span>${state.word.emoji}</span>`;
-    say(`${rnd(PRAISE)} Je hebt ${state.word.text} geschreven! ${won===1?'Eén punt':won+' punten'} erbij.`); if(wordLevel()>state.wlvl) setTimeout(()=>{ toast(`🎉 Niveau ${wordLevel()}: nieuwe letters ${[...LETTERSETS[wordLevel()-1]].join(' ')}`); say(`Je gaat naar niveau ${wordLevel()}! Er komen nieuwe letters bij: ${[...LETTERSETS[wordLevel()-1]].join(', ')}.`,{keep:true}); },1800); }
+    say(`${rnd(PRAISE)} Je hebt ${state.word.text} geschreven! ${won===1?'Eén punt':won+' punten'} erbij.`); if(!state.wpick&&wordLevel()>state.wlvl) setTimeout(()=>{ toast(`🎉 Niveau ${wordLevel()}: nieuwe letters ${newLetters(wordLevel()).join(' ')}`); say(`Je gaat naar niveau ${wordLevel()}! Er komen nieuwe letters bij: ${newLetters(wordLevel()).join(', ')}.`,{keep:true}); },1800); }
   else { const key=ch; const old=state.stars[key]||0; if(state.firstTry) state.stars[key]=Math.max(old,Math.min(MAXSTAR[state.lvl],old+1)); state.total++; state.sessionStars++; save();
   const fb=document.createElement('div'); fb.className='feedback good'; fb.innerHTML=`<span class="emo">${w[1].slice(0,2)}</span> ${rnd(PRAISE)} ${isDigit(ch)?w[0]:ch+' van '+w[0]}`; $('#stage').appendChild(fb);
   if(hidden()){ $('#vraag').textContent='Dat is de'; $('#bigletter').textContent=ch; $('#woord').innerHTML=`<span>${w[1]}</span> ${isDigit(ch)?'':ch+' van '}${w[0]}`; }
@@ -594,7 +608,7 @@ function startSession(set,list){
 }
 /* Voor de vaste niveaus: liefst letters die het kind al kent (meeste sterren), de rest willekeurig. */
 function pickKnown(chars,n){ const pool=chars.slice().sort((a,b)=>(state.stars[b]||0)-(state.stars[a]||0)||Math.random()-0.5); return pool.slice(0,n).sort(()=>Math.random()-0.5); }
-function pickWords(n){ const L=wordLevel(); let cand=wordsOf(L); if(cand.length<n) cand=cand.concat(wordsOf(Math.max(1,L-1))); const pool=cand.slice().sort((a,b)=>(state.stars['woord:'+a[0]]||0)-(state.stars['woord:'+b[0]]||0)||a[0].length-b[0].length||Math.random()-0.5); return pool.slice(0,n).sort(()=>Math.random()-0.5).map(w=>({word:w[0],emoji:w[1]})); }
+function pickWords(n){ const L=playLevel(); let cand=wordsOf(L); if(cand.length<n) cand=cand.concat(wordsOf(Math.max(1,L-1))); const pool=cand.slice().sort((a,b)=>(state.stars['woord:'+a[0]]||0)-(state.stars['woord:'+b[0]]||0)||a[0].length-b[0].length||Math.random()-0.5); return pool.slice(0,n).sort(()=>Math.random()-0.5).map(w=>({word:w[0],emoji:w[1]})); }
 function pickList(chars,n){ const pool=chars.slice().sort((a,b)=>(state.stars[a]||0)-(state.stars[b]||0)||Math.random()-0.5); const take=pool.slice(0,Math.min(n,pool.length)); return chars.filter(c=>take.includes(c)); }
 function nameLetters(n){ const clean=n.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9 \-]/g,''); const parts=clean.split(/[\s\-]+/).filter(Boolean).map(p=>p[0].toUpperCase()+p.slice(1).toLowerCase()); return parts.join('').split('').filter(c=>SHAPES[c]); }
 function startSet(set){
@@ -603,7 +617,7 @@ function startSet(set){
   let list;
   if(set==='naam'){ list=nameLetters(n); if(!list.length){ say('Typ eerst je naam.'); $('#naam').focus(); $('#naam').classList.add('shake'); setTimeout(()=>$('#naam').classList.remove('shake'),500); return; } }
   else if(set==='kiezen'||set==='geheugen') list=pickKnown(SETS.klein,8);
-  else if(set==='woord'){ list=pickWords(5); setTimeout(()=>{ toast(`Niveau ${wordLevel()} · letters: ${levelLetters(wordLevel())}`); },300); }
+  else if(set==='woord'){ list=pickWords(5); setTimeout(()=>{ toast(`Niveau ${playLevel()} · letters: ${levelLetters(playLevel())}`); },300); }
   else list=pickList(SETS[set],8);
   startSession(set,list); say(`Hoi ${n||''}! Daar gaan we.`);
 }
@@ -614,7 +628,7 @@ function buildTrack(){ const t=$('#track'); t.querySelectorAll('.station').forEa
 function updateJourney(){ const N=stationsFor(); const done=Math.min(N,Math.floor((state.idx+(state.busy?1:0))/2)); $('#track').querySelectorAll('.station').forEach((s,i)=>{ if(i<done&&!s.classList.contains('done')){ s.classList.add('done','new'); s.textContent=state.earned[i]||'⭐'; } });
   const pct=4+92*((state.idx+(state.busy?1:0))/state.list.length); $('#walker').style.left=Math.min(96,pct)+'%'; $('#fill').style.width=Math.min(92,pct-4)+'%'; $('#walker').classList.remove('hop'); void $('#walker').offsetWidth; $('#walker').classList.add('hop'); return done; }
 function stickerToast(s){ const t=document.createElement('div'); t.className='sticker-toast'; t.innerHTML=`<div>${s}</div>`; document.body.appendChild(t); confetti(innerWidth/2,innerHeight/2,120); setTimeout(()=>t.remove(),1700); }
-function toast(txt){ const t=document.createElement('div'); t.className='toast'; t.textContent=txt; document.body.appendChild(t); setTimeout(()=>t.remove(),3200); }
+function toast(txt){ const t=document.createElement('div'); t.className='toast'; t.textContent=txt; const n=document.querySelectorAll('.toast').length; t.style.top=`calc(14% + ${n*56}px)`; document.body.appendChild(t); setTimeout(()=>t.remove(),3200); }
 
 /* Pennen */
 function buildPens(){ const box=$('#pens'); const had=new Set([...box.querySelectorAll('.pen')].filter(b=>!b.classList.contains('lock')).map(b=>b.dataset.id)); box.innerHTML=''; let locked=0; for(const p of PENS){ if(!penUnlocked(p)&&++locked>2) break; const b=document.createElement('button'); b.type='button'; b.dataset.id=p.id; const un=penUnlocked(p); b.className='pen'+(p.color==='rainbow'?' rainbow':'')+(p.glitter?' glitter':'')+(un?'':' lock')+(p.id===curPen().id?' sel':'')+(un&&had.size&&!had.has(p.id)?' new':''); if(p.color!=='rainbow') b.style.setProperty('--pc',p.color); b.title=un?p.naam:`Nog ${p.need-state.total} letters`; b.setAttribute('aria-label',b.title);
@@ -643,7 +657,7 @@ function sizeWordCanvas(){ if(!state.word) return; const wrap=$('#wordcanvaswrap
 window.addEventListener('resize',sizeWordCanvas);
 function loadWord(it){
   state.word={text:it.word,emoji:it.emoji}; state.letter=it.word; state.w=[it.word,it.emoji]; state.item=it; state.lvl='woord'; state.busy=false; state.fails=0;
-  state.boxes=it.word.split('').map(ch=>({ch,ink:[],status:'',ghost:0,fails:0,model:false})); state.modelCount=0; state.wlvl=wordLevel(); wBox=0; wCur=null; wDraw=false;
+  state.boxes=it.word.split('').map(ch=>({ch,ink:[],status:'',ghost:0,fails:0,model:false})); state.modelCount=0; state.wlvl=playLevel(); buildLevelRow(); wBox=0; wCur=null; wDraw=false;
   const pill=$('#lvlpill'); pill.textContent='woord'; pill.className='lvlpill wrd';
   $('#vraag').textContent='Schrijf het woord bij'; $('#bigletter').textContent=''; $('#woord').innerHTML=`<span class="pic">${it.emoji}</span>`;
   $('#answers').hidden=true; $('#canvaswrap').hidden=true; $('#stage > .tools').hidden=true; $('#wordwrap').hidden=false;
@@ -698,12 +712,18 @@ function checkWord(){ if(!state.word||state.busy) return; const empty=state.boxe
   const nieuw=wrong.filter(i=>{ const b=state.boxes[i]; return b.fails>=2&&!b.model&&state.wlvl<=2; });
   if(nieuw.length){ nieuw.forEach(i=>{ state.boxes[i].model=true; state.modelCount++; }); say(`Bijna! Kijk, boven het ${RANG[nieuw[0]]} vakje staat nu de letter. Schrijf die na in het vakje.`); return; }
   say(w===1?`Bijna! De ${RANG[wrong[0]]} letter klopt nog niet. Probeer die nog eens, of vraag een tip.`:`Bijna! ${w} letters kloppen nog niet, ze zijn rood. Probeer het nog eens, of vraag een tip.`); }
+/* Niveauknoppen: terug naar een eerder niveau om nog meer te oefenen; het hoogste gehaalde niveau volgt weer de voortgang. */
+function buildLevelRow(){ const row=$('#lvlrow'); row.innerHTML='<span>Niveau</span>'; const top=wordLevel(); for(let L=1;L<=MAXLVL;L++){ const b=document.createElement('button'); b.type='button'; b.className='nivo'+(L===playLevel()?' sel':'')+(L>top?' lock':''); b.textContent=L>top?'🔒':L; b.title=L>top?'Nog niet vrijgespeeld':`Niveau ${L}: ${levelLetters(L)}`;
+  b.addEventListener('click',()=>{ if(L>top){ say('Dat niveau is nog niet vrijgespeeld.'); return; } if(L===playLevel()) return; state.wpick=(L===top)?0:L; save(); clearTimeout(state.autoT); if(canSpeak()) speechSynthesis.cancel(); startSession('woord',pickWords(5)); toast(`Niveau ${L} · letters: ${levelLetters(L)}`); say(`Niveau ${L}.`); }); row.appendChild(b); } }
 function giveTip(){ if(!state.word||state.busy) return; const b=state.boxes[wBox]; if(!b) return;
   if(state.wlvl<=3) b.ghost=performance.now()+6000; if(b.status==='bad'){ b.status=''; b.ink=[]; }
   say(`De ${RANG[wBox]} letter is de ${b.ch}. ${TIP[b.ch]}.${state.wlvl<=3?' Kijk naar de stippellijn.':''}`); }
 $('#tipbtn').addEventListener('click',giveTip);
 $('#wisbtn').addEventListener('click',()=>{ if(!state.word||state.busy) return; const b=state.boxes[wBox]; const leeg=!b||!b.ink.some(st=>st.length>1); if(!leeg){ b.ink=[]; b.status=''; b.sparks=[]; return; } const rood=state.boxes.filter(x=>x.status==='bad'); (rood.length?rood:state.boxes).forEach(x=>{ x.ink=[]; x.status=''; x.sparks=[]; }); });
 $('#klaarbtn').addEventListener('click',checkWord);
+/* Overslaan: door naar de volgende, zonder ster. */
+function skip(){ if(state.busy) return; clearTimeout(state.autoT); if(canSpeak()) speechSynthesis.cancel(); state.busy=true; next(); }
+$('#skip1').addEventListener('click',skip); $('#skip2').addEventListener('click',skip);
 
 /* ===================== EINDE EN VUURWERK ===================== */
 let fw=null;

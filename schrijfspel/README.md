@@ -66,6 +66,14 @@ Het woord staat nergens geschreven.
   ronde zie je even de letters van het niveau.
 - Op niveau 3 komt er geen voorbeeldletter meer boven het vakje, op niveau 4
   geeft een tip alleen nog de uitleg van de stem, zonder stippellijn.
+- Niveau 5 is voor woorden met een tweetekenklank (oe, ui, ei, ij): koe,
+  huis, ei, trein, muis... Dat komt pas als alle vier de andere niveaus
+  gehaald zijn.
+- Onder de vakjes staan niveauknoppen. Daarmee ga je terug naar een eerder
+  niveau om nog meer te oefenen; de keuze blijft bewaard. Tik je weer op het
+  hoogste gehaalde niveau, dan volgt het spel de voortgang weer vanzelf.
+- Met "Overslaan" ga je door naar het volgende woord (of de volgende letter)
+  zonder ster.
 - De namen oskar, ronja en linda zitten ook tussen de woorden.
 
 ## Belonen
