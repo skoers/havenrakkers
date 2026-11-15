@@ -23,7 +23,7 @@ p{margin:0;color:var(--muted);text-align:center}
 .tile svg{width:100%;height:auto;aspect-ratio:4/3;border-radius:18px}
 .tile h2{font-family:Fredoka,Nunito,sans-serif;font-size:clamp(1.4rem,4vw,1.9rem);margin:0;color:var(--c)}
 .tile small{color:var(--muted);font-size:1rem}
-.tile.fries{--c:var(--a1)} .tile.reken{--c:var(--a2)} .tile.woord{--c:#1aa36b} .tile.verhaal{--c:#c2410c} .tile.schrijf{--c:#ff4fa3}
+.tile.fries{--c:var(--a1)} .tile.gron{--c:#1f9d55} .tile.reken{--c:var(--a2)} .tile.woord{--c:#1aa36b} .tile.verhaal{--c:#c2410c} .tile.schrijf{--c:#ff4fa3}
 @keyframes wob{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
 .tile:hover .wob{animation:wob 1s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 </style>
@@ -104,7 +104,7 @@ p{margin:0;color:var(--muted);text-align:center}
     <small>Luisterverhaal bij Faqta · Van boer tot piloot (groep 6)</small>
   </a>
 
-  <a class="tile fries" href="friesland-spel/">
+  <a class="tile fries" href="friesland-spel/?v=2">
     <svg viewBox="0 0 400 300" aria-hidden="true">
       <defs><clipPath id="c1"><rect width="400" height="300" rx="18"/></clipPath></defs>
       <g clip-path="url(#c1)">
@@ -129,6 +129,25 @@ p{margin:0;color:var(--muted);text-align:center}
       </g>
     </svg>
     <h2>Friesland Kaartspel</h2>
+    <small>Plaatsen, eilanden en wateren (groep 6)</small>
+  </a>
+
+  <a class="tile gron" href="groningen-spel/">
+    <svg viewBox="0 0 400 300" aria-hidden="true">
+      <defs><clipPath id="c2"><rect width="400" height="300" rx="18"/></clipPath></defs>
+      <g clip-path="url(#c2)">
+        <!-- Groninger vlag: rood-blauwe hoeken met een wit-groen kruis -->
+        <rect width="400" height="300" fill="#d9232e"/>
+        <rect x="0" y="0" width="200" height="150" fill="#2a56b5"/>
+        <rect x="200" y="150" width="200" height="150" fill="#2a56b5"/>
+        <rect x="0" y="105" width="400" height="90" fill="#fff"/>
+        <rect x="155" y="0" width="90" height="300" fill="#fff"/>
+        <rect x="0" y="125" width="400" height="50" fill="#1f9d55"/>
+        <rect x="175" y="0" width="50" height="300" fill="#1f9d55"/>
+        <text x="330" y="78" font-size="56" text-anchor="middle" class="wob">🗺️</text>
+      </g>
+    </svg>
+    <h2>Groningen Kaartspel</h2>
     <small>Plaatsen, eilanden en wateren (groep 6)</small>
   </a>
 
