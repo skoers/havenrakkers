@@ -129,7 +129,7 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 <section id="start" class="screen">
   <svg class="mini-map" viewBox="0 0 1565 1080" aria-hidden="true"><use href="#basemap"/></svg>
   <h1>Friesland Kaartspel</h1>
-  <p>Ken jij alle plaatsen, eilanden en wateren van Friesland? Maximaal 1 fout en je naam ontploft in vuurwerk!</p>
+  <p>Tegel 3 · Ken jij alle plaatsen, eilanden en wateren van Friesland? Maximaal 1 fout en je naam ontploft in vuurwerk!</p>
   <form class="namebox" id="nameform">
     <label for="naam" class="visually-hidden" hidden>Je naam</label>
     <input type="text" id="naam" placeholder="Hoe heet je?" autocomplete="off" maxlength="20" required>
@@ -209,23 +209,22 @@ input[type=text]{font:inherit;font-size:1.4rem;padding:.6rem 1rem;border-radius:
 /* ===================== DATA ===================== */
 const ITEMS = [
   {id:'schiermonnikoog', naam:'Schiermonnikoog', soort:'eiland', x:1220, y:63, shape:'s-schiermonnikoog'},
-  {id:'waddeneilanden', naam:'Waddeneilanden', soort:'gebied', x:310, y:307},
+  {id:'waddeneilanden', naam:'Waddeneilanden', soort:'gebied', x:310, y:307, group:['schiermonnikoog','terschelling','ameland','vlieland']},
   {id:'leeuwarden', naam:'Leeuwarden', soort:'hoofdstad', x:890, y:492},
   {id:'harlingen', naam:'Harlingen', soort:'plaats', x:575, y:530},
   {id:'terschelling', naam:'Terschelling', soort:'eiland', x:490, y:195, shape:'s-terschelling'},
   {id:'sneek', naam:'Sneek', soort:'plaats', x:770, y:725},
   {id:'ameland', naam:'Ameland', soort:'eiland', x:900, y:115, shape:'s-ameland'},
-  {id:'afsluitdijk', naam:'Afsluitdijk', soort:'bijzonderheid', x:376, y:762, shape:'s-afsluitdijk'},
+  {id:'afsluitdijk', naam:'Afsluitdijk', soort:'bijzonderheid', x:376, y:762, shape:'s-afsluitdijk', hitorder:-1},
   {id:'drachten', naam:'Drachten', soort:'plaats', x:1165, y:618},
-  {id:'ijsselmeer', naam:'IJsselmeer', soort:'meer', x:350, y:945, shape:'w-ijsselmeer'},
-  {id:'waddenzee', naam:'Waddenzee', soort:'zee', x:320, y:530, shape:'w-waddenzee'},
+  {id:'ijsselmeer', naam:'IJsselmeer', soort:'meer', x:350, y:945, shape:'w-ijsselmeer', hitorder:3},
+  {id:'waddenzee', naam:'Waddenzee', soort:'zee', x:320, y:530, shape:'w-waddenzee', hitorder:3, overlays:['s-schiermonnikoog','s-terschelling','s-ameland','s-vlieland']},
   {id:'dokkum', naam:'Dokkum', soort:'plaats', x:1060, y:312},
   {id:'vlieland', naam:'Vlieland', soort:'eiland', x:120, y:447, shape:'s-vlieland'},
-  {id:'friesland', naam:'Friesland', soort:'provincie', x:780, y:635, shape:'s-friesland'},
+  {id:'friesland', naam:'Friesland', soort:'provincie', x:780, y:635, shape:'s-friesland', hitorder:2},
   {id:'franeker', naam:'Franeker', soort:'plaats', x:675, y:512},
   {id:'heerenveen', naam:'Heerenveen', soort:'plaats', x:1020, y:847},
 ];
-const EILANDEN = ['schiermonnikoog','terschelling','ameland','vlieland'];
 const SOORT = {
   eiland:{label:'Eiland', typ:'Welk eiland licht op?', klik:'Klik op het eiland {n}.', kies:'Welk eiland licht op?', lidw:'het eiland'},
   plaats:{label:'Plaats', typ:'Welke plaats licht op?', klik:'Klik op de plaats {n}.', kies:'Welke plaats licht op?', lidw:'de plaats'},
@@ -238,6 +237,7 @@ const SOORT = {
 };
 const MODES = ['typ','klik','kies'];
 const byId = Object.fromEntries(ITEMS.map(i=>[i.id,i]));
+const isGoed = (it, v) => [it.naam, ...(it.alias||[])].some(a=>norm(a)===norm(v));
 
 /* ===================== HULP ===================== */
 const $ = s => document.querySelector(s);
@@ -280,10 +280,13 @@ function drawHits(){
   hits.innerHTML='';
   const add=(e,id)=>{ e.dataset.id=id; e.addEventListener('click',()=>onMapClick(id)); hits.append(e); };
   // onderste laag: water en provincie, dan eilanden, dijk, daarna punten
-  for(const id of ['waddenzee','ijsselmeer','friesland', ...EILANDEN]){
-    const src=document.getElementById(byId[id].shape); add(el('polygon',{points:src.getAttribute('points')}),id);
+  // grote vlakken eerst (water, provincie), dan kleinere vlakken, lijnen, en bovenop de punten
+  const shaped = ITEMS.filter(it=>it.shape).sort((a,b)=>(b.hitorder||0)-(a.hitorder||0));
+  for(const it of shaped){
+    const src=document.getElementById(it.shape);
+    if(src.tagName==='line') add(el('line',{x1:src.getAttribute('x1'),y1:src.getAttribute('y1'),x2:src.getAttribute('x2'),y2:src.getAttribute('y2')}),it.id);
+    else add(el('polygon',{points:src.getAttribute('points')}),it.id);
   }
-  add(el('line',{x1:542,y1:645,x2:210,y2:880}),'afsluitdijk');
   for(const it of ITEMS){ if(it.shape) continue; add(el('circle',{cx:it.x,cy:it.y,r:48}),it.id); }
 }
 function clearHighlight(){ hl.innerHTML=''; }
@@ -291,18 +294,18 @@ function clearHighlight(){ hl.innerHTML=''; }
 function highlight(id, cls='glow'){
   const it=byId[id];
   if(cls==='glow' && !hl.querySelector('.dim')) hl.prepend(el('rect',{class:'dim',x:0,y:0,width:1565,height:1080}));
-  const ids = id==='waddeneilanden' ? EILANDEN : (it.shape ? [id] : []);
+  const ids = it.group ? it.group : (it.shape ? [id] : []);
   for(const sid of ids){
     const src=document.getElementById(byId[sid].shape);
     if(src.tagName==='line') hl.append(el('line',{class:'hl-line '+cls,x1:src.getAttribute('x1'),y1:src.getAttribute('y1'),x2:src.getAttribute('x2'),y2:src.getAttribute('y2')}));
     else hl.append(el('polygon',{class:'hl-shape '+cls,points:src.getAttribute('points')}));
   }
-  if(id==='waddenzee'){ for(const e of EILANDEN){ const u=el('use',{href:'#'+byId[e].shape}); u.style.opacity='.55'; hl.append(u); } }
-  if(!it.shape || it.soort==='bijzonderheid' || id==='waddeneilanden'){
+  for(const o of (it.overlays||[])){ const u=el('use',{href:'#'+o}); u.style.opacity='.55'; hl.append(u); }
+  if(!it.shape || it.soort==='bijzonderheid' || it.group){
     const ring = el('circle',{class:'hl-ring',cx:it.x,cy:it.y,r:46});
     if(cls!=='glow'){ ring.style.animation='none'; ring.style.fill=`var(--${cls==='goodfill'?'good':'bad'})`; ring.style.stroke=ring.style.fill; }
     hl.append(ring);
-    if(!it.shape && id!=='waddeneilanden') hl.append(el('circle',{class:'hl-dot',cx:it.x,cy:it.y,r:11}));
+    if(!it.shape && !it.group) hl.append(el('circle',{class:'hl-dot',cx:it.x,cy:it.y,r:11}));
   }
 }
 
@@ -337,7 +340,7 @@ function showQuestion(){
     $('#vraag').textContent = S.typ;
     const f=document.createElement('form'); f.className='answer';
     f.innerHTML=`<input type="text" id="antwoord" autocomplete="off" autocapitalize="words" placeholder="Typ de naam" aria-label="Antwoord"><button class="btn" type="submit">OK</button>`;
-    f.addEventListener('submit',e=>{e.preventDefault(); const v=f.querySelector('input').value; if(v.trim()) check(norm(v)===norm(it.naam), null);});
+    f.addEventListener('submit',e=>{e.preventDefault(); const v=f.querySelector('input').value; if(v.trim()) check(isGoed(it,v), null);});
     box.append(f); setTimeout(()=>f.querySelector('input').focus(),50);
   } else if(q.mode==='klik'){
     $('#vraag').textContent = S.klik.replace('{n}', it.naam);
@@ -359,7 +362,7 @@ function showQuestion(){
 function onMapClick(id){
   const q=state.queue[state.idx]; if(state.busy||q.mode!=='klik') return;
   const t=q.item.id;
-  const ok = id===t || (t==='waddeneilanden' && EILANDEN.includes(id));
+  const ok = id===t || (q.item.group||[]).includes(id);
   map.classList.remove('klik');
   if(!ok) highlight(id,'badfill');
   highlight(t, ok?'goodfill':'goodfill');
@@ -438,9 +441,13 @@ class Fireworks{
     while(pts.length>1400){ pts=pts.filter((_,i)=>i%2===0); }
     return pts;
   }
-  start(){ this.running=true; addEventListener('resize',this.resize); this.resize(); this.last=performance.now(); this.phase='wait'; this.phaseT=this.name?0.8:9e9;
+  /* Het vuurwerk stopt na ongeveer 15 seconden met een stilstaand eindplaatje, en pauzeert zodra de pagina niet zichtbaar is.
+     Zo blijft de iPad niet urenlang op volle kracht tekenen als het eindscherm blijft staan. */
+  start(){ this.running=true; this.paused=false; addEventListener('resize',this.resize); this.onVis=()=>{ if(document.hidden){ this.paused=true; } else if(this.paused&&this.running){ this.paused=false; this.last=performance.now(); requestAnimationFrame(t=>this.loop(t)); } };
+    document.addEventListener('visibilitychange',this.onVis); this.resize(); this.last=performance.now(); this.phase='wait'; this.phaseT=this.name?0.8:9e9;
     if(this.reduced){ this.drawStatic(); return; } requestAnimationFrame(t=>this.loop(t)); }
-  stop(){ this.running=false; removeEventListener('resize',this.resize); }
+  stop(){ this.running=false; removeEventListener('resize',this.resize); if(this.onVis) document.removeEventListener('visibilitychange',this.onVis); }
+  finish(){ this.stop(); this.drawStatic(); }
   drawStatic(){ const g=this.ctx; g.fillStyle='#070b1a'; g.fillRect(0,0,this.W,this.H); g.fillStyle='#ffd166';
     for(const [x,y] of this.targets){ g.beginPath(); g.arc(x,y,2.2,0,7); g.fill(); }
     for(let i=0;i<60;i++){ g.fillStyle=`hsl(${Math.random()*360} 90% 65%)`; g.beginPath(); g.arc(Math.random()*this.W,Math.random()*this.H,Math.random()*3+1,0,7); g.fill(); } }
@@ -458,7 +465,8 @@ class Fireworks{
     }
   }
   loop(now){
-    if(!this.running) return;
+    if(!this.running||this.paused) return;
+    if(this.t>15 && (this.phase==='wait' || !this.name)){ this.finish(); return; }
     const dt=Math.min(0.05,(now-this.last)/1000); this.last=now; this.t+=dt; this.phaseT-=dt;
     const g=this.ctx; g.globalCompositeOperation='source-over'; g.fillStyle='rgba(7,11,26,0.22)'; g.fillRect(0,0,this.W,this.H); g.globalCompositeOperation='lighter';
     if(Math.random()<(this.grand?0.14:0.02)) this.launch();
